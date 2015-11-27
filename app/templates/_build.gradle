@@ -39,6 +39,19 @@ bootRun {
     addResources = false
 }
 
+
+test {
+    println 'Starting the Unit and Integration test'
+    include '**/*UnitTest*'
+    include '**/*IntTest*'
+}
+
+task cucumberTest(type: Test) {
+    include '**/CucumberTest*'
+}
+
+test.finalizedBy(cucumberTest)
+
 apply from: 'yeoman.gradle'
 apply from: 'sonar.gradle'
 <% if (databaseType == 'sql') { %>
@@ -123,7 +136,6 @@ dependencies {
     compile group: 'org.springframework.boot', name: 'spring-boot-actuator'
     compile group: 'org.springframework.boot', name: 'spring-boot-autoconfigure'
     compile group: 'org.springframework.boot', name: 'spring-boot-loader-tools'
-    compile group: 'org.springframework.boot', name: 'spring-boot-devtools'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-logging'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-aop'<% if (databaseType == 'sql') { %>
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'<% } %><% if (searchEngine == 'elasticsearch') { %>
@@ -175,8 +187,7 @@ dependencies {
     testCompile group: 'info.cukes', name: 'cucumber-junit', version: cucumber_version
     testCompile group: 'info.cukes', name: 'cucumber-spring', version: cucumber_version<% } %>
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
-    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-jetty'
-	testCompile group: 'org.assertj', name: 'assertj-core', version: assertj_core_version
+	  testCompile group: 'org.assertj', name: 'assertj-core', version: assertj_core_version
     testCompile group: 'junit', name: 'junit'
     testCompile group: 'org.mockito', name: 'mockito-core'<% if (databaseType == 'sql') { %>
     testCompile group: 'com.mattbertolini', name: 'liquibase-slf4j', version: liquibase_slf4j_version<% } %><% if (databaseType == 'mongodb') { %>
@@ -198,7 +209,7 @@ clean {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.7'
+    gradleVersion = '2.9'
 }
 
 task stage(dependsOn: 'bootRepackage') {

@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('<%=angularAppName%>').controller('<%= entityClass %>DialogController',
-    ['$scope', '$stateParams', '$modalInstance'<% if (fieldsContainOwnerOneToOne) { %>, '$q'<% } %><% if (fieldsContainBlob) { %>, 'DataUtils'<% } %>, 'entity', '<%= entityClass %>'<% for (idx in differentTypes) { if (differentTypes[idx] != entityClass) {%>, '<%= differentTypes[idx] %>'<% } } %>,
-        function($scope, $stateParams, $modalInstance<% if (fieldsContainOwnerOneToOne) { %>, $q<% } %><% if (fieldsContainBlob) { %>, DataUtils<% } %>, entity, <%= entityClass %><% for (idx in differentTypes) { if (differentTypes[idx] != entityClass) {%>, <%= differentTypes[idx] %><% } } %>) {
+    ['$scope', '$stateParams', '$uibModalInstance'<% if (fieldsContainOwnerOneToOne) { %>, '$q'<% } %><% if (fieldsContainBlob) { %>, 'DataUtils'<% } %>, 'entity', '<%= entityClass %>'<% for (idx in differentTypes) { if (differentTypes[idx] != entityClass) {%>, '<%= differentTypes[idx] %>'<% } } %>,
+        function($scope, $stateParams, $uibModalInstance<% if (fieldsContainOwnerOneToOne) { %>, $q<% } %><% if (fieldsContainBlob) { %>, DataUtils<% } %>, entity, <%= entityClass %><% for (idx in differentTypes) { if (differentTypes[idx] != entityClass) {%>, <%= differentTypes[idx] %><% } } %>) {
 
         $scope.<%= entityInstance %> = entity;<%
             var queries = [];
@@ -10,9 +10,13 @@ angular.module('<%=angularAppName%>').controller('<%= entityClass %>DialogContro
                 var query;
                 if (relationships[idx].relationshipType == 'one-to-one' && relationships[idx].ownerSide == true && relationships[idx].otherEntityName != 'user') {
                     query = '$scope.' + relationships[idx].relationshipFieldName.toLowerCase() + 's = ' + relationships[idx].otherEntityNameCapitalized + ".query({filter: '" + relationships[idx].otherEntityRelationshipName.toLowerCase() + "-is-null'});"
-                + "\n        $q.all([$scope." + relationships[idx].otherEntityRelationshipName + ".$promise, $scope." + relationships[idx].relationshipFieldName.toLowerCase() + "s.$promise]).then(function() {"
-                + "\n            if (!$scope." + relationships[idx].otherEntityRelationshipName + "." + relationships[idx].relationshipFieldName + (dto == 'no' ? ".id" : "Id") + ") {"
-                + "\n                return $q.reject();"
+                + "\n        $q.all([$scope." + relationships[idx].otherEntityRelationshipName + ".$promise, $scope." + relationships[idx].relationshipFieldName.toLowerCase() + "s.$promise]).then(function() {";
+                    if (dto == "no"){
+                        query += "\n            if (!$scope." + relationships[idx].otherEntityRelationshipName + "." + relationships[idx].relationshipFieldName + " || !$scope." + relationships[idx].otherEntityRelationshipName + "." + relationships[idx].relationshipFieldName + ".id) {"
+                    } else {
+                        query += "\n            if (!$scope." + relationships[idx].otherEntityRelationshipName + "." + relationships[idx].relationshipFieldName + "Id) {"
+                    }
+                    query += "\n                return $q.reject();"
                 + "\n            }"
                 + "\n            return " + relationships[idx].otherEntityNameCapitalized + ".get({id : $scope." + relationships[idx].otherEntityRelationshipName + "." + relationships[idx].relationshipFieldName + (dto == 'no' ? ".id" : "Id") + "}).$promise;"
                 + "\n        }).then(function(" + relationships[idx].relationshipFieldName + ") {"
@@ -34,7 +38,7 @@ angular.module('<%=angularAppName%>').controller('<%= entityClass %>DialogContro
 
         var onSaveSuccess = function (result) {
             $scope.$emit('<%=angularAppName%>:<%= entityInstance %>Update', result);
-            $modalInstance.close(result);
+            $uibModalInstance.close(result);
             $scope.isSaving = false;
         };
 
@@ -52,7 +56,7 @@ angular.module('<%=angularAppName%>').controller('<%= entityClass %>DialogContro
         };
 
         $scope.clear = function() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
         };
         <%_ if (fieldsContainBlob) { _%>
 

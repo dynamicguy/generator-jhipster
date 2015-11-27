@@ -1220,6 +1220,7 @@ EntityGenerator.prototype.files = function files() {
                 this.copyEnumI18n('es', enumInfo);
                 this.copyEnumI18n('sv', enumInfo);
                 this.copyEnumI18n('tr', enumInfo);
+                this.copyEnumI18n('ta', enumInfo);
             }
         }
     }
@@ -1231,11 +1232,6 @@ EntityGenerator.prototype.files = function files() {
         'src/main/java/' + this.packageFolder + '/repository/' +    this.entityClass + 'Repository.java', this, {});
 
     if (this.searchEngine == 'elasticsearch') {
-        this.template('src/main/java/package/repository/search/_EntitySearchRepository.java',
-            'src/main/java/' + this.packageFolder + '/repository/search/' +    this.entityClass + 'SearchRepository.java', this, {});
-    }
-
-    if (this.searchEngine == 'solr') {
         this.template('src/main/java/package/repository/search/_EntitySearchRepository.java',
             'src/main/java/' + this.packageFolder + '/repository/search/' +    this.entityClass + 'SearchRepository.java', this, {});
     }
@@ -1302,14 +1298,8 @@ EntityGenerator.prototype.files = function files() {
         this.addComponentsScriptToIndex(this.entityInstance + '/' + this.entityInstance + '.search.service' + '.js');
     }
 
-    if (this.searchEngine == 'solr') {
-        this.template('src/main/webapp/components/_entity-search-service.js',
-            'src/main/webapp/scripts/components/entities/' + this.entityInstance + '/' + this.entityInstance + '.search.service' + '.js', this, {});
-        this.addComponentsScriptToIndex(this.entityInstance + '/' + this.entityInstance + '.search.service' + '.js');
-    }
-
-    this.template('src/test/java/package/web/rest/_EntityResourceTest.java',
-        'src/test/java/' + this.packageFolder + '/web/rest/' +    this.entityClass + 'ResourceTest.java', this, {});
+    this.template('src/test/java/package/web/rest/_EntityResourceIntTest.java',
+        'src/test/java/' + this.packageFolder + '/web/rest/' +    this.entityClass + 'ResourceIntTest.java', this, {});
 
     if (this.testFrameworks.indexOf('gatling') != -1) {
         this.template('src/test/gatling/simulations/_EntityGatlingTest.scala',
@@ -1338,6 +1328,7 @@ EntityGenerator.prototype.files = function files() {
         this.copyI18n('es');
         this.copyI18n('sv');
         this.copyI18n('tr');
+        this.copyI18n('ta');
     }
 };
 
