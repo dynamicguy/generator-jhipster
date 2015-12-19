@@ -1,7 +1,7 @@
 <% var keyPrefix = angularAppName + '.'+ entityInstance + '.'; %>
 <form name="editForm" role="form" novalidate ng-submit="save()"<% if (validation) { %> show-validation<% } %>>
 
-    <div class="modal-header">
+    <div class="modal-header bg-success">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"
                 ng-click="clear()">&times;</button>
         <h4 class="modal-title" id="my<%= entityClass %>Label" translate="<%= keyPrefix %>home.createOrEditLabel">Create or edit a <%= entityClass %></h4>

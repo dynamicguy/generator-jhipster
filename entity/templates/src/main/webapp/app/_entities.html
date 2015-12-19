@@ -11,13 +11,33 @@
             </div>
             <%_ if (searchEngine == 'elasticsearch') { _%>
             <div class="col-md-8">
-                <form name="searchForm" class="form-inline">
-                    <div class="form-group">
-                        <input type="text" class="form-control" ng-model="searchQuery" id="searchQuery" placeholder="query">
-                    </div>
-                    <button class="btn btn-info" ng-click="search()"><span class="glyphicon glyphicon-search"></span> <span>Search a <%= entityClass %></span>
+                <div class="pull-right">
+                    <form name="searchForm" class="form-inline" ng-submit="search()" novalidate show-validation>
+                        <div class="form-group">
+                            <input type="text" class="form-control" ng-model="searchQuery" id="searchQuery" placeholder="search for..." required>
+                        </div>
+                        <button ng-disabled="searchForm.$invalid" class="btn btn-info" type="submit"><span class="glyphicon glyphicon-search"></span> <span translate="entity.action.search">Search a <%= entityClass %></span>
+                        </button>
+                    </form>
+                    <button ng-disabled="!areAll<%= entityClass %>sSelected" class="btn btn-default" ng-click="sync()">
+                        <i class="glyphicon glyphicon-refresh" aria-label="sync"></i>
+                        <span translate="entity.action.sync">sync</span>
                     </button>
-                </form>
+                    <button ng-disabled="!areAll<%= entityClass %>sSelected" class="btn btn-default" ng-click="export()">
+                        <i class="glyphicon glyphicon-export" aria-label="export"></i>
+                        <span translate="entity.action.export">export</span>
+                    </button>
+
+                    <button ng-disabled="!areAll<%= entityClass %>sSelected" class="btn btn-default" ng-click="import()">
+                        <i class="glyphicon glyphicon-import" aria-label="import"></i>
+                        <span translate="entity.action.import">import</span>
+                    </button>
+
+                    <button ng-disabled="!areAll<%= entityClass %>sSelected" class="btn btn-default btn-danger" ng-click="deleteSelected()">
+                        <i class="glyphicon glyphicon-trash" aria-label="delete"></i>
+                        <span translate="entity.action.delete">delete</span>
+                    </button>
+                </div>
             </div>
             <%_ } _%>
         </div>
@@ -27,6 +47,7 @@
         <table class="table table-striped">
             <thead>
                 <tr<% if (pagination != 'no') { %> jh-sort="predicate" ascending="reverse" callback="<%=pagination != 'infinite-scroll' ? 'loadAll' : 'reset'%>()"<% } %>>
+                    <th><input type="checkbox" ng-model="areAll<%=entityClass %>sSelected" ng-change="update<%=entityClass %>sSelection(<%=entityInstance %>s, areAll<%=entityClass %>sSelected)"></th>
                     <th translate="global.field.id"<% if (pagination != 'no') { %> jh-sort-by="id"<% } %>>ID</th>
                     <%_ for (fieldId in fields) { _%>
                     <th translate="<%=keyPrefix + fields[fieldId].fieldName %>"<% if (pagination != 'no') { %> jh-sort-by="<%= fields[fieldId].fieldName%>"<% } %>><%=fields[fieldId].fieldNameCapitalized%></th>
@@ -44,6 +65,7 @@
             </thead>
             <tbody<% if (pagination == 'infinite-scroll') { %> infinite-scroll="loadPage(page + 1)" infinite-scroll-disabled="links['last'] == page"<% } %>>
                 <tr ng-repeat="<%=entityInstance %> in <%=entityInstance %>s track by <%=entityInstance %>.id">
+                    <td><input type="checkbox" ng-model="<%= entityInstance %>.isSelected"/></td>
                     <td><a ui-sref="<%= entityInstance %>.detail({id:<%= entityInstance %>.id})">{{<%=entityInstance %>.id}}</a></td>
                     <%_ for (fieldId in fields) { _%>
                         <%_ if (fields[fieldId].fieldType == 'byte[]' && fields[fieldId].fieldTypeBlobContent == 'image') { _%>
@@ -89,7 +111,7 @@
                                 <%_ if (relationshipType == 'many-to-many') { _%>
                         <span ng-repeat="<%= relationshipFieldName %> in <%= entityInstance %>.<%= relationshipFieldName %>s">
                             <a class="form-control-static" ui-sref="<%= otherEntityName %>.detail({id: {{<%= relationshipFieldName %>.id}}})">{{<%= relationshipFieldName %>.<%= otherEntityField %>}}</a>{{$last ? '' : ', '}}
-                        <span>
+                        </span>
                                 <%_ } else { _%>
                                     <%_ if (dto == 'no') { _%>
                         <a ui-sref="<%= otherEntityName %>.detail({id:<%= entityInstance + "." + relationshipFieldName + ".id" %>})">{{<%= entityInstance + "." + relationshipFieldName + "." + otherEntityField %>}}</a>

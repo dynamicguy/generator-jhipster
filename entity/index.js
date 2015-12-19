@@ -1231,7 +1231,7 @@ EntityGenerator.prototype.files = function files() {
     this.template('src/main/java/package/repository/_EntityRepository.java',
         'src/main/java/' + this.packageFolder + '/repository/' +    this.entityClass + 'Repository.java', this, {});
 
-    if (this.searchEngine == 'elasticsearch') {
+    if (this.searchEngine == 'elasticsearch' || this.searchEngine == 'solr') {
         this.template('src/main/java/package/repository/search/_EntitySearchRepository.java',
             'src/main/java/' + this.packageFolder + '/repository/search/' +    this.entityClass + 'SearchRepository.java', this, {});
     }

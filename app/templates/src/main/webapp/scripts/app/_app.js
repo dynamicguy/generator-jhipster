@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('<%=angularAppName%>', ['LocalStorageModule', <% if (enableTranslation) { %>'tmh.dynamicLocale', 'pascalprecht.translate', <% } %>
-    'ngResource', 'ngCookies', 'ngAria', 'ngCacheBuster', 'ngFileUpload',
+'ngResource', 'ngCookies', 'ngAria', 'ngCacheBuster', 'ngFileUpload',
     'ui.bootstrap', 'ui.router',  'infinite-scroll', 'angular-loading-bar'])
 
     .run(function ($rootScope, $location, $window, $http, $state, <% if (enableTranslation) { %>$translate, Language,<% } %> Auth, Principal, ENV, VERSION) {
@@ -39,11 +39,11 @@ angular.module('<%=angularAppName%>', ['LocalStorageModule', <% if (enableTransl
         $rootScope.$on('$stateChangeSuccess',  function(event, toState, toParams, fromState, fromParams) {
             var titleKey =<% if (enableTranslation) { %> 'global.title' <% }else { %> '<%= baseName %>' <% } %>;
 
-            // Remember previous state unless we've been redirected to login or we've just
-            // reset the state memory after logout. If we're redirected to login, our
-            // previousState is already set in the authExpiredInterceptor. If we're going
-            // to login directly, we don't want to be sent to some previous state anyway
-            if (toState.name != 'login' && $rootScope.previousStateName) {
+    // Remember previous state unless we've been redirected to login or we've just
+        // reset the state memory after logout. If we're redirected to login, our
+        // previousState is already set in the authExpiredInterceptor. If we're going
+        // to login directly, we don't want to be sent to some previous state anyway
+        if (toState.name != 'login' && $rootScope.previousStateName) {
               $rootScope.previousStateName = fromState.name;
               $rootScope.previousStateParams = fromParams;
             }
@@ -80,27 +80,27 @@ angular.module('<%=angularAppName%>', ['LocalStorageModule', <% if (enableTransl
         httpRequestInterceptorCacheBusterProvider.setMatchlist([/.*api.*/, /.*protected.*/], true);
 
         $urlRouterProvider.otherwise('/');
-        $stateProvider.state('site', {
+    $stateProvider.state('site', {
             'abstract': true,
             views: {
                 'navbar@': {
-                    templateUrl: 'scripts/components/navbar/navbar.html',
-                    controller: 'NavbarController'
-                }
-            },
-            resolve: {
-                authorize: ['Auth',
-                    function (Auth) {
-                        return Auth.authorize();
-                    }
-                ]<% if (enableTranslation) { %>,
-                translatePartialLoader: ['$translate', '$translatePartialLoader', function ($translate, $translatePartialLoader) {
-                    $translatePartialLoader.addPart('global');
-                }]<% } %>
-            }
-        });
+        templateUrl: 'scripts/components/navbar/navbar.html',
+        controller: 'NavbarController'
+        }
+    },
+    resolve: {
+        authorize: ['Auth',
+        function (Auth) {
+        return Auth.authorize();
+        }
+        ]<% if (enableTranslation) { %>,
+        translatePartialLoader: ['$translate', '$translatePartialLoader', function ($translate, $translatePartialLoader) {
+        $translatePartialLoader.addPart('global');
+        }]<% } %>
+        }
+    });
 
-        $httpProvider.interceptors.push('errorHandlerInterceptor');
+    $httpProvider.interceptors.push('errorHandlerInterceptor');
         $httpProvider.interceptors.push('authExpiredInterceptor');<% if (authenticationType == 'oauth2' || authenticationType == 'xauth') { %>
         $httpProvider.interceptors.push('authInterceptor');<% } %>
         $httpProvider.interceptors.push('notificationInterceptor');
