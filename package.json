@@ -1,7 +1,89 @@
 {
-  "name": "generator-jhipster",
-  "version": "2.24.0",
-  "description": "Java + Spring + JPA + AngularJS complete dev stack",
+  "_args": [
+    [
+      "generator-jhipster@3.3.0",
+      "/Users/ferdous/projects/ferabb/getatransporter"
+    ]
+  ],
+  "_from": "generator-jhipster@3.3.0",
+  "_id": "generator-jhipster@3.3.0",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/generator-jhipster",
+  "_nodeVersion": "4.4.3",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/generator-jhipster-3.3.0.tgz_1463150175220_0.504904173547402"
+  },
+  "_npmUser": {
+    "email": "julien.dubois@gmail.com",
+    "name": "jdubois"
+  },
+  "_npmVersion": "3.8.8",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "generator-jhipster",
+    "raw": "generator-jhipster@3.3.0",
+    "rawSpec": "3.3.0",
+    "scope": null,
+    "spec": "3.3.0",
+    "type": "version"
+  },
+  "_requiredBy": [
+    "#DEV:/"
+  ],
+  "_resolved": "http://registry.npmjs.org/generator-jhipster/-/generator-jhipster-3.3.0.tgz",
+  "_shasum": "8771591c5b96a9de8a2f8bae403536bf66510ab4",
+  "_shrinkwrap": null,
+  "_spec": "generator-jhipster@3.3.0",
+  "_where": "/Users/ferdous/projects/ferabb/getatransporter",
+  "author": {
+    "name": "Julien Dubois",
+    "url": "https://github.com/jdubois"
+  },
+  "bugs": {
+    "url": "https://github.com/jhipster/generator-jhipster/issues"
+  },
+  "dependencies": {
+    "chalk": "1.1.3",
+    "cheerio": "0.20.0",
+    "ejs": "2.4.1",
+    "glob": "7.0.3",
+    "html-wiring": "1.2.0",
+    "insight": "0.8.1",
+    "jhipster-uml": "1.6.1",
+    "js-yaml": "3.6.0",
+    "lodash": "4.11.1",
+    "mkdirp": "0.5.1",
+    "pluralize": "1.2.1",
+    "semver": "5.1.0",
+    "shelljs": "0.7.0",
+    "wordwrap": "1.0.0",
+    "yeoman-generator": "0.22.6",
+    "yo": "1.7.0"
+  },
+  "description": "Spring Boot + AngularJS in one handy generator",
+  "devDependencies": {
+    "eslint": "2.8.0",
+    "fs-extra": "0.30.0",
+    "mocha": "2.4.5",
+    "yeoman-assert": "2.2.1",
+    "yeoman-test": "1.1.0"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "8771591c5b96a9de8a2f8bae403536bf66510ab4",
+    "tarball": "https://registry.npmjs.org/generator-jhipster/-/generator-jhipster-3.3.0.tgz"
+  },
+  "engines": {
+    "node": ">=4.0.0",
+    "npm": ">=2.14.2"
+  },
+  "files": [
+    "generators"
+  ],
+  "gitHead": "1df4c631c00e1eace2d342ec922468a518a5899d",
+  "homepage": "http://jhipster.github.io/",
   "keywords": [
     "yeoman-generator",
     "Java",
@@ -12,42 +94,26 @@
     "AngularJS",
     "Twitter Bootstrap"
   ],
-  "homepage": "http://jhipster.github.io/",
-  "bugs": "https://github.com/jhipster/generator-jhipster/issues",
-  "author": {
-    "name": "Julien Dubois",
-    "email": "",
-    "url": "https://github.com/jdubois"
-  },
+  "license": "Apache-2.0",
   "main": "app/index.js",
+  "maintainers": [
+    {
+      "email": "julien.dubois@gmail.com",
+      "name": "jdubois"
+    }
+  ],
+  "name": "generator-jhipster",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
   "repository": {
     "type": "git",
     "url": "git://github.com/jhipster/generator-jhipster.git"
   },
   "scripts": {
-    "test": "mocha --reporter spec"
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "pretest": "eslint .",
+    "test": "mocha --timeout 20000 --reporter spec"
   },
-  "dependencies": {
-    "chalk": "1.0.0",
-    "cheerio": "0.19.0",
-    "ejs": "2.3.4",
-    "html-wiring": "1.1.0",
-    "insight": "0.6.0",
-    "lodash": "3.10.0",
-    "mkdirp": "0.5.1",
-    "shelljs": "0.5.0",
-    "underscore.string": "3.2.0",
-    "wordwrap": "1.0.0",
-    "yeoman-generator": "0.20.3",
-    "yo": "1.4.8"
-  },
-  "devDependencies": {
-    "grunt": "0.4.5",
-    "mocha": "1.21.5"
-  },
-  "engines": {
-    "node": ">=0.12.0",
-    "npm": ">=1.4.0"
-  },
-  "license": "Apache-2.0"
+  "version": "3.3.0"
 }
