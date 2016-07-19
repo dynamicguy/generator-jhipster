@@ -7,6 +7,7 @@ var generators = require('yeoman-generator'),
     jsyaml = require('js-yaml'),
     pathjs = require('path'),
     util = require('util'),
+    prompts = require('./prompts'),
     scriptBase = require('../generator-base');
 
 var DockerComposeGenerator = generators.Base.extend({});
@@ -29,16 +30,16 @@ module.exports = DockerComposeGenerator.extend({
 
             shelljs.exec('docker -v', {silent:true}, function(code, stdout, stderr) {
                 if (stderr) {
-                    this.log(chalk.yellow.bold('WARNING!') + ' Docker version 1.10.0 or later is not installed on your computer.\n' +
-                        '         Read http://docs.docker.com/engine/installation/#installation\n');
+                    this.log(chalk.red('Docker version 1.10.0 or later is not installed on your computer.\n' +
+                        '         Read http://docs.docker.com/engine/installation/#installation\n'));
                 } else {
                     var dockerVersion = stdout.split(' ')[2].replace(/,/g, '');
                     var dockerVersionMajor = dockerVersion.split('.')[0];
                     var dockerVersionMinor = dockerVersion.split('.')[1];
                     if ( dockerVersionMajor < 1 || ( dockerVersionMajor === 1 && dockerVersionMinor < 10 )) {
-                        this.log(chalk.yellow.bold('WARNING!') + ' Docker version 1.10.0 or later is not installed on your computer.\n' +
+                        this.log(chalk.red('Docker version 1.10.0 or later is not installed on your computer.\n' +
                             '         Docker version found: ' + dockerVersion + '\n' +
-                            '         Read http://docs.docker.com/engine/installation/#installation\n');
+                            '         Read http://docs.docker.com/engine/installation/#installation\n'));
                     }
                 }
                 done();
@@ -50,16 +51,16 @@ module.exports = DockerComposeGenerator.extend({
 
             shelljs.exec('docker-compose -v', {silent:true}, function(code, stdout, stderr) {
                 if (stderr) {
-                    this.log(chalk.yellow.bold('WARNING!') + ' Docker Compose 1.6.0 or later is not installed on your computer.\n' +
-                        '         Read https://docs.docker.com/compose/install/\n');
+                    this.log(chalk.red('Docker Compose 1.6.0 or later is not installed on your computer.\n' +
+                        '         Read https://docs.docker.com/compose/install/\n'));
                 } else {
                     var composeVersion = stdout.split(' ')[2].replace(/,/g, '');
                     var composeVersionMajor = composeVersion.split('.')[0];
                     var composeVersionMinor = composeVersion.split('.')[1];
                     if ( composeVersionMajor < 1 || ( composeVersionMajor === 1 && composeVersionMinor < 6 )) {
-                        this.log(chalk.yellow.bold('WARNING!') + ' Docker Compose version 1.6.0 or later is not installed on your computer.\n' +
+                        this.log(chalk.red('Docker Compose version 1.6.0 or later is not installed on your computer.\n' +
                             '         Docker Compose version found: ' + composeVersion + '\n' +
-                            '         Read https://docs.docker.com/compose/install/\n');
+                            '         Read https://docs.docker.com/compose/install/\n'));
                     }
                 }
                 done();
@@ -81,195 +82,16 @@ module.exports = DockerComposeGenerator.extend({
         }
     },
 
-    _getAppFolders: function (input) {
-        var files = shelljs.ls('-l', this.destinationPath(input));
-        var appsFolders = [];
-
-        files.forEach(function(file) {
-            if(file.isDirectory()) {
-                if( (shelljs.test('-f', input + file.name + '/.yo-rc.json'))
-                    && (shelljs.test('-f', input + file.name + '/src/main/docker/app.yml')) ) {
-                    try {
-                        var fileData = this.fs.readJSON(input + file.name + '/.yo-rc.json');
-                        if(fileData['generator-jhipster'].baseName !== undefined) {
-                            appsFolders.push(file.name.match(/([^\/]*)\/*$/)[1]);
-                        }
-                    } catch(err) {
-                        this.log(chalk.red(file + ': this .yo-rc.json can\'t be read'));
-                    }
-                }
-            }
-        }, this);
-
-        return appsFolders;
-    },
-
     prompting: {
-        askForPath: function() {
-            if (this.regenerate) return;
+        askForPath: prompts.askForPath,
 
-            var done = this.async();
+        askForApps: prompts.askForApps,
 
-            var prompts = [{
-                type: 'input',
-                name: 'directoryPath',
-                message: 'Enter the root directory where your gateway(s) and microservices are located',
-                default: this.directoryPath || '../',
-                validate: function (input) {
-                    var path = this.destinationPath(input);
-                    if(shelljs.test('-d', path)) {
-                        var appsFolders = this._getAppFolders(input);
+        askForClustersMode: prompts.askForClustersMode,
 
-                        if(appsFolders.length === 0) {
-                            return 'No microservice or gateway found in ' + path;
-                        } else {
-                            return true;
-                        }
-                    } else {
-                        return path + ' is not a directory or doesn\'t exist';
-                    }
-                }.bind(this)
-            }];
+        askForElk: prompts.askForElk,
 
-            this.prompt(prompts, function (props) {
-                this.directoryPath = props.directoryPath;
-
-                this.appsFolders = this._getAppFolders(this.directoryPath);
-
-                //Removing registry from appsFolders, using reverse for loop
-                for(var i = this.appsFolders.length - 1; i >= 0; i--) {
-                    if (this.appsFolders[i] === 'jhipster-registry' || this.appsFolders[i] === 'registry') {
-                        this.appsFolders.splice(i,1);
-                    }
-                }
-
-                this.log(chalk.green(this.appsFolders.length + ' applications found at ' + this.destinationPath(this.directoryPath) + '\n'));
-
-                done();
-            }.bind(this));
-        },
-
-        askForApps: function() {
-            if (this.regenerate) return;
-
-            var done = this.async();
-
-            var prompts = [{
-                type: 'checkbox',
-                name: 'chosenApps',
-                message: 'Which applications do you want to include in your Docker Compose configuration?',
-                choices: this.appsFolders,
-                default: this.defaultAppsFolders,
-                validate: function (input) {
-                    if(input.length === 0) {
-                        return 'Please choose at least one application';
-                    } else return true;
-                }
-            }];
-
-            this.prompt(prompts, function (props) {
-                this.appsFolders = props.chosenApps;
-
-                this.appConfigs = [];
-                this.gatewayNb = 0;
-                this.monolithicNb = 0;
-                this.microserviceNb = 0;
-
-                //Loading configs
-                this.appsFolders.forEach(function (appFolder) {
-                    var path = this.destinationPath(this.directoryPath + appFolder +'/.yo-rc.json');
-                    var fileData = this.fs.readJSON(path);
-                    var config = fileData['generator-jhipster'];
-
-                    if(config.applicationType === 'monolith') {
-                        this.monolithicNb++;
-                    } else if(config.applicationType === 'gateway') {
-                        this.gatewayNb++;
-                    } else if(config.applicationType === 'microservice') {
-                        this.microserviceNb++;
-                    }
-
-                    this.portsToBind = this.monolithicNb + this.gatewayNb;
-                    this.appConfigs.push(config);
-                }, this);
-
-                done();
-            }.bind(this));
-        },
-
-        askForClustersMode: function () {
-            if (this.regenerate) return;
-
-            var mongoApps = [];
-            this.appConfigs.forEach(function (appConfig, index) {
-                if(appConfig.prodDatabaseType === 'mongodb') {
-                    mongoApps.push(this.appsFolders[index]);
-                }
-            }, this);
-            if(mongoApps.length===0) return;
-
-            var done = this.async();
-
-            var prompts = [{
-                type: 'checkbox',
-                name: 'clusteredDbApps',
-                message: 'Which applications do you want to use with clustered databases (only available with MongoDB)?',
-                choices: mongoApps,
-                default: this.clusteredDbApps
-            }];
-
-            this.prompt(prompts, function (props) {
-                this.clusteredDbApps = props.clusteredDbApps;
-                for (var i = 0; i < this.appsFolders.length; i++) {
-                    for (var j = 0; j < props.clusteredDbApps.length; j++) {
-                        this.appConfigs[i].clusteredDb = this.appsFolders[i] === props.clusteredDbApps[j];
-                    }
-                }
-
-                done();
-            }.bind(this));
-        },
-
-        askForElk: function() {
-            if (this.regenerate) return;
-
-            var done = this.async();
-
-            var prompts = [{
-                type: 'confirm',
-                name: 'elk',
-                message: 'Do you want the JHipster Console (based on ELK) to monitor your applications?',
-                default: this.useElk && true
-            }];
-
-            this.prompt(prompts, function(props) {
-                this.useElk = props.elk;
-                done();
-            }.bind(this));
-        },
-
-        askForAdminPassword: function() {
-            if (this.regenerate) return;
-
-            var done = this.async();
-
-            var prompts = [{
-                type: 'input',
-                name: 'adminPassword',
-                message: 'Enter the admin password used to secure the JHipster Registry',
-                default: 'admin',
-                validate: function (input) {
-                    if(input.length < 5) {
-                        return 'The password must have at least 5 characters';
-                    } else return true;
-                }
-            }];
-
-            this.prompt(prompts, function(props) {
-                this.adminPassword = props.adminPassword;
-                done();
-            }.bind(this));
-        }
+        askForAdminPassword: prompts.askForAdminPassword
     },
 
     configuring: {
@@ -284,10 +106,11 @@ module.exports = DockerComposeGenerator.extend({
 
             var imagePath = '';
             var runCommand = '';
-            this.warningMessage = 'To generate Docker image, please run:\n';
+            this.warning = false;
+            this.warningMessage = 'To generate the missing Docker image(s), please run:\n';
             this.appsFolders.forEach(function (appsFolder, index) {
                 var appConfig = this.appConfigs[index];
-                if(appConfig.buildTool === 'maven') {
+                if (appConfig.buildTool === 'maven') {
                     imagePath = this.destinationPath(this.directoryPath + appsFolder + '/target/docker/' + _.kebabCase(appConfig.baseName) + '-*.war');
                     runCommand = './mvnw package -Pprod docker:build';
                 } else {
@@ -339,7 +162,7 @@ module.exports = DockerComposeGenerator.extend({
                 // Add monitoring configuration for monolith directly in the docker-compose file as they can't get them from the config server
                 if (appConfig.applicationType === 'monolith' && this.useElk) {
                     yamlConfig.environment.push('JHIPSTER_LOGGING_LOGSTASH_ENABLED=true');
-                    yamlConfig.environment.push('JHIPSTER_LOGGING_LOGSTASH_HOST=elk-logstash');
+                    yamlConfig.environment.push('JHIPSTER_LOGGING_LOGSTASH_HOST=jhipster-logstash');
                     yamlConfig.environment.push('JHIPSTER_METRICS_LOGS_ENABLED=true');
                     yamlConfig.environment.push('JHIPSTER_METRICS_LOGS_REPORT_FREQUENCY=60');
                 }
@@ -377,33 +200,44 @@ module.exports = DockerComposeGenerator.extend({
                 if (database !== 'no') {
                     var relativePath = '';
                     var databaseYaml = jsyaml.load(this.fs.read(path + '/src/main/docker/' + database + '.yml'));
-                    var databaseYamlConfig = databaseYaml.services[lowercaseBaseName + '-' + database];
+                    var databaseServiceName = lowercaseBaseName + '-' + database;
+                    var databaseYamlConfig = databaseYaml.services[databaseServiceName];
                     delete databaseYamlConfig.ports;
 
                     if (database === 'cassandra') {
-                        var cassandraDbYaml = jsyaml.load(this.fs.read(path + '/src/main/docker/cassandra-cluster.yml'));
                         relativePath = pathjs.relative(this.destinationRoot(), path + '/src/main/docker');
-                        var cassandraConfig = cassandraDbYaml.services[lowercaseBaseName + '-' + database];
-                        cassandraConfig.build.context = relativePath;
-                        var cassandraNodeConfig = cassandraDbYaml.services[lowercaseBaseName + '-' + database + '-node'];
-                        databaseYamlConfig = cassandraDbYaml.services[lowercaseBaseName + '-' + database];
-                        delete databaseYamlConfig.ports;
-                        parentConfiguration[lowercaseBaseName + '-' + database + '-node'] = cassandraNodeConfig;
+
+                        // node config
+                        var cassandraClusterYaml = jsyaml.load(this.fs.read(path + '/src/main/docker/cassandra-cluster.yml'));
+                        var cassandraNodeConfig = cassandraClusterYaml.services[databaseServiceName + '-node'];
+                        parentConfiguration[databaseServiceName + '-node'] = cassandraNodeConfig;
+
+                        // migration service config
+                        var cassandraMigrationYaml = jsyaml.load(this.fs.read(path + '/src/main/docker/cassandra-migration.yml'));
+                        var cassandraMigrationConfig = cassandraMigrationYaml.services[databaseServiceName + '-migration'];
+                        cassandraMigrationConfig.build.context = relativePath;
+                        var createKeyspaceScript = cassandraClusterYaml.services[databaseServiceName + '-migration'].environment[0];
+                        cassandraMigrationConfig.environment.push(createKeyspaceScript);
+                        cassandraMigrationConfig['links'] = cassandraClusterYaml.services[databaseServiceName + '-migration'].links;
+                        var cqlFilesRelativePath = pathjs.relative(this.destinationRoot(), path + '/src/main/resources/config/cql');
+                        cassandraMigrationConfig['volumes'][0] = cqlFilesRelativePath + ':/cql:ro';
+
+                        parentConfiguration[databaseServiceName + '-migration'] = cassandraMigrationConfig;
                     }
 
                     if (appConfig.clusteredDb) {
                         var clusterDbYaml = jsyaml.load(this.fs.read(path + '/src/main/docker/mongodb-cluster.yml'));
                         relativePath = pathjs.relative(this.destinationRoot(), path + '/src/main/docker');
-                        var mongodbNodeConfig = clusterDbYaml.services[lowercaseBaseName + '-' + database + '-node'];
-                        var mongoDbConfigSrvConfig = clusterDbYaml.services[lowercaseBaseName + '-' + database + '-config'];
+                        var mongodbNodeConfig = clusterDbYaml.services[databaseServiceName + '-node'];
+                        var mongoDbConfigSrvConfig = clusterDbYaml.services[databaseServiceName + '-config'];
                         mongodbNodeConfig.build.context = relativePath;
-                        databaseYamlConfig = clusterDbYaml.services[lowercaseBaseName + '-' + database];
+                        databaseYamlConfig = clusterDbYaml.services[databaseServiceName];
                         delete databaseYamlConfig.ports;
-                        parentConfiguration[lowercaseBaseName + '-' + database + '-node'] = mongodbNodeConfig;
-                        parentConfiguration[lowercaseBaseName + '-' + database + '-config'] = mongoDbConfigSrvConfig;
+                        parentConfiguration[databaseServiceName + '-node'] = mongodbNodeConfig;
+                        parentConfiguration[databaseServiceName + '-config'] = mongoDbConfigSrvConfig;
                     }
 
-                    parentConfiguration[lowercaseBaseName + '-' + database] = databaseYamlConfig;
+                    parentConfiguration[databaseServiceName] = databaseYamlConfig;
                 }
                 // Add search engine configuration
                 var searchEngine = appConfig.searchEngine;
@@ -454,15 +288,16 @@ module.exports = DockerComposeGenerator.extend({
         writeElkFiles: function() {
             if(!this.useElk) return;
 
-            this.copy('elk.yml', 'elk.yml');
-            this.copy('log-monitoring/log-config/logstash.conf', 'log-monitoring/log-config/logstash.conf');
-            this.copy('log-monitoring/log-data/gitignore', 'log-monitoring/log-data/.gitignore');
+            this.copy('jhipster-console.yml', 'jhipster-console.yml');
+            this.copy('log-conf/logstash.conf', 'log-conf/logstash.conf');
+            this.copy('log-data/gitignore', 'log-data/.gitignore');
         }
     },
     end: function() {
         if (this.warning) {
-            this.log('\n' + chalk.yellow.bold('WARNING!') + ' Docker Compose configuration generated with missing images!');
-            this.log(this.warningMessage);
+            this.log('\n');
+            this.log(chalk.red('Docker Compose configuration generated with missing images!'));
+            this.log(chalk.red(this.warningMessage));
         } else {
             this.log('\n' + chalk.bold.green('Docker Compose configuration successfully generated!'));
         }

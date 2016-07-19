@@ -25,13 +25,18 @@ public class AbstractCassandraTest {
 
     public static final String CASSANDRA_UNIT_KEYSPACE = "cassandra_unit_keyspace";
 
+    public static final long CASSANDRA_TIMEOUT = 30000L;
+
     @BeforeClass
     public static void startServer() throws InterruptedException, TTransportException, ConfigurationException, IOException, URISyntaxException  {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra(CASSANDRA_TIMEOUT);
         Cluster cluster = new Cluster.Builder().addContactPoints("127.0.0.1").withPort(9142).build();
         Session session = cluster.connect();
+        String createQuery = "CREATE KEYSPACE " + CASSANDRA_UNIT_KEYSPACE + " WITH replication={'class' : 'SimpleStrategy', 'replication_factor':1}";
+        session.execute(createQuery);
+        String useKeyspaceQuery = "USE " + CASSANDRA_UNIT_KEYSPACE;
+        session.execute(useKeyspaceQuery);
         CQLDataLoader dataLoader = new CQLDataLoader(session);
-        dataLoader.load(new ClassPathCQLDataSet("config/cql/create-tables.cql", true, CASSANDRA_UNIT_KEYSPACE));
         applyScripts(dataLoader, "config/cql/changelog/", "*.cql");
     }
 

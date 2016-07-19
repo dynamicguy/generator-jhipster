@@ -20,7 +20,7 @@ module.exports = ModulesGenerator.extend({
         var jhipsterVar = this.options.jhipsterVar;
         var jhipsterFunc = this.options.jhipsterFunc;
         if (jhipsterVar === undefined || jhipsterVar.moduleName === undefined) {
-            this.env.error(chalk.red('ERROR! This sub-generator must be used by JHipster modules, and the module name is not defined.'));
+            this.error(chalk.red('This sub-generator must be used by JHipster modules, and the module name is not defined.'));
         }
 
         this.log('Composing JHipster configuration with module ' + chalk.red(jhipsterVar.moduleName));
@@ -31,13 +31,15 @@ module.exports = ModulesGenerator.extend({
 
         if (!this.options.skipValidation && (baseName === undefined || packageName === undefined)) {
             this.log(chalk.red('ERROR! There is no existing JHipster configuration file in this directory.'));
-            this.env.error('JHipster ' + jhipsterVar.moduleName + ' is a JHipster module, and needs a .yo-rc.json configuration file made by JHipster.');
+            this.error('JHipster ' + jhipsterVar.moduleName + ' is a JHipster module, and needs a .yo-rc.json configuration file made by JHipster.');
         }
         // add required Jhipster variables
         jhipsterVar.baseName = this.baseName = baseName;
         jhipsterVar.packageName = packageName;
         jhipsterVar.packageFolder = packageFolder;
 
+        jhipsterVar.jhipsterConfig = this.config.getAll();
+        jhipsterVar.applicationType = this.config.get('applicationType');
         jhipsterVar.authenticationType = this.config.get('authenticationType');
         jhipsterVar.hibernateCache = this.config.get('hibernateCache');
         jhipsterVar.clusteredHttpSession = this.config.get('clusteredHttpSession');
@@ -55,6 +57,7 @@ module.exports = ModulesGenerator.extend({
         jhipsterVar.testFrameworks = this.config.get('testFrameworks');
         jhipsterVar.jhiPrefix = this.config.get('jhiPrefix');
         jhipsterVar.jhipsterVersion = this.config.get('jhipsterVersion');
+        jhipsterVar.serverPort = this.config.get('serverPort');
 
         jhipsterVar.angularAppName = this.getAngularAppName();
         jhipsterVar.mainClassName = this.getMainClassName();
@@ -111,6 +114,20 @@ module.exports = ModulesGenerator.extend({
         jhipsterFunc.getModuleHooks = this.getModuleHooks;
         jhipsterFunc.getExistingEntities = this.getExistingEntities;
         jhipsterFunc.isJhipsterVersionLessThan = this.isJhipsterVersionLessThan;
+        jhipsterFunc.getTableName = this.getTableName;
+        jhipsterFunc.getColumnName = this.getColumnName;
+        jhipsterFunc.getPluralColumnName = this.getPluralColumnName;
+        jhipsterFunc.error = this.error;
+        jhipsterFunc.warning = this.warning;
+        jhipsterFunc.printJHipsterLogo = this.printJHipsterLogo;
+        jhipsterFunc.checkForNewVersion = this.checkForNewVersion;
+        jhipsterFunc.getAngularAppName = this.getAngularAppName;
+        jhipsterFunc.getMainClassName = this.getMainClassName;
+        jhipsterFunc.askModuleName = this.askModuleName;
+        jhipsterFunc.aski18n = this.aski18n;
+        jhipsterFunc.composeLanguagesSub = this.composeLanguagesSub;
+        jhipsterFunc.getNumberedQuestion = this.getNumberedQuestion;
+        jhipsterFunc.buildApplication = this.buildApplication;
 
     },
 

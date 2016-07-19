@@ -3,12 +3,11 @@ var util = require('util'),
     generators = require('yeoman-generator'),
     chalk = require('chalk'),
     _ = require('lodash'),
+    prompts = require('./prompts'),
     scriptBase = require('../generator-base'),
     packagejs = require('../../package.json'),
     crypto = require('crypto'),
-    mkdirp = require('mkdirp'),
-    path = require('path'),
-    shelljs = require('shelljs');
+    mkdirp = require('mkdirp');
 
 var JhipsterServerGenerator = generators.Base.extend({});
 
@@ -29,16 +28,13 @@ const constants = require('../generator-constants'),
     SERVER_TEST_SRC_DIR = constants.SERVER_TEST_SRC_DIR,
     SERVER_TEST_RES_DIR = constants.SERVER_TEST_RES_DIR;
 
-var currentQuestion;
-var totalQuestions;
-var configOptions = {};
 var javaDir;
 
 module.exports = JhipsterServerGenerator.extend({
     constructor: function () {
         generators.Base.apply(this, arguments);
 
-        configOptions = this.options.configOptions || {};
+        this.configOptions = this.options.configOptions || {};
 
         // This adds support for a `--[no-]client-hook` flag
         this.option('client-hook', {
@@ -75,16 +71,16 @@ module.exports = JhipsterServerGenerator.extend({
             defaults: false
         });
 
-        this.skipClient = !this.options['client-hook'] || configOptions.skipClient || this.config.get('skipClient');
-        this.skipUserManagement = configOptions.skipUserManagement || this.options['skip-user-management'] || this.config.get('skipUserManagement');
+        this.skipClient = !this.options['client-hook'] || this.configOptions.skipClient || this.config.get('skipClient');
+        this.skipUserManagement = this.configOptions.skipUserManagement || this.options['skip-user-management'] || this.config.get('skipUserManagement');
         this.enableTranslation = this.options['i18n'];
         this.testFrameworks = [];
         this.options['gatling'] && this.testFrameworks.push('gatling');
         this.options['cucumber'] && this.testFrameworks.push('cucumber');
-        currentQuestion = configOptions.lastQuestion ? configOptions.lastQuestion : 0;
-        totalQuestions = configOptions.totalQuestions ? configOptions.totalQuestions : QUESTIONS;
-        this.logo = configOptions.logo;
-        this.baseName = configOptions.baseName;
+        this.currentQuestion = this.configOptions.lastQuestion ? this.configOptions.lastQuestion : 0;
+        this.totalQuestions = this.configOptions.totalQuestions ? this.configOptions.totalQuestions : QUESTIONS;
+        this.logo = this.configOptions.logo;
+        this.baseName = this.configOptions.baseName;
     },
     initializing: {
         displayLogo: function () {
@@ -104,7 +100,7 @@ module.exports = JhipsterServerGenerator.extend({
             this.SERVER_TEST_SRC_DIR = SERVER_TEST_SRC_DIR;
             this.SERVER_TEST_RES_DIR = SERVER_TEST_RES_DIR;
 
-            this.applicationType = this.config.get('applicationType') || configOptions.applicationType;
+            this.applicationType = this.config.get('applicationType') || this.configOptions.applicationType;
             if (!this.applicationType) {
                 this.applicationType = 'monolith';
             }
@@ -215,578 +211,28 @@ module.exports = JhipsterServerGenerator.extend({
         }
     },
 
-    _getUaaAppName : function (input) {
-        if (!input) return false;
-
-        input = input.trim();
-        var fromPath = '';
-        if(path.isAbsolute(input)) {
-            fromPath = input + '/' + '.yo-rc.json';
-        } else {
-            fromPath = this.destinationPath(input + '/' + '.yo-rc.json');
-        }
-
-        if (shelljs.test('-f', fromPath)) {
-            var fileData = this.fs.readJSON(fromPath);
-            if (fileData && fileData['generator-jhipster']) {
-                return fileData['generator-jhipster'];
-            } else return false;
-        } else {
-            return false;
-        }
-    },
-
     prompting: {
 
-        askForModuleName: function () {
-            if (this.baseName) return;
-
-            this.askModuleName(this, currentQuestion++, totalQuestions);
-
-        },
-
-        askForServerSideOpts: function () {
-            if (this.existingProject) return;
-
-            var done = this.async();
-            var getNumberedQuestion = this.getNumberedQuestion;
-            var applicationType = this.applicationType;
-            var prompts = [
-                {
-                    when: function (response) {
-                        return (applicationType === 'gateway' || applicationType === 'microservice' || applicationType === 'uaa');
-                    },
-                    type: 'input',
-                    name: 'serverPort',
-                    validate: function (input) {
-                        if (/^([0-9]*)$/.test(input)) return true;
-                        return 'This is not a valid port number.';
-                    },
-                    message: function (response) {
-                        return getNumberedQuestion('As you are running in a microservice architecture, on which port would like your server to run? It should be unique to avoid port conflicts.', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'gateway' || applicationType === 'microservice');
-                    },
-                    default: applicationType === 'gateway' ? '8080' : applicationType === 'uaa' ? '9999' : '8081'
-                },
-                {
-                    type: 'input',
-                    name: 'packageName',
-                    validate: function (input) {
-                        if (/^([a-z_]{1}[a-z0-9_]*(\.[a-z_]{1}[a-z0-9_]*)*)$/.test(input)) return true;
-                        return 'The package name you have provided is not a valid Java package name.';
-                    },
-                    message: function (response) {
-                        return getNumberedQuestion('What is your default Java package name?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, true);
-                    },
-                    default: 'com.mycompany.myapp',
-                    store: true
-                },
-                {
-                    when: function (response) {
-                        return applicationType === 'monolith';
-                    },
-                    type: 'list',
-                    name: 'authenticationType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *type* of authentication would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'monolith');
-                    },
-                    choices: [
-                        {
-                            value: 'session',
-                            name: 'HTTP Session Authentication (stateful, default Spring Security mechanism)'
-                        },
-                        {
-                            value: 'oauth2',
-                            name: 'OAuth2 Authentication (stateless, with an OAuth2 server implementation)'
-                        },
-                        {
-                            value: 'jwt',
-                            name: 'JWT authentication (stateless, with a token)'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return applicationType === 'gateway' || applicationType === 'microservice';
-                    },
-                    type: 'list',
-                    name: 'authenticationType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *type* of authentication would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'gateway' || applicationType === 'microservice');
-                    },
-                    choices: [
-                        {
-                            value: 'jwt',
-                            name: 'JWT authentication (stateless, with a token)'
-                        },
-                        {
-                            value: 'uaa',
-                            name: '[BETA] Authentication with JHipster UAA server (the server must be generated separately)'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return (applicationType === 'gateway' && response.authenticationType === 'uaa');
-                    },
-                    type: 'input',
-                    name: 'uaaBaseName',
-                    message: function (response) {
-                        return getNumberedQuestion('What is the folder path of your UAA application?.', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'gateway' && response.authenticationType === 'uaa');
-                    },
-                    default: '../uaa',
-                    validate: function (input) {
-                        var uaaAppData = this._getUaaAppName(input);
-
-                        if (uaaAppData && uaaAppData.baseName && uaaAppData.applicationType === 'uaa') {
-                            return true;
-                        } else {
-                            return 'Could not find a valid JHipster UAA server in path "' + input + '"';
-                        }
-                    }.bind(this)
-                },
-                {
-                    when: function (response) {
-                        return applicationType === 'monolith' && (response.authenticationType === 'session' || response.authenticationType === 'jwt');
-                    },
-                    type: 'list',
-                    name: 'enableSocialSignIn',
-                    message: function (response) {
-                        return getNumberedQuestion('Do you want to use social login (Google, Facebook, Twitter)? Warning, this doesn\'t work with Cassandra!', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'monolith' && (response.authenticationType === 'session' || response.authenticationType === 'jwt'));
-                    },
-                    choices: [
-                        {
-                            value: false,
-                            name: 'No'
-                        },
-                        {
-                            value: true,
-                            name: 'Yes, use social login'
-                        }
-                    ],
-                    default: false
-                },
-                {
-                    when: function (response) {
-                        return applicationType === 'microservice';
-                    },
-                    type: 'list',
-                    name: 'databaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *type* of database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'microservice');
-                    },
-                    choices: [
-                        {
-                            value: 'no',
-                            name: 'No database'
-                        },
-                        {
-                            value: 'sql',
-                            name: 'SQL (H2, MySQL, PostgreSQL, Oracle)'
-                        },
-                        {
-                            value: 'mongodb',
-                            name: 'MongoDB'
-                        },
-                        {
-                            value: 'cassandra',
-                            name: 'Cassandra'
-                        }
-                    ],
-                    default: 1
-                },
-                {
-                    when: function (response) {
-                        return response.enableSocialSignIn;
-                    },
-                    type: 'list',
-                    name: 'databaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *type* of database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.authenticationType === 'session-social');
-                    },
-                    choices: [
-                        {
-                            value: 'sql',
-                            name: 'SQL (H2, MySQL, PostgreSQL, Oracle)'
-                        },
-                        {
-                            value: 'mongodb',
-                            name: 'MongoDB'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return response.authenticationType === 'oauth2' && !response.enableSocialSignIn && applicationType !== 'microservice';
-                    },
-                    type: 'list',
-                    name: 'databaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *type* of database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.authenticationType !== 'session-social' && applicationType !== 'microservice');
-                    },
-                    choices: [
-                        {
-                            value: 'sql',
-                            name: 'SQL (H2, MySQL, PostgreSQL, Oracle)'
-                        },
-                        {
-                            value: 'mongodb',
-                            name: 'MongoDB'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return response.authenticationType !== 'oauth2' && !response.enableSocialSignIn && applicationType !== 'microservice';
-                    },
-                    type: 'list',
-                    name: 'databaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *type* of database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.authenticationType !== 'session-social' && applicationType !== 'microservice');
-                    },
-                    choices: [
-                        {
-                            value: 'sql',
-                            name: 'SQL (H2, MySQL, PostgreSQL, Oracle)'
-                        },
-                        {
-                            value: 'mongodb',
-                            name: 'MongoDB'
-                        },
-                        {
-                            value: 'cassandra',
-                            name: 'Cassandra'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return response.databaseType === 'sql';
-                    },
-                    type: 'list',
-                    name: 'prodDatabaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *production* database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.databaseType === 'sql');
-                    },
-                    choices: [
-                        {
-                            value: 'mysql',
-                            name: 'MySQL'
-                        },
-                        {
-                            value: 'postgresql',
-                            name: 'PostgreSQL'
-                        },
-                        {
-                            value: 'oracle',
-                            name: 'Oracle - Warning! The Oracle JDBC driver (ojdbc) is not bundled because it is not Open Source. Please follow our documentation to install it manually.'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return (response.databaseType === 'sql' && response.prodDatabaseType === 'mysql');
-                    },
-                    type: 'list',
-                    name: 'devDatabaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *development* database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.databaseType === 'sql' && response.prodDatabaseType === 'mysql');
-                    },
-                    choices: [
-                        {
-                            value: 'h2Disk',
-                            name: 'H2 with disk-based persistence'
-                        },
-                        {
-                            value: 'h2Memory',
-                            name: 'H2 with in-memory persistence'
-                        },
-                        {
-                            value: 'mysql',
-                            name: 'MySQL'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return (response.databaseType === 'sql' && response.prodDatabaseType === 'postgresql');
-                    },
-                    type: 'list',
-                    name: 'devDatabaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *development* database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.databaseType === 'sql' && response.prodDatabaseType === 'postgresql');
-                    },
-                    choices: [
-                        {
-                            value: 'h2Disk',
-                            name: 'H2 with disk-based persistence'
-                        },
-                        {
-                            value: 'h2Memory',
-                            name: 'H2 with in-memory persistence'
-                        },
-                        {
-                            value: 'postgresql',
-                            name: 'PostgreSQL'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return (response.databaseType === 'sql' && response.prodDatabaseType === 'oracle');
-                    },
-                    type: 'list',
-                    name: 'devDatabaseType',
-                    message: function (response) {
-                        return getNumberedQuestion('Which *development* database would you like to use?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.databaseType === 'sql' && response.prodDatabaseType === 'oracle');
-                    },
-                    choices: [
-                        {
-                            value: 'h2Disk',
-                            name: 'H2 with disk-based persistence'
-                        },
-                        {
-                            value: 'h2Memory',
-                            name: 'H2 with in-memory persistence'
-                        },
-                        {
-                            value: 'oracle',
-                            name: 'Oracle 12c'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return response.databaseType === 'sql';
-                    },
-                    type: 'list',
-                    name: 'hibernateCache',
-                    message: function (response) {
-                        return getNumberedQuestion('Do you want to use Hibernate 2nd level cache?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.databaseType === 'sql');
-                    },
-                    choices: [
-                        {
-                            value: 'no',
-                            name: 'No'
-                        },
-                        {
-                            value: 'ehcache',
-                            name: 'Yes, with ehcache (local cache, for a single node)'
-                        },
-                        {
-                            value: 'hazelcast',
-                            name: 'Yes, with HazelCast (distributed cache, for multiple nodes)'
-                        }
-                    ],
-                    default: (applicationType === 'gateway' || applicationType === 'microservice' || applicationType === 'uaa') ? 2 : 1
-                },
-                {
-                    when: function (response) {
-                        return response.databaseType === 'sql';
-                    },
-                    type: 'list',
-                    name: 'searchEngine',
-                    message: function (response) {
-                        return getNumberedQuestion('Do you want to use a search engine in your application?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, response.databaseType === 'sql');
-                    },
-                    choices: [
-                        {
-                            value: 'no',
-                            name: 'No'
-                        },
-                        {
-                            value: 'elasticsearch',
-                            name: 'Yes, with ElasticSearch'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return applicationType === 'monolith' || applicationType === 'gateway';
-                    },
-                    type: 'list',
-                    name: 'clusteredHttpSession',
-                    message: function (response) {
-                        return getNumberedQuestion('Do you want to use clustered HTTP sessions?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'monolith' || applicationType === 'gateway');
-                    },
-                    choices: [
-                        {
-                            value: 'no',
-                            name: 'No'
-                        },
-                        {
-                            value: 'hazelcast',
-                            name: 'Yes, with HazelCast'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    when: function (response) {
-                        return applicationType === 'monolith' || applicationType === 'gateway';
-                    },
-                    type: 'list',
-                    name: 'websocket',
-                    message: function (response) {
-                        return getNumberedQuestion('Do you want to use WebSockets?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, applicationType === 'monolith' || applicationType === 'gateway');
-                    },
-                    choices: [
-                        {
-                            value: 'no',
-                            name: 'No'
-                        },
-                        {
-                            value: 'spring-websocket',
-                            name: 'Yes, with Spring Websocket'
-                        }
-                    ],
-                    default: 0
-                },
-                {
-                    type: 'list',
-                    name: 'buildTool',
-                    message: function (response) {
-                        return getNumberedQuestion('Would you like to use Maven or Gradle for building the backend?', currentQuestion, totalQuestions, function (current) {
-                            currentQuestion = current;
-                        }, true);
-                    },
-                    choices: [
-                        {
-                            value: 'maven',
-                            name: 'Maven'
-                        },
-                        {
-                            value: 'gradle',
-                            name: 'Gradle'
-                        }
-                    ],
-                    default: 'maven'
-                }
-            ];
-
-            this.prompt(prompts, function (props) {
-                this.authenticationType = props.authenticationType;
-
-                if (this.authenticationType === 'session') {
-                    this.rememberMeKey = crypto.randomBytes(20).toString('hex');
-                }
-
-                if (this.authenticationType === 'jwt' || this.authenticationType === 'uaa' || this.applicationType === 'microservice' || this.applicationType === 'uaa') {
-                    this.jwtSecretKey = crypto.randomBytes(20).toString('hex');
-                }
-
-                //this will be handled by the UAA app
-                if(this.applicationType === 'gateway' && this.authenticationType === 'uaa') {
-                    this.skipUserManagement = true;
-                }
-
-                if(this.applicationType === 'uaa') {
-                    this.authenticationType = 'uaa';
-                }
-
-                this.packageName = props.packageName;
-                this.serverPort = props.serverPort;
-                if (this.serverPort === undefined) {
-                    this.serverPort = '8080';
-                }
-                this.hibernateCache = props.hibernateCache;
-                this.clusteredHttpSession = props.clusteredHttpSession;
-                this.websocket = props.websocket;
-                this.databaseType = props.databaseType;
-                this.devDatabaseType = props.devDatabaseType;
-                this.prodDatabaseType = props.prodDatabaseType;
-                this.searchEngine = props.searchEngine;
-                this.buildTool = props.buildTool;
-                this.enableSocialSignIn = props.enableSocialSignIn;
-                this.uaaBaseName = this._getUaaAppName(props.uaaBaseName).baseName;
-
-                if (this.databaseType === 'no') {
-                    this.devDatabaseType = 'no';
-                    this.prodDatabaseType = 'no';
-                    this.hibernateCache = 'no';
-                } else if (this.databaseType === 'mongodb') {
-                    this.devDatabaseType = 'mongodb';
-                    this.prodDatabaseType = 'mongodb';
-                    this.hibernateCache = 'no';
-                } else if (this.databaseType === 'cassandra') {
-                    this.devDatabaseType = 'cassandra';
-                    this.prodDatabaseType = 'cassandra';
-                    this.hibernateCache = 'no';
-                }
-                if (this.searchEngine === undefined) {
-                    this.searchEngine = 'no';
-                }
-
-                done();
-            }.bind(this));
-        },
-
-        askFori18n: function () {
-            if (this.existingProject || configOptions.skipI18nQuestion) return;
-            this.aski18n(this, currentQuestion++, totalQuestions);
-        },
+        askForModuleName: prompts.askForModuleName,
+        askForServerSideOpts: prompts.askForServerSideOpts,
+        askFori18n: prompts.askFori18n,
 
         setSharedConfigOptions: function () {
-            configOptions.lastQuestion = currentQuestion;
-            configOptions.totalQuestions = totalQuestions;
-            configOptions.packageName = this.packageName;
-            configOptions.hibernateCache = this.hibernateCache;
-            configOptions.clusteredHttpSession = this.clusteredHttpSession;
-            configOptions.websocket = this.websocket;
-            configOptions.databaseType = this.databaseType;
-            configOptions.devDatabaseType = this.devDatabaseType;
-            configOptions.prodDatabaseType = this.prodDatabaseType;
-            configOptions.searchEngine = this.searchEngine;
-            configOptions.buildTool = this.buildTool;
-            configOptions.enableSocialSignIn = this.enableSocialSignIn;
-            configOptions.authenticationType = this.authenticationType;
-            configOptions.uaaBaseName = this.uaaBaseName;
-            configOptions.serverPort = this.serverPort;
+            this.configOptions.lastQuestion = this.currentQuestion;
+            this.configOptions.totalQuestions = this.totalQuestions;
+            this.configOptions.packageName = this.packageName;
+            this.configOptions.hibernateCache = this.hibernateCache;
+            this.configOptions.clusteredHttpSession = this.clusteredHttpSession;
+            this.configOptions.websocket = this.websocket;
+            this.configOptions.databaseType = this.databaseType;
+            this.configOptions.devDatabaseType = this.devDatabaseType;
+            this.configOptions.prodDatabaseType = this.prodDatabaseType;
+            this.configOptions.searchEngine = this.searchEngine;
+            this.configOptions.buildTool = this.buildTool;
+            this.configOptions.enableSocialSignIn = this.enableSocialSignIn;
+            this.configOptions.authenticationType = this.authenticationType;
+            this.configOptions.uaaBaseName = this.uaaBaseName;
+            this.configOptions.serverPort = this.serverPort;
 
             // Make dist dir available in templates
             if (this.buildTool === 'maven') {
@@ -819,6 +265,7 @@ module.exports = JhipsterServerGenerator.extend({
             this.camelizedBaseName = _.camelCase(this.baseName);
             this.dasherizedBaseName = _.kebabCase(this.baseName);
             this.lowercaseBaseName = this.baseName.toLowerCase();
+            this.humanizedBaseName = _.startCase(this.baseName);
             this.mainClass = this.getMainClassName();
 
             if (this.prodDatabaseType === 'oracle') {
@@ -863,7 +310,7 @@ module.exports = JhipsterServerGenerator.extend({
             this.config.set('jwtSecretKey', this.jwtSecretKey);
             this.config.set('rememberMeKey', this.rememberMeKey);
             this.config.set('enableTranslation', this.enableTranslation);
-            if (this.enableTranslation && !configOptions.skipI18nQuestion) {
+            if (this.enableTranslation && !this.configOptions.skipI18nQuestion) {
                 this.config.set('nativeLanguage', this.nativeLanguage);
                 this.config.set('languages', this.languages);
             }
@@ -872,25 +319,25 @@ module.exports = JhipsterServerGenerator.extend({
 
     default: {
         getSharedConfigOptions: function () {
-            this.useSass = configOptions.useSass ? configOptions.useSass : false;
-            if (configOptions.enableTranslation !== undefined) {
-                this.enableTranslation = configOptions.enableTranslation;
+            this.useSass = this.configOptions.useSass ? this.configOptions.useSass : false;
+            if (this.configOptions.enableTranslation !== undefined) {
+                this.enableTranslation = this.configOptions.enableTranslation;
             }
-            if (configOptions.nativeLanguage !== undefined) {
-                this.nativeLanguage = configOptions.nativeLanguage;
+            if (this.configOptions.nativeLanguage !== undefined) {
+                this.nativeLanguage = this.configOptions.nativeLanguage;
             }
-            if (configOptions.languages !== undefined) {
-                this.languages = configOptions.languages;
+            if (this.configOptions.languages !== undefined) {
+                this.languages = this.configOptions.languages;
             }
-            if (configOptions.testFrameworks) {
-                this.testFrameworks = configOptions.testFrameworks;
+            if (this.configOptions.testFrameworks) {
+                this.testFrameworks = this.configOptions.testFrameworks;
             }
         },
 
         composeLanguages: function () {
-            if (configOptions.skipI18nQuestion) return;
+            if (this.configOptions.skipI18nQuestion) return;
 
-            this.composeLanguagesSub(this, configOptions, 'server');
+            this.composeLanguagesSub(this, this.configOptions, 'server');
         }
     },
 
@@ -902,6 +349,7 @@ module.exports = JhipsterServerGenerator.extend({
             this.copy('gitattributes', '.gitattributes');
             this.copy('editorconfig', '.editorconfig');
             this.template('_travis.yml', '.travis.yml', this, {});
+            this.template('_Jenkinsfile', 'Jenkinsfile', this, {});
         },
 
         writeDockerFiles: function () {
@@ -910,6 +358,9 @@ module.exports = JhipsterServerGenerator.extend({
             this.template(DOCKER_DIR + '_app.yml', DOCKER_DIR + 'app.yml', this, {});
             if (this.prodDatabaseType === 'mysql') {
                 this.template(DOCKER_DIR + '_mysql.yml', DOCKER_DIR + 'mysql.yml', this, {});
+            }
+            if (this.prodDatabaseType === 'mariadb') {
+                this.template(DOCKER_DIR + '_mariadb.yml', DOCKER_DIR + 'mariadb.yml', this, {});
             }
             if (this.prodDatabaseType === 'postgresql') {
                 this.template(DOCKER_DIR + '_postgresql.yml', DOCKER_DIR + 'postgresql.yml', this, {});
@@ -924,24 +375,19 @@ module.exports = JhipsterServerGenerator.extend({
                 // docker-compose files
                 this.template(DOCKER_DIR + '_cassandra.yml', DOCKER_DIR + 'cassandra.yml', this, {});
                 this.template(DOCKER_DIR + '_cassandra-cluster.yml', DOCKER_DIR + 'cassandra-cluster.yml', this, {});
-                this.template(DOCKER_DIR + '_cassandra-opscenter.yml', DOCKER_DIR + 'cassandra-opscenter.yml', this, {});
+                this.template(DOCKER_DIR + '_cassandra-migration.yml', DOCKER_DIR + 'cassandra-migration.yml', this, {});
                 // dockerfiles
-                this.template(DOCKER_DIR + 'cassandra/_Cassandra.Dockerfile', DOCKER_DIR + 'cassandra/Cassandra.Dockerfile', this, {});
-                this.template(DOCKER_DIR + 'cassandra/_Cassandra-Cluster.Dockerfile', DOCKER_DIR + 'cassandra/Cassandra-Cluster.Dockerfile', this, {});
-                this.template(DOCKER_DIR + 'cassandra/_Cassandra-OpsCenter.Dockerfile', DOCKER_DIR + 'cassandra/Cassandra-OpsCenter.Dockerfile', this, {});
-                this.template(DOCKER_DIR + 'opscenter/_Dockerfile', DOCKER_DIR + 'opscenter/Dockerfile', this, {});
+                this.template(DOCKER_DIR + 'cassandra/_Cassandra-Migration.Dockerfile', DOCKER_DIR + 'cassandra/Cassandra-Migration.Dockerfile', this, {});
                 // scripts
                 this.template(DOCKER_DIR + 'cassandra/scripts/_autoMigrate.sh', DOCKER_DIR + 'cassandra/scripts/autoMigrate.sh', this, {});
-                this.template(DOCKER_DIR + 'cassandra/scripts/_cassandra.sh', DOCKER_DIR + 'cassandra/scripts/cassandra.sh', this, {});
                 this.template(DOCKER_DIR + 'cassandra/scripts/_execute-cql.sh', DOCKER_DIR + 'cassandra/scripts/execute-cql.sh', this, {});
-                this.template(DOCKER_DIR + 'cassandra/scripts/_init-dev.sh', DOCKER_DIR + 'cassandra/scripts/init-dev.sh', this, {});
-                this.template(DOCKER_DIR + 'cassandra/scripts/_init-prod.sh', DOCKER_DIR + 'cassandra/scripts/init-prod.sh', this, {});
             }
             if (this.searchEngine === 'elasticsearch') {
                 this.template(DOCKER_DIR + '_elasticsearch.yml', DOCKER_DIR + 'elasticsearch.yml', this, {});
             }
 
             if (this.applicationType === 'microservice' || this.applicationType === 'gateway' || this.applicationType === 'uaa') {
+                this.copy(DOCKER_DIR + 'central-server-config/application.yml', DOCKER_DIR + 'central-server-config/application.yml');
                 this.template(DOCKER_DIR + '_jhipster-registry.yml', DOCKER_DIR + 'jhipster-registry.yml', this, {});
             }
             this.template(DOCKER_DIR + '_sonar.yml', DOCKER_DIR + 'sonar.yml', this, {});
@@ -1010,7 +456,7 @@ module.exports = JhipsterServerGenerator.extend({
                 this.copy(SERVER_MAIN_RES_DIR + '/config/liquibase/master.xml', SERVER_MAIN_RES_DIR + 'config/liquibase/master.xml');
             }
 
-            if (this.databaseType === 'mongodb') {
+            if (this.databaseType === 'mongodb' && !this.skipUserManagement) {
                 this.template(SERVER_MAIN_SRC_DIR + 'package/config/dbmigrations/_InitialSetupMigration.java', javaDir + 'config/dbmigrations/InitialSetupMigration.java', this, {});
             }
 
@@ -1018,13 +464,13 @@ module.exports = JhipsterServerGenerator.extend({
                 this.template(SERVER_MAIN_RES_DIR + 'config/cql/_create-keyspace-prod.cql', SERVER_MAIN_RES_DIR + 'config/cql/create-keyspace-prod.cql', this, {});
                 this.template(SERVER_MAIN_RES_DIR + 'config/cql/_create-keyspace.cql', SERVER_MAIN_RES_DIR + 'config/cql/create-keyspace.cql', this, {});
                 this.template(SERVER_MAIN_RES_DIR + 'config/cql/_drop-keyspace.cql', SERVER_MAIN_RES_DIR + 'config/cql/drop-keyspace.cql', this, {});
-                this.copy(SERVER_MAIN_RES_DIR + 'config/cql/create-tables.cql', SERVER_MAIN_RES_DIR + 'config/cql/create-tables.cql');
                 this.copy(SERVER_MAIN_RES_DIR + 'config/cql/changelog/README.md', SERVER_MAIN_RES_DIR + 'config/cql/changelog/README.md');
 
                 /* Skip the code below for --skip-user-management */
                 if (this.skipUserManagement) return;
-                if (this.databaseType === 'cassandra' ) {
-                    this.template(SERVER_MAIN_RES_DIR + 'config/cql/changelog/_insert_default_users.cql', SERVER_MAIN_RES_DIR + 'config/cql/changelog/00000000000000_insert_default_users.cql');
+                if (this.applicationType !== 'microservice' && this.databaseType === 'cassandra') {
+                    this.template(SERVER_MAIN_RES_DIR + 'config/cql/changelog/_create-tables.cql', SERVER_MAIN_RES_DIR + 'config/cql/changelog/00000000000000_create-tables.cql', this, {});
+                    this.template(SERVER_MAIN_RES_DIR + 'config/cql/changelog/_insert_default_users.cql', SERVER_MAIN_RES_DIR + 'config/cql/changelog/00000000000001_insert_default_users.cql', this, {});
                 }
             }
         },
@@ -1156,6 +602,7 @@ module.exports = JhipsterServerGenerator.extend({
 
             this.template(SERVER_MAIN_SRC_DIR + 'package/aop/logging/_LoggingAspect.java', javaDir + 'aop/logging/LoggingAspect.java', this, {});
 
+            this.template(SERVER_MAIN_SRC_DIR + 'package/config/_DefaultProfileUtil.java', javaDir + 'config/DefaultProfileUtil.java', this, {});
             this.template(SERVER_MAIN_SRC_DIR + 'package/config/apidoc/_package-info.java', javaDir + 'config/apidoc/package-info.java', this, {});
             this.template(SERVER_MAIN_SRC_DIR + 'package/config/apidoc/_SwaggerConfiguration.java', javaDir + 'config/apidoc/SwaggerConfiguration.java', this, {});
 
@@ -1430,7 +877,11 @@ module.exports = JhipsterServerGenerator.extend({
 
     end: function () {
         if (this.prodDatabaseType === 'oracle') {
-            this.log(chalk.yellow.bold('\n\nYou have selected Oracle database.\n') + 'Please place the ' + chalk.yellow.bold('ojdbc-' + this.ojdbcVersion + '.jar') + ' in the `' + chalk.yellow.bold(this.libFolder) + '` folder under the project root. \n');
+            this.log('\n\n');
+            this.warning(chalk.yellow.bold('You have selected Oracle database.\n') + 'Please rename ' +
+                chalk.yellow.bold('ojdbc' + this.ojdbcVersion + '.jar') + ' to ' +
+                chalk.yellow.bold('ojdbc-' + this.ojdbcVersion + '.jar') + ' and place it in the `' +
+                chalk.yellow.bold(this.libFolder) + '` folder under the project root. \n');
         }
         this.log(chalk.green.bold('\nServer app generated successfully.\n'));
     }
