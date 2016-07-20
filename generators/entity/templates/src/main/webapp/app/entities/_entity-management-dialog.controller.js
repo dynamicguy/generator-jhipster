@@ -48,7 +48,6 @@
         <%- queries[idx] %><% } %>
 
         $timeout(function (){
-            angular.element('select').selectize();
             angular.element('.form-group:eq(1)>input').focus();
         });
 

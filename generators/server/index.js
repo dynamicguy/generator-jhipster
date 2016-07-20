@@ -5,6 +5,7 @@ var util = require('util'),
     _ = require('lodash'),
     prompts = require('./prompts'),
     scriptBase = require('../generator-base'),
+    cleanup = require('../cleanup'),
     packagejs = require('../../package.json'),
     crypto = require('crypto'),
     mkdirp = require('mkdirp');
@@ -343,6 +344,10 @@ module.exports = JhipsterServerGenerator.extend({
 
     writing: {
 
+        cleanupOldServerFiles: function() {
+            cleanup.cleanupOldServerFiles(this, this.javaDir, this.testDir);
+        },
+
         writeGlobalFiles: function () {
             this.template('_README.md', 'README.md', this, {});
             this.copy('gitignore', '.gitignore');
@@ -472,6 +477,10 @@ module.exports = JhipsterServerGenerator.extend({
                     this.template(SERVER_MAIN_RES_DIR + 'config/cql/changelog/_create-tables.cql', SERVER_MAIN_RES_DIR + 'config/cql/changelog/00000000000000_create-tables.cql', this, {});
                     this.template(SERVER_MAIN_RES_DIR + 'config/cql/changelog/_insert_default_users.cql', SERVER_MAIN_RES_DIR + 'config/cql/changelog/00000000000001_insert_default_users.cql', this, {});
                 }
+            }
+
+            if (this.applicationType === 'uaa') {
+                this.generateKeyStore();
             }
         },
 
@@ -605,6 +614,7 @@ module.exports = JhipsterServerGenerator.extend({
             this.template(SERVER_MAIN_SRC_DIR + 'package/config/_DefaultProfileUtil.java', javaDir + 'config/DefaultProfileUtil.java', this, {});
             this.template(SERVER_MAIN_SRC_DIR + 'package/config/apidoc/_package-info.java', javaDir + 'config/apidoc/package-info.java', this, {});
             this.template(SERVER_MAIN_SRC_DIR + 'package/config/apidoc/_SwaggerConfiguration.java', javaDir + 'config/apidoc/SwaggerConfiguration.java', this, {});
+            this.template(SERVER_MAIN_SRC_DIR + 'package/config/apidoc/_PageableParameterBuilderPlugin.java', javaDir + 'config/apidoc/PageableParameterBuilderPlugin.java', this, {});
 
             this.template(SERVER_MAIN_SRC_DIR + 'package/async/_package-info.java', javaDir + 'async/package-info.java', this, {});
             this.template(SERVER_MAIN_SRC_DIR + 'package/async/_ExceptionHandlingAsyncTaskExecutor.java', javaDir + 'async/ExceptionHandlingAsyncTaskExecutor.java', this, {});
@@ -672,8 +682,6 @@ module.exports = JhipsterServerGenerator.extend({
             this.template(SERVER_MAIN_SRC_DIR + 'package/domain/_package-info.java', javaDir + 'domain/package-info.java', this, {});
 
             this.template(SERVER_MAIN_SRC_DIR + 'package/domain/util/_JSR310DateConverters.java', javaDir + 'domain/util/JSR310DateConverters.java', this, {});
-            this.template(SERVER_MAIN_SRC_DIR + 'package/domain/util/_JSR310DateTimeSerializer.java', javaDir + 'domain/util/JSR310DateTimeSerializer.java', this, {});
-            this.template(SERVER_MAIN_SRC_DIR + 'package/domain/util/_JSR310LocalDateDeserializer.java', javaDir + 'domain/util/JSR310LocalDateDeserializer.java', this, {});
             if (this.databaseType === 'sql') {
                 this.template(SERVER_MAIN_SRC_DIR + 'package/domain/util/_JSR310PersistenceConverters.java', javaDir + 'domain/util/JSR310PersistenceConverters.java', this, {});
                 this.template(SERVER_MAIN_SRC_DIR + 'package/domain/util/_FixedH2Dialect.java', javaDir + 'domain/util/FixedH2Dialect.java', this, {});
