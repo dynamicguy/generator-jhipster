@@ -69,8 +69,6 @@
                                  referencedTableName="<%
                                  var otherEntityTable = getTableName(otherEntityName);
                                  if (otherEntityTable == 'user') { %>jhi_user<% } else { %><%=otherEntityTable %><% } %>"/>
-	 <%  } %><% } %>
-
-        <loadData encoding="UTF-8" file="config/liquibase/<%=entityTableName %>.csv" separator="," tableName="<%=entityTableName %>"/>                                     
+        <%  } %><% } %>
     </changeSet>
 </databaseChangeLog>
