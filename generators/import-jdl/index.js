@@ -21,14 +21,14 @@ module.exports = JDLGenerator.extend({
         validate: function () {
             this.jdlFiles && this.jdlFiles.forEach(function (key) {
                 if (!shelljs.test('-f', key)) {
-                    this.env.error(chalk.red('\nCould not find ' + key + ', make sure the path is correct!\n'));
+                    this.env.error(chalk.red(`\nCould not find ${ key }, make sure the path is correct!\n`));
                 }
             }, this);
         },
 
         getConfig: function () {
             this.baseName = this.config.get('baseName');
-            this.databaseType = this.config.get('databaseType');
+            this.prodDatabaseType = this.config.get('prodDatabaseType');
         }
     },
 
@@ -40,30 +40,40 @@ module.exports = JDLGenerator.extend({
 
         parseJDL: function () {
             this.log('The jdl is being parsed.');
+            try {
+                var jdlObject = jhiCore.convertToJDL(jhiCore.parseFromFiles(this.jdlFiles), this.prodDatabaseType);
+                var entities = jhiCore.convertToJHipsterJSON({
+                    jdlObject: jdlObject,
+                    databaseType: this.prodDatabaseType
+                });
+                this.log('Writing entity JSON files.');
+                jhiCore.exportToJSON(entities, this.options['force']);
+            } catch (e) {
+                this.log(e.message || e);
+                this.error(`\nError while parsing entities from JDL\n`);
+            }
 
-            var jdlObject = jhiCore.convertToJDL(jhiCore.parseFromFiles(this.jdlFiles), this.databaseType);
-            var entities = jhiCore.convertToJHipsterJSON({
-                jdlObject: jdlObject,
-                databaseType: this.databaseType
-            });
-            this.log('Writing entity JSON files.');
-            jhiCore.exportToJSON(entities);
 
         },
 
         generateEntities: function () {
             this.log('Generating entities.');
-            this.getExistingEntities().forEach(function (entity) {
-                this.composeWith('jhipster:entity', {
-                    options: {
-                        regenerate: true,
-                        'skip-install': true
-                    },
-                    args: [entity.name]
-                }, {
-                    local: require.resolve('../entity')
-                });
-            }, this);
+            try {
+                this.getExistingEntities().forEach(function (entity) {
+                    this.composeWith('jhipster:entity', {
+                        options: {
+                            regenerate: true,
+                            'skip-install': true
+                        },
+                        args: [entity.name]
+                    }, {
+                        local: require.resolve('../entity')
+                    });
+                }, this);
+            } catch (e) {
+                this.error(`Error while generating entities from parsed JDL\n${ e }`);
+            }
+
         }
     },
 
