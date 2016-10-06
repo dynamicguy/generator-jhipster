@@ -1,0 +1,66 @@
+        // bulk operations start
+        vm.areAll<%= entityClass %>sSelected = false;
+        vm.<%= entityInstancePlural %>Selected = [];
+        vm.update<%= entityClass %>sSelection = update<%= entityClass %>sSelection;
+        vm.updateSelected<%= entityClass %>s = updateSelected<%= entityClass %>s;
+        vm.import<%= entityClass %>s = import<%= entityClass %>s;
+        vm.syncSelected = syncSelected;
+        vm.deleteSelected = deleteSelected;
+        vm.exportSelected = exportSelected;
+
+        function update<%= entityClass %>sSelection(<%= entityInstance %>Array, selectionValue) {
+            for (var i = 0; i < <%= entityInstance %>Array.length; i++) {
+                <%= entityInstance %>Array[i].isSelected = selectionValue;
+            }
+            if (selectionValue === false) {
+                vm.<%= entityInstancePlural %>Selected = [];
+            } else {
+                vm.<%= entityInstancePlural %>Selected = <%= entityInstance %>Array;
+            }
+        }
+
+        function updateSelected<%= entityClass %>s(<%= entityInstance %>, selectionValue) {
+            if (selectionValue === true) {
+                vm.<%= entityInstancePlural %>Selected.push(<%= entityInstance %>);
+            } else {
+                vm.<%= entityInstancePlural %>Selected.pop(<%= entityInstance %>);
+            }
+        }
+
+        function import<%= entityClass %>s() {
+            for (var i = 0; i < vm.<%= entityInstancePlural %>Selected.length; i++) {
+                var <%= entityInstance %> = vm.<%= entityInstancePlural %>Selected[i];
+                if (<%= entityInstance %>.isSelected) {
+                    //<%= entityClass %>.update(<%= entityInstance %>);
+                    //TODO: handle bulk export
+                }
+            }
+        }
+
+        function exportSelected() {
+            for (var i = 0; i < vm.<%= entityInstancePlural %>Selected.length; i++) {
+                var <%= entityInstance %> = vm.<%= entityInstancePlural %>Selected[i];
+                if (<%= entityInstance %>.isSelected) {
+                    //<%= entityClass %>.update(<%= entityInstance %>);
+                    //TODO: handle bulk export
+                }
+            }
+        }
+
+        function deleteSelected() {
+            for (var i = 0; i < vm.<%= entityInstancePlural %>Selected.length; i++) {
+                var <%= entityInstance %> = vm.<%= entityInstancePlural %>Selected[i];
+                if (<%= entityInstance %>.isSelected) {
+                    <%= entityClass %>.delete(<%= entityInstance %>);
+                }
+            }
+        }
+
+        function syncSelected() {
+            for (var i = 0; i < vm.<%= entityInstancePlural %>Selected.length; i++) {
+                var <%= entityInstance %> = vm.<%= entityInstancePlural %>Selected[i];
+                if (<%= entityInstance %>.isSelected) {
+                    <%= entityClass %>.update(<%= entityInstance %>);
+                }
+            }
+        }
