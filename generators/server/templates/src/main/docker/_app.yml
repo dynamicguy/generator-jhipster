@@ -1,3 +1,10 @@
+<%_ if (applicationType == 'gateway' && prodDatabaseType != 'cassandra') { _%>
+#-------------------------------------------------------------------------------
+# Note for using the rate-limiting:
+#   The comment part won't be copied if you use the subgenerator docker-compose
+#   you have to manually copy it
+#-------------------------------------------------------------------------------
+<%_ } _%>
 version: '2'
 services:
     <%= baseName.toLowerCase() %>-app:
@@ -26,6 +33,10 @@ services:
         <%_ } _%>
         <%_ if (searchEngine == 'elasticsearch') { _%>
             - <%= baseName.toLowerCase() %>-elasticsearch:elasticsearch
+        <%_ } _%>
+        <%_ if (messageBroker == 'kafka') { _%>
+            - kafka:kafka
+            - zookeeper:zookeeper
         <%_ } _%>
         <%_ if (applicationType == 'microservice' || applicationType == 'gateway' || applicationType == 'uaa') { _%>
             - jhipster-registry:registry
@@ -56,6 +67,10 @@ services:
             <%_ } _%>
             <%_ if (searchEngine == 'elasticsearch') { _%>
             - SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=elasticsearch:9300
+            <%_ } _%>
+            <%_ if (messageBroker == 'kafka') { _%>
+            - SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS=kafka
+            - SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK-NODES=zookeeper
             <%_ } _%>
         <%_ if (applicationType == 'monolith' || applicationType == 'gateway') { _%>
         ports:
@@ -106,10 +121,17 @@ services:
             - CREATE_KEYSPACE_SCRIPT=create-keyspace-prod.cql
     <%_ } _%>
     <%_ if (applicationType == 'gateway' && prodDatabaseType != 'cassandra') { _%>
-        # Uncomment to have Cassandra working with the gateway
-        # extends:
-        #     file: cassandra-cluster.yml
-        #     service: <%= baseName.toLowerCase() %>-cassandra
+    # Uncomment to have Cassandra working with the gateway
+    # <%= baseName.toLowerCase() %>-cassandra:
+    #     extends:
+    #         file: cassandra-cluster.yml
+    #         service: <%= baseName.toLowerCase() %>-cassandra
+    # <%= baseName.toLowerCase() %>-cassandra-migration:
+    #     extends:
+    #         file: cassandra-migration.yml
+    #         service: <%= baseName.toLowerCase() %>-cassandra-migration
+    #     environment:
+    #         - CREATE_KEYSPACE_SCRIPT=create-keyspace-prod.cql
     <%_ } _%>
     <%_ if (searchEngine == 'elasticsearch') { _%>
     <%= baseName.toLowerCase() %>-elasticsearch:
@@ -117,9 +139,27 @@ services:
             file: elasticsearch.yml
             service: <%= baseName.toLowerCase() %>-elasticsearch
     <%_ } _%>
+    <%_ if (searchEngine == 'solr') { _%>
+    <%= baseName.toLowerCase() %>-solr:
+        extends:
+            file: solr.yml
+            service: <%= baseName.toLowerCase() %>-solr
+    <%_ } _%>
+    <%_ if (messageBroker == 'kafka') { _%>
+    kafka:
+        extends:
+            file: kafka.yml
+            service: kafka
+    zookeeper:
+        extends:
+            file: kafka.yml
+            service: zookeeper
+    <%_ } _%>
     <%_ if (applicationType == 'microservice' || applicationType == 'gateway' || applicationType == 'uaa') { _%>
     jhipster-registry:
         extends:
             file: jhipster-registry.yml
             service: jhipster-registry
+        environment:
+            - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:./central-config/docker-config/
     <%_ } _%>

@@ -74,9 +74,9 @@ module.exports = LanguagesGenerator.extend({
             this.applicationType = this.config.get('applicationType');
             this.baseName = this.config.get('baseName');
             this.capitalizedBaseName = _.upperFirst(this.baseName);
-            this.websocket = this.config.get('websocket');
+            this.websocket = this.config.get('websocket') === 'no' ? false : this.config.get('websocket');
             this.databaseType = this.config.get('databaseType');
-            this.searchEngine = this.config.get('searchEngine');
+            this.searchEngine = this.config.get('searchEngine') === 'no' ? false : this.config.get('searchEngine');
             this.env.options.appPath = this.config.get('appPath') || CLIENT_MAIN_SRC_DIR;
             this.enableTranslation = this.config.get('enableTranslation');
             this.enableSocialSignIn = this.config.get('enableSocialSignIn');
@@ -87,7 +87,7 @@ module.exports = LanguagesGenerator.extend({
     prompting: function () {
         if (this.languages) return;
 
-        var cb = this.async();
+        var done = this.async();
         var languageOptions = this.getAllSupportedLanguageOptions();
         var prompts = [
             {
@@ -97,9 +97,9 @@ module.exports = LanguagesGenerator.extend({
                 choices: languageOptions
             }];
         if (this.enableTranslation || configOptions.enableTranslation) {
-            this.prompt(prompts, function (props) {
+            this.prompt(prompts).then(function (props) {
                 this.languagesToApply = props.languages;
-                cb();
+                done();
             }.bind(this));
         } else {
             this.log(chalk.red('Translation is disabled for the project. Languages cannot be added.'));
@@ -120,13 +120,13 @@ module.exports = LanguagesGenerator.extend({
             if (configOptions.baseName) {
                 this.baseName = configOptions.baseName;
             }
-            if (configOptions.websocket) {
+            if (configOptions.websocket !== undefined) {
                 this.websocket = configOptions.websocket;
             }
             if (configOptions.databaseType) {
                 this.databaseType = configOptions.databaseType;
             }
-            if (configOptions.searchEngine) {
+            if (configOptions.searchEngine !== undefined) {
                 this.searchEngine = configOptions.searchEngine;
             }
             if (configOptions.enableTranslation) {

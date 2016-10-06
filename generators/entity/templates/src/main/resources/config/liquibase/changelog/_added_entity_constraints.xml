@@ -44,6 +44,5 @@
                                  referencedColumnNames="id"
                                  referencedTableName="<%= otherEntityTableName %>"/>
         <%  } %><% } %>
-        <loadData encoding="UTF-8" file="config/liquibase/<%=entityTableName %>.csv" separator="," tableName="<%=entityTableName %>"/>
     </changeSet>
 </databaseChangeLog>

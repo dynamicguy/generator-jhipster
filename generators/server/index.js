@@ -37,6 +37,8 @@ const constants = require('../generator-constants'),
     DOCKER_MONGODB = constants.DOCKER_MONGODB,
     DOCKER_CASSANDRA = constants.DOCKER_CASSANDRA,
     DOCKER_ELASTICSEARCH = constants.DOCKER_ELASTICSEARCH,
+    DOCKER_KAFKA = constants.DOCKER_KAFKA,
+    DOCKER_ZOOKEEPER = constants.DOCKER_ZOOKEEPER,
     DOCKER_SONAR = constants.DOCKER_SONAR,
     DOCKER_JHIPSTER_CONSOLE = constants.DOCKER_JHIPSTER_CONSOLE,
     DOCKER_JHIPSTER_ELASTICSEARCH = constants.DOCKER_JHIPSTER_ELASTICSEARCH,
@@ -122,6 +124,8 @@ module.exports = JhipsterServerGenerator.extend({
             this.DOCKER_MONGODB = DOCKER_MONGODB;
             this.DOCKER_CASSANDRA = DOCKER_CASSANDRA;
             this.DOCKER_ELASTICSEARCH = DOCKER_ELASTICSEARCH;
+            this.DOCKER_KAFKA = DOCKER_KAFKA;
+            this.DOCKER_ZOOKEEPER = DOCKER_ZOOKEEPER;
             this.DOCKER_SONAR = DOCKER_SONAR;
             this.DOCKER_JHIPSTER_CONSOLE = DOCKER_JHIPSTER_CONSOLE;
             this.DOCKER_JHIPSTER_ELASTICSEARCH = DOCKER_JHIPSTER_ELASTICSEARCH;
@@ -138,9 +142,16 @@ module.exports = JhipsterServerGenerator.extend({
                 this.serverPort = '8080';
             }
             this.authenticationType = this.config.get('authenticationType');
-            this.clusteredHttpSession = this.config.get('clusteredHttpSession');
-            this.searchEngine = this.config.get('searchEngine');
-            this.websocket = this.config.get('websocket');
+            this.clusteredHttpSession = this.config.get('clusteredHttpSession') === 'no' ? false : this.config.get('clusteredHttpSession');
+            this.searchEngine = this.config.get('searchEngine') === 'no' ? false : this.config.get('searchEngine');
+            if (this.searchEngine === undefined) {
+                this.searchEngine = false;
+            }
+            this.messageBroker = this.config.get('messageBroker') === 'no' ? false : this.config.get('messageBroker');
+            if (this.messageBroker === undefined) {
+                this.messageBroker = false;
+            }
+            this.websocket = this.config.get('websocket') === 'no' ? false : this.config.get('websocket');
             this.databaseType = this.config.get('databaseType');
             if (this.databaseType === 'mongodb') {
                 this.devDatabaseType = 'mongodb';
@@ -183,8 +194,8 @@ module.exports = JhipsterServerGenerator.extend({
 
             // force variables unused by microservice applications
             if (this.applicationType === 'microservice' || this.applicationType === 'uaa') {
-                this.clusteredHttpSession = 'no';
-                this.websocket = 'no';
+                this.clusteredHttpSession = false;
+                this.websocket = false;
             }
 
             var serverConfigFound = this.packageName !== undefined &&
@@ -242,6 +253,7 @@ module.exports = JhipsterServerGenerator.extend({
 
         askForModuleName: prompts.askForModuleName,
         askForServerSideOpts: prompts.askForServerSideOpts,
+        askForOptionalItems: prompts.askForOptionalItems,
         askFori18n: prompts.askFori18n,
 
         setSharedConfigOptions: function () {
@@ -255,6 +267,7 @@ module.exports = JhipsterServerGenerator.extend({
             this.configOptions.devDatabaseType = this.devDatabaseType;
             this.configOptions.prodDatabaseType = this.prodDatabaseType;
             this.configOptions.searchEngine = this.searchEngine;
+            this.configOptions.messageBroker = this.messageBroker;
             this.configOptions.buildTool = this.buildTool;
             this.configOptions.enableSocialSignIn = this.enableSocialSignIn;
             this.configOptions.authenticationType = this.authenticationType;
@@ -282,6 +295,7 @@ module.exports = JhipsterServerGenerator.extend({
             insight.track('app/devDatabaseType', this.devDatabaseType);
             insight.track('app/prodDatabaseType', this.prodDatabaseType);
             insight.track('app/searchEngine', this.searchEngine);
+            insight.track('app/messageBroker', this.messageBroker);
             insight.track('app/buildTool', this.buildTool);
             insight.track('app/enableSocialSignIn', this.enableSocialSignIn);
         },
@@ -332,6 +346,7 @@ module.exports = JhipsterServerGenerator.extend({
             this.config.set('devDatabaseType', this.devDatabaseType);
             this.config.set('prodDatabaseType', this.prodDatabaseType);
             this.config.set('searchEngine', this.searchEngine);
+            this.config.set('messageBroker', this.messageBroker);
             this.config.set('buildTool', this.buildTool);
             this.config.set('enableSocialSignIn', this.enableSocialSignIn);
             this.config.set('jwtSecretKey', this.jwtSecretKey);
@@ -416,9 +431,13 @@ module.exports = JhipsterServerGenerator.extend({
             if (this.searchEngine === 'elasticsearch') {
                 this.template(DOCKER_DIR + '_elasticsearch.yml', DOCKER_DIR + 'elasticsearch.yml', this, {});
             }
+            if (this.messageBroker === 'kafka') {
+                this.template(DOCKER_DIR + '_kafka.yml', DOCKER_DIR + 'kafka.yml', this, {});
+            }
 
             if (this.applicationType === 'microservice' || this.applicationType === 'gateway' || this.applicationType === 'uaa') {
-                this.copy(DOCKER_DIR + 'central-server-config/application.yml', DOCKER_DIR + 'central-server-config/application.yml');
+                this.copy(DOCKER_DIR + 'central-server-config/localhost-config/application.yml', DOCKER_DIR + 'central-server-config/localhost-config/application.yml');
+                this.copy(DOCKER_DIR + 'central-server-config/docker-config/application.yml', DOCKER_DIR + 'central-server-config/docker-config/application.yml');
                 this.template(DOCKER_DIR + '_jhipster-registry.yml', DOCKER_DIR + 'jhipster-registry.yml', this, {});
             }
             this.template(DOCKER_DIR + '_sonar.yml', DOCKER_DIR + 'sonar.yml', this, {});
@@ -533,6 +552,7 @@ module.exports = JhipsterServerGenerator.extend({
             if(this.applicationType === 'uaa') {
                 this.template(SERVER_MAIN_SRC_DIR + 'package/config/_UaaWebSecurityConfiguration.java', javaDir + 'config/UaaWebSecurityConfiguration.java', this, {});
                 this.template(SERVER_MAIN_SRC_DIR + 'package/config/_UaaConfiguration.java', javaDir + 'config/UaaConfiguration.java', this, {});
+                this.template(SERVER_MAIN_SRC_DIR + 'package/config/_LoadBalancedResourceDetails.java', javaDir + 'config/LoadBalancedResourceDetails.java', this, {});
             } else {
                 this.template(SERVER_MAIN_SRC_DIR + 'package/config/_SecurityConfiguration.java', javaDir + 'config/SecurityConfiguration.java', this, {});
             }
@@ -614,11 +634,18 @@ module.exports = JhipsterServerGenerator.extend({
             if (this.applicationType !== 'microservice' && !(this.applicationType === 'gateway' && this.authenticationType === 'uaa')) return;
 
             this.template(SERVER_MAIN_SRC_DIR + 'package/config/_MicroserviceSecurityConfiguration.java', javaDir + 'config/MicroserviceSecurityConfiguration.java', this, {});
+            if (this.applicationType === 'microservice' && this.authenticationType === 'uaa') {
+                this.template(SERVER_MAIN_SRC_DIR + 'package/config/_LoadBalancedResourceDetails.java', javaDir + 'config/LoadBalancedResourceDetails.java', this, {});
+                this.template(SERVER_MAIN_SRC_DIR + 'package/config/_FeignConfiguration.java', javaDir + 'config/FeignConfiguration.java', this, {});
+                this.template(SERVER_MAIN_SRC_DIR + 'package/client/_AuthorizedFeignClient.java', javaDir + 'client/AuthorizedFeignClient.java', this, {});
+                this.template(SERVER_MAIN_SRC_DIR + 'package/client/_OAuth2InterceptedFeignConfiguration.java', javaDir + 'client/OAuth2InterceptedFeignConfiguration.java', this, {});
+            }
         },
 
         writeServerMicroserviceAndGatewayFiles: function () {
             if (this.applicationType !== 'microservice' && this.applicationType !== 'gateway' && this.applicationType !== 'uaa') return;
 
+            this.template(SERVER_MAIN_RES_DIR + 'config/_bootstrap.yml', SERVER_MAIN_RES_DIR + 'config/bootstrap.yml', this, {});
             this.template(SERVER_MAIN_RES_DIR + 'config/_bootstrap-dev.yml', SERVER_MAIN_RES_DIR + 'config/bootstrap-dev.yml', this, {});
             this.template(SERVER_MAIN_RES_DIR + 'config/_bootstrap-prod.yml', SERVER_MAIN_RES_DIR + 'config/bootstrap-prod.yml', this, {});
 
@@ -701,6 +728,12 @@ module.exports = JhipsterServerGenerator.extend({
             if (this.searchEngine === 'elasticsearch') {
                 this.template(SERVER_MAIN_SRC_DIR + 'package/config/_ElasticSearchConfiguration.java', javaDir + 'config/ElasticSearchConfiguration.java', this, {});
             }
+            if (this.searchEngine === 'solr') {
+                this.template(SERVER_MAIN_SRC_DIR + 'package/config/_SolrConfiguration.java', javaDir + 'config/SolrConfiguration.java', this, {});
+            }
+            if (this.messageBroker === 'kafka') {
+                this.template(SERVER_MAIN_SRC_DIR + 'package/config/_MessagingConfiguration.java', javaDir + 'config/MessagingConfiguration.java', this, {});
+            }
         },
 
         writeServerJavaDomainFiles: function () {
@@ -723,7 +756,7 @@ module.exports = JhipsterServerGenerator.extend({
 
         writeServerJavaRepoFiles: function () {
 
-            if (this.searchEngine === 'elasticsearch') {
+            if (this.searchEngine === 'elasticsearch' || this.searchEngine === 'solr') {
                 this.template(SERVER_MAIN_SRC_DIR + 'package/repository/search/_package-info.java', javaDir + 'repository/search/package-info.java', this, {});
             }
             this.template(SERVER_MAIN_SRC_DIR + 'package/repository/_package-info.java', javaDir + 'repository/package-info.java', this, {});
@@ -799,6 +832,11 @@ module.exports = JhipsterServerGenerator.extend({
                 this.template(SERVER_TEST_SRC_DIR + 'package/gateway/responserewriting/_SwaggerBasePathRewritingFilterTest.java', testDir + 'gateway/responserewriting/SwaggerBasePathRewritingFilterTest.java', this, {});
             }
 
+            if (this.authenticationType === 'uaa') {
+                this.template(SERVER_TEST_SRC_DIR + 'package/security/_OAuth2TokenMockUtil.java', testDir + 'security/OAuth2TokenMockUtil.java', this, {});
+                this.template(SERVER_TEST_SRC_DIR + 'package/config/_SecurityBeanOverrideConfiguration.java', testDir + 'config/SecurityBeanOverrideConfiguration.java', this, {});
+            }
+
             if (this.hibernateCache === 'ehcache') {
                 this.template(SERVER_TEST_RES_DIR + '_ehcache.xml', SERVER_TEST_RES_DIR + 'ehcache.xml', this, {});
             }
@@ -834,7 +872,9 @@ module.exports = JhipsterServerGenerator.extend({
                 this.copy(SERVER_MAIN_RES_DIR + 'config/liquibase/users.csv', SERVER_MAIN_RES_DIR + 'config/liquibase/users.csv');
                 this.copy(SERVER_MAIN_RES_DIR + 'config/liquibase/authorities.csv', SERVER_MAIN_RES_DIR + 'config/liquibase/authorities.csv');
                 this.copy(SERVER_MAIN_RES_DIR + 'config/liquibase/users_authorities.csv', SERVER_MAIN_RES_DIR + 'config/liquibase/users_authorities.csv');
-                this.copy(SERVER_MAIN_RES_DIR + 'config/liquibase/oauth_client_details.csv', SERVER_MAIN_RES_DIR + 'config/liquibase/oauth_client_details.csv');
+                if (this.authenticationType === 'oauth2') {
+                    this.copy(SERVER_MAIN_RES_DIR + 'config/liquibase/oauth_client_details.csv', SERVER_MAIN_RES_DIR + 'config/liquibase/oauth_client_details.csv');
+                }
             }
 
             // Email templates
@@ -853,7 +893,7 @@ module.exports = JhipsterServerGenerator.extend({
             }
 
             /* User management java repo files */
-            if (this.searchEngine === 'elasticsearch') {
+            if (this.searchEngine === 'elasticsearch' || this.searchEngine === 'solr') {
                 this.template(SERVER_MAIN_SRC_DIR + 'package/repository/search/_UserSearchRepository.java', javaDir + 'repository/search/UserSearchRepository.java', this, {});
             }
             if (this.databaseType === 'sql' || this.databaseType === 'mongodb') {

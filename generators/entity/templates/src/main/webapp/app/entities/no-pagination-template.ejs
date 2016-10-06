@@ -3,7 +3,7 @@
         vm.openFile = DataUtils.openFile;
         vm.byteSize = DataUtils.byteSize;
         <%_ } _%>
-        <%_ if (searchEngine == 'elasticsearch') { _%>
+        <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
         vm.search = search;
         vm.loadAll = loadAll;
         <%_ } _%>
@@ -15,7 +15,7 @@
                 vm.<%= entityInstancePlural %> = result;
             });
         }
-        <%_ if (searchEngine == 'elasticsearch') { _%>
+        <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
         function search () {
             if (!vm.searchQuery) {

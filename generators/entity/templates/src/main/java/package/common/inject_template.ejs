@@ -7,7 +7,7 @@
     @Inject
     private <%= entityClass %>Mapper <%= entityInstance %>Mapper;
     <%_ } _%>
-    <%_ if (searchEngine == 'elasticsearch') { _%>
+    <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
     @Inject
     private <%= entityClass %>SearchRepository <%= entityInstance %>SearchRepository;

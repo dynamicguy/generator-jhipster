@@ -19,7 +19,8 @@
             "diskSpace": "Disk space",
             "mail": "Email"<% if (searchEngine === 'elasticsearch') { %>,
             "elasticsearch": "Elasticsearch"<% } %><% if (databaseType === 'sql') { %>,
-            "db": "Database"<% } %><% if (databaseType === 'mongodb') { %>,
+            "db": "Database"<% } %><% if (searchEngine === 'solr') { %>,
+            "solr": "SOLR"<% } %><% if (databaseType === 'mongodb') { %>,
             "mongo": "MongoDB"<% } %><% if (databaseType === 'cassandra') { %>,
             "cassandra": "Cassandra"<% } %>
         },

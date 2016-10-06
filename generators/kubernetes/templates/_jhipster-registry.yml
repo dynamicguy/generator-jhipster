@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: registry
-        image: jhipster/jhipster-registry:v2.2.0
+        image: <%= DOCKER_JHIPSTER_REGISTRY %>
         ports:
         - containerPort: 8761
         env:
@@ -43,7 +43,7 @@ spec:
           value: http://admin:<%= adminPassword %>@jhipster-registry.<%= kubernetesNamespace %>.svc.cluster.local:8761/eureka/
         # - name: GIT_URI
         #   value: https://github.com/jhipster/jhipster-registry/
-        # - name: GIT_SEARCH_PATH
+        # - name: GIT_SEARCH_PATHS
         #   value: central-config
 ---
 apiVersion: v1

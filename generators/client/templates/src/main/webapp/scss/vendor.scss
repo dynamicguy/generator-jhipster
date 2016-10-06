@@ -1,7 +1,12 @@
+@import 'vars';
+
 $icon-font-path: "../fonts/";
 
 /* Sass bower components will be injected here */
 /* bower:scss */
+@import "../bower_components/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
+@import "../bower_components/bootstrap-material-design/sass/bootstrap-material-design.scss";
+@import "../bower_components/bootstrap-material-design/sass/ripples.scss";
 /* endinject */
 /* bower:sass */
 /* endinject */

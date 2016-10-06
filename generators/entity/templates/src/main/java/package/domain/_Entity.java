@@ -13,7 +13,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;<% } %><% if (database
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;<% } %><% if (searchEngine == 'elasticsearch') { %>
-import org.springframework.data.elasticsearch.annotations.Document;<% } %>
+import org.springframework.data.elasticsearch.annotations.Document;<% } %><% if (searchEngine == 'solr') { %>
+import org.springframework.data.solr.core.mapping.SolrDocument;
+import org.apache.solr.client.solrj.beans.Field;<% } %>    
 <% if (databaseType == 'sql') { %>
 import javax.persistence.*;<% } %><% if (validation) { %>
 import javax.validation.constraints.*;<% } %>
@@ -43,7 +45,8 @@ import <%=packageName%>.domain.enumeration.<%= element %>;<% }); %>
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)<% } %><% } %><% if (databaseType == 'mongodb') { %>
 @Document(collection = "<%= entityTableName %>")<% } %><% if (databaseType == 'cassandra') { %>
 @Table(name = "<%= entityInstance %>")<% } %><% if (searchEngine == 'elasticsearch') { %>
-@Document(indexName = "<%= entityInstance.toLowerCase() %>")<% } %>
+@Document(indexName = "<%= entityInstance.toLowerCase() %>")<% } %><% if (searchEngine == 'solr') { %>
+@SolrDocument(solrCoreName = "<%= entityInstance.toLowerCase() %>s")<% } %>
 public class <%= entityClass %> implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -90,7 +93,7 @@ public class <%= entityClass %> implements Serializable {
     @Column(name = "<%=fieldNameUnderscored %>"<% if (fieldValidate == true) { %><% if (fieldValidateRules.indexOf('maxlength') != -1) { %>, length = <%= fieldValidateRulesMaxlength %><% } %><% if (required) { %>, nullable = false<% } %><% } %>)
     <%_     }
         } _%>
-    <%_ if (databaseType == 'mongodb') { _%>
+    <%_ if (databaseType == 'mongodb' || searchEngine == 'solr') { _%>
     @Field("<%=fieldNameUnderscored %>")
     <%_ } _%>
     <%_ if (fieldTypeBlobContent != 'text') { _%>
@@ -267,7 +270,7 @@ public class <%= entityClass %> implements Serializable {
         return this;
     }
 
-    public <%= entityClass %> add<%= otherEntityNameCapitalized %>(<%= otherEntityNameCapitalized %> <%= otherEntityName %>) {
+    public <%= entityClass %> add<%= relationshipNameCapitalized %>(<%= otherEntityNameCapitalized %> <%= otherEntityName %>) {
         <%= relationshipFieldNamePlural %>.add(<%= otherEntityName %>);
             <%_ if (relationshipType == 'one-to-many') { _%>
         <%= otherEntityName %>.set<%= otherEntityRelationshipNameCapitalized %>(this);
@@ -278,7 +281,7 @@ public class <%= entityClass %> implements Serializable {
         return this;
     }
 
-    public <%= entityClass %> remove<%= otherEntityNameCapitalized %>(<%= otherEntityNameCapitalized %> <%= otherEntityName %>) {
+    public <%= entityClass %> remove<%= relationshipNameCapitalized %>(<%= otherEntityNameCapitalized %> <%= otherEntityName %>) {
         <%= relationshipFieldNamePlural %>.remove(<%= otherEntityName %>);
             <%_ if (relationshipType == 'one-to-many') { _%>
         <%= otherEntityName %>.set<%= otherEntityRelationshipNameCapitalized %>(null);

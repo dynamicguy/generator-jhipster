@@ -81,7 +81,7 @@ public class OAuth2ServerConfiguration {<% if (databaseType == 'sql') { %>
                 .disable()
                 .headers()
                 .frameOptions().disable()
-            .and()<% if (websocket == 'no') { %>
+            .and()<% if (!websocket) { %>
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()<% } %>
@@ -89,6 +89,7 @@ public class OAuth2ServerConfiguration {<% if (databaseType == 'sql') { %>
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/api/authenticate").permitAll()
                 .antMatchers("/api/register").permitAll()
+                .antMatchers("/api/profile-info").permitAll()
                 .antMatchers("/api/**").authenticated()<% if (websocket == 'spring-websocket') { %>
                 .antMatchers("/websocket/tracker").hasAuthority(AuthoritiesConstants.ADMIN)
                 .antMatchers("/websocket/**").permitAll()<% } %>

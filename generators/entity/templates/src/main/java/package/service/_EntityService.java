@@ -14,6 +14,10 @@ import org.springframework.data.domain.Pageable;
 import java.util.LinkedList;<% } %>
 import java.util.List;
 
+<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
+import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;
+<% } %>    
+
 /**
  * Service Interface for managing <%= entityClass %>.
  */
@@ -57,6 +61,16 @@ public interface <%= entityClass %>Service {
      *  @param id the id of the entity
      */
     void delete(<%= pkType %> id);<% if (searchEngine == 'elasticsearch') { %>
+
+    /**
+     * Search for the <%= entityInstance %> corresponding to the query.
+     *
+     *  @param query the query of the search
+     *  <% if (pagination != 'no') { %>
+     *  @param pageable the pagination information<% } %>
+     *  @return the list of entities
+     */
+    <% if (pagination != 'no') { %>Page<<%= instanceType %><% } else { %>List<<%= instanceType %><% } %>> search(String query<% if (pagination != 'no') { %>, Pageable pageable<% } %>);<% } %><% if (searchEngine == 'solr') { %>
 
     /**
      * Search for the <%= entityInstance %> corresponding to the query.

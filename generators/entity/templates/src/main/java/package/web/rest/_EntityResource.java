@@ -6,7 +6,7 @@ import <%=packageName%>.domain.<%= entityClass %>;
 <%_ } _%>
 <%_ if (service != 'no') { _%>
 import <%=packageName%>.service.<%= entityClass %>Service;<% } else { %>
-import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (searchEngine == 'elasticsearch') { %>
+import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;<% }} %>
 import <%=packageName%>.web.rest.util.HeaderUtil;<% if (pagination != 'no') { %>
 import <%=packageName%>.web.rest.util.PaginationUtil;<% } %>
@@ -155,5 +155,21 @@ public class <%= entityClass %>Resource {
         method = RequestMethod.GET,
         produces = MediaType.APPLICATION_JSON_VALUE)
     @Timed<%- include('../../common/search_template', {viaService: viaService}); -%><% } %>
+            
+            
+    <% if (searchEngine == 'solr') { %>
+        
+    /**
+    * SEARCH  /_search/<%= entityApiUrl %>?query=:query : search for the <%= entityInstance %> corresponding
+    * to the query.
+     * @param query the query of the <%= entityInstance %> search <% if (pagination != 'no') { %>
+     * @param pageable the pagination information<% } %>
+     * @return the result of the search<% if (pagination != 'no') { %>
+     * @throws URISyntaxException if there is an error to generate the pagination HTTP headers<% } %>
+     */
+    @RequestMapping(value = "/_search/<%= entityApiUrl %>",
+        method = RequestMethod.GET,
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    @Timed<%- include('../../common/solr_search_template', {viaService: viaService}); -%><% } %>
 
 }

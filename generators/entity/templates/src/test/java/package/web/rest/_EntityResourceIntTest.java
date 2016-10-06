@@ -2,6 +2,9 @@ package <%=packageName%>.web.rest;
 <% if (databaseType == 'cassandra') { %>
 import <%=packageName%>.AbstractCassandraTest;<% } %>
 import <%=packageName%>.<%= mainClass %>;
+<% if (authenticationType == 'uaa') { %>
+import <%=packageName%>.config.SecurityBeanOverrideConfiguration;
+<% } %>
 import <%=packageName%>.domain.<%= entityClass %>;
 <%_ for (idx in relationships) { // import entities in required relationships
         var relationshipValidate = relationships[idx].relationshipValidate;
@@ -10,7 +13,7 @@ import <%=packageName%>.domain.<%= entityClass %>;
 import <%=packageName%>.domain.<%= otherEntityNameCapitalized %>;
 <%_ } } _%>
 import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (service != 'no') { %>
-import <%=packageName%>.service.<%= entityClass %>Service;<% } if (searchEngine == 'elasticsearch') { %>
+import <%=packageName%>.service.<%= entityClass %>Service;<% } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;<% } if (dto == 'mapstruct') { %>
 import <%=packageName%>.service.dto.<%= entityClass %>DTO;
 import <%=packageName%>.service.mapper.<%= entityClass %>Mapper;<% } %>
@@ -56,11 +59,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @see <%= entityClass %>Resource
  */
 @RunWith(SpringRunner.class)
+<%_ if (authenticationType === 'uaa') { _%>
+@SpringBootTest(classes = {<%= mainClass %>.class, SecurityBeanOverrideConfiguration.class})
+<%_ } else { _%>
 @SpringBootTest(classes = <%= mainClass %>.class)
-public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra') { %>extends AbstractCassandraTest <% } %>{<%_ if (fieldsContainZonedDateTime == true) { _%>
+<%_ } _%>
+public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra') { %>extends AbstractCassandraTest <% } %>{
+    <%_ if (fieldsContainZonedDateTime == true) { _%>
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("Z"));<%_ } _%>
-<% for (idx in fields) {
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("Z"));
+    <%_ } _%>
+    <%_ for (idx in fields) {
     var defaultValueName = 'DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase();
     var updatedValueName = 'UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase();
 
@@ -114,8 +123,8 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         for( var i = 0; i < sampleTextMinLength; i++ ) {
             sampleTextString += "A";
             updatedTextString += "B";
-        }
-        %>
+        }_%>
+
     private static final String <%=defaultValueName %> = "<%=sampleTextString %>";
     private static final String <%=updatedValueName %> = "<%=updatedTextString %>";<% } else if (fieldType == 'Integer') { %>
 
@@ -170,7 +179,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
     private <%= entityClass %>Mapper <%= entityInstance %>Mapper;<% } if (service != 'no') { %>
 
     @Inject
-    private <%= entityClass %>Service <%= entityInstance %>Service;<% } if (searchEngine == 'elasticsearch') { %>
+    private <%= entityClass %>Service <%= entityInstance %>Service;<% } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 
     @Inject
     private <%= entityClass %>SearchRepository <%= entityInstance %>SearchRepository;<% } %>
@@ -197,7 +206,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         <%_ if (service != 'no') { _%>
         ReflectionTestUtils.setField(<%= entityInstance %>Resource, "<%= entityInstance %>Service", <%= entityInstance %>Service);
         <%_ } else { _%>
-            <%_ if (searchEngine == 'elasticsearch') { _%>
+            <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
         ReflectionTestUtils.setField(<%= entityInstance %>Resource, "<%= entityInstance %>SearchRepository", <%= entityInstance %>SearchRepository);
             <%_ } _%>
         ReflectionTestUtils.setField(<%= entityInstance %>Resource, "<%= entityInstance %>Repository", <%= entityInstance %>Repository);
@@ -217,13 +226,12 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
      * if they test an entity which requires the current entity.
      */
     public static <%= entityClass %> createEntity(<% if (databaseType == 'sql') { %>EntityManager em<% } %>) {
-        <%= entityClass %> <%= entityInstance %> = new <%= entityClass %>();
         <%_ if (fluentMethods) { _%>
-        <%= entityInstance %> = new <%= entityClass %>()<% for (idx in fields) { %>
+        <%= entityClass %> <%= entityInstance %> = new <%= entityClass %>()<% for (idx in fields) { %>
                 .<%= fields[idx].fieldName %>(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>)<% if ((fields[idx].fieldType == 'byte[]' || fields[idx].fieldType === 'ByteBuffer') && fields[idx].fieldTypeBlobContent != 'text') { %>
                 .<%= fields[idx].fieldName %>ContentType(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>_CONTENT_TYPE)<% } %><% } %>;
         <%_ } else { _%>
-        <%= entityInstance %> = new <%= entityClass %>();
+        <%= entityClass %> <%= entityInstance %> = new <%= entityClass %>();
             <%_ for (idx in fields) { _%>
         <%= entityInstance %>.set<%= fields[idx].fieldInJavaBeanMethod %>(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase() %>);
                 <%_ if ((fields[idx].fieldType == 'byte[]' || fields[idx].fieldType === 'ByteBuffer') && fields[idx].fieldTypeBlobContent != 'text') { _%>
@@ -256,7 +264,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
     public void initTest() {
         <%_ if (databaseType == 'mongodb' || databaseType == 'cassandra') { _%>
         <%= entityInstance %>Repository.deleteAll();
-        <%_ } if (searchEngine == 'elasticsearch') { _%>
+        <%_ } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
         <%= entityInstance %>SearchRepository.deleteAll();
         <%_ } _%>
         <%= entityInstance %> = createEntity(<% if (databaseType == 'sql') { %>em<% } %>);
@@ -288,7 +296,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         assertThat(test<%= entityClass %>.is<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
         <%_ } else { _%>
         assertThat(test<%= entityClass %>.get<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
-        <%_ }} if (searchEngine == 'elasticsearch') { _%>
+        <%_ }} if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
         // Validate the <%= entityClass %> in ElasticSearch
         <%= entityClass %> <%= entityInstance %>Es = <%= entityInstance %>SearchRepository.findOne(test<%= entityClass %>.getId());
@@ -373,7 +381,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
 <%_ if (service != 'no' && dto != 'mapstruct') { _%>
         <%= entityInstance %>Service.save(<%= entityInstance %>);
 <%_ } else { _%>
-        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch') { %>
+        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
         <%= entityInstance %>SearchRepository.save(<%= entityInstance %>);<%_ } _%>
 <%_ } _%>
 
@@ -415,9 +423,9 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         assertThat(test<%= entityClass %>.is<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
         <%_ } else { _%>
         assertThat(test<%= entityClass %>.get<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
-        <%_ } } if (searchEngine == 'elasticsearch') { _%>
+        <%_ } } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
-        // Validate the <%= entityClass %> in ElasticSearch
+        // Validate the <%= entityClass %> in Search Engine
         <%= entityClass %> <%= entityInstance %>Es = <%= entityInstance %>SearchRepository.findOne(test<%= entityClass %>.getId());
         assertThat(<%= entityInstance %>Es).isEqualToComparingFieldByField(test<%= entityClass %>);
         <%_ } _%>
@@ -430,7 +438,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
 <%_ if (service != 'no' && dto != 'mapstruct') { _%>
         <%= entityInstance %>Service.save(<%= entityInstance %>);
 <%_ } else { _%>
-        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch') { %>
+        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
         <%= entityInstance %>SearchRepository.save(<%= entityInstance %>);<%_ } _%>
 <%_ } _%>
 
@@ -439,7 +447,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         // Get the <%= entityInstance %>
         rest<%= entityClass %>MockMvc.perform(delete("/api/<%= entityApiUrl %>/{id}", <%= entityInstance %>.getId())
                 .accept(TestUtil.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk());<% if (searchEngine == 'elasticsearch') { %>
+                .andExpect(status().isOk());<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 
         // Validate ElasticSearch is empty
         boolean <%= entityInstance %>ExistsInEs = <%= entityInstance %>SearchRepository.exists(<%= entityInstance %>.getId());
@@ -448,7 +456,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         // Validate the database is empty
         List<<%= entityClass %>> <%= entityInstancePlural %> = <%= entityInstance %>Repository.findAll();
         assertThat(<%= entityInstancePlural %>).hasSize(databaseSizeBeforeDelete - 1);
-    }<% if (searchEngine == 'elasticsearch') { %>
+    }<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 
     @Test<% if (databaseType == 'sql') { %>
     @Transactional<% } %>

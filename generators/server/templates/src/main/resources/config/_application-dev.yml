@@ -25,6 +25,8 @@ eureka:
 <%_ } _%>
 
 spring:
+    profiles:
+        include: swagger
     <%_ if (applicationType == 'gateway' && databaseType != 'cassandra') { _%>
     autoconfigure:
         exclude: org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration
@@ -36,6 +38,17 @@ spring:
             enabled: false # we use gulp + BrowserSync for livereload
     jackson:
         serialization.indent_output: true
+    <%_ if (messageBroker == 'kafka') { _%>
+    cloud:
+        stream:
+            kafka:
+                binder:
+                    brokers: localhost
+                    zk-nodes: localhost
+            bindings:
+                output:
+                    destination: topic-jhipster
+    <%_ } _%>
     <%_ if (databaseType == 'sql') { _%>
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
@@ -131,6 +144,14 @@ spring:
                   logs: target/elasticsearch/log
                   data: target/elasticsearch/data
     <%_ } _%>
+    <%_ if (searchEngine == 'solr') { _%>
+        solr:
+            host: http://localhost:8983/solr
+            alternate-host: http://127.0.0.1:8983/solr
+            zk-host: localhost:9983
+            repositories:
+                enabled: true
+    <%_ } _%>
     mail:
         host: localhost
         port: 25
@@ -140,8 +161,6 @@ spring:
         cache-seconds: 1
     thymeleaf:
         cache: false
-    profiles:
-        include: swagger # automatically set the 'swagger' profile
 
 <%_ if (databaseType === 'sql') { _%>
 liquibase:
@@ -186,6 +205,16 @@ jhipster:
                 secret: my-secret-token-to-change-in-production
                 # Token is valid 24 hours
                 tokenValidityInSeconds: 86400
+    <%_ } _%>
+    <%_ if ((applicationType === 'microservice' || applicationType === 'uaa') && authenticationType === 'uaa') { _%>
+    security:
+        client-authorization:
+            <%_ if (applicationType !== 'uaa') { _%>
+            accessTokenUri: http://<%= uaaBaseName.toLowerCase() %>/oauth/token
+            tokenServiceId: <%= uaaBaseName.toLowerCase() %>
+            <%_ } _%>
+            clientId: internal
+            clientSecret: internal
     <%_ } _%>
     <%_ if (authenticationType == 'oauth2' && databaseType != 'sql') { _%>
     security:

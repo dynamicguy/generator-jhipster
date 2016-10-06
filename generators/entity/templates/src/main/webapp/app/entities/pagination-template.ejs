@@ -3,7 +3,8 @@
         vm.reverse = pagingParams.ascending;
         vm.transition = transition;
         vm.itemsPerPage = paginationConstants.itemsPerPage;
-        <%_ if (searchEngine == 'elasticsearch') { _%>
+        vm.perPages = [10, 20, 30, 50, 100, 200, 500];
+        <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
         vm.clear = clear;
         vm.search = search;
         vm.loadAll = loadAll;
@@ -18,7 +19,7 @@
         loadAll();
 
         function loadAll () {
-        <%_ if (searchEngine != 'elasticsearch') { _%>
+        <%_ if (searchEngine != 'elasticsearch' && searchEngine != 'solr') { _%>
             <%= entityClass %>.query({
                 page: pagingParams.page - 1,
                 size: vm.itemsPerPage,
@@ -71,7 +72,7 @@
                 search: vm.currentSearch
             });
         }
-        <%_ if (searchEngine == 'elasticsearch') { _%>
+        <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
         function search (searchQuery) {
             if (!searchQuery){
