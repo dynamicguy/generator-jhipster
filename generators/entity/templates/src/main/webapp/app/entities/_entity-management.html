@@ -24,17 +24,15 @@
                     <form name="searchForm" class="form-inline" ng-submit="vm.search(vm.searchQuery)" role="form" novalidate show-validation>
                         <div class="input-group input-group-sm">
                             <input type="text" class="form-control" ng-model="vm.searchQuery" id="searchQuery" placeholder="<% if (enableTranslation) { %>{{ '<%= keyPrefix %>home.search' | translate }}<% } else { %>Query<% } %>" required>
-                            <span  class="input-group-btn width-min" >
-                                <button class="btn btn-info" ng-click="vm.search(vm.searchQuery)">
-                                    <span class="glyphicon glyphicon-search"></span>
-                                </button>
-                            </span>
-                            <span class="input-group-btn width-min" ng-if="vm.currentSearch">
-                                <button class="btn btn-info btn-raised" ng-click="vm.clear()">
-                                    <span class="glyphicon glyphicon-trash"></span>
-                                </button>
-                            </span>   
                             <span  class="input-group-btn width-min">                     
+                                <button class="btn btn-raised btn-default" ng-click="vm.search(vm.searchQuery)">
+                                    <i class="glyphicon glyphicon-search" aria-label="search"></i> <span
+                                    translate="entity.action.search">search</span>
+                                </button>
+                                <button ng-show="vm.currentSearch" class="btn btn-danger btn-raised" ng-click="vm.clear()">
+                                    <i class="glyphicon glyphicon-trash" aria-label="trash"></i> <span
+                                    translate="entity.action.trash">trash</span>
+                                </button>                                
                                 <button ng-disabled="!vm.areAll<%= entityClass %>sSelected && !vm.<%= entityInstancePlural %>Selected.length" class="btn btn-raised btn-default" ng-click="vm.syncSelected()">
                                     <i class="glyphicon glyphicon-refresh" aria-label="sync"></i>
                                     <span translate="entity.action.sync">sync</span>

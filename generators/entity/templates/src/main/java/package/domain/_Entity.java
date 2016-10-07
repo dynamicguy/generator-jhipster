@@ -46,7 +46,7 @@ import <%=packageName%>.domain.enumeration.<%= element %>;<% }); %>
 @Document(collection = "<%= entityTableName %>")<% } %><% if (databaseType == 'cassandra') { %>
 @Table(name = "<%= entityInstance %>")<% } %><% if (searchEngine == 'elasticsearch') { %>
 @Document(indexName = "<%= entityInstance.toLowerCase() %>")<% } %><% if (searchEngine == 'solr') { %>
-@SolrDocument(solrCoreName = "<%= entityInstance.toLowerCase() %>s")<% } %>
+@SolrDocument(solrCoreName = "<%= entityInstancePlural %>")<% } %>
 public class <%= entityClass %> implements Serializable {
 
     private static final long serialVersionUID = 1L;
