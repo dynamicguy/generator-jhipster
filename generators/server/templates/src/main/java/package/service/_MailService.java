@@ -31,6 +31,7 @@ public class MailService {
     private final Logger log = LoggerFactory.getLogger(MailService.class);
 
     private static final String USER = "user";
+
     private static final String BASE_URL = "baseUrl";
 
     @Inject
@@ -61,7 +62,7 @@ public class MailService {
             javaMailSender.send(mimeMessage);
             log.debug("Sent e-mail to User '{}'", to);
         } catch (Exception e) {
-            log.warn("E-mail could not be sent to user '{}', exception is: {}", to, e.getMessage());
+            log.warn("E-mail could not be sent to user '{}'", to, e);
         }
     }
 

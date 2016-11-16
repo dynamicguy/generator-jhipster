@@ -75,11 +75,10 @@
             "objects": "Objekt",
             "hits": "Träffar",
             "misses": "Missar",
-            "evictioncount": "Utkastade",
-            "mean": "Medeltid för GET (ms)"
+            "evictioncount": "Utkastade"
         },
         "datasource": {
-        	"usage": "Usage",
+            "usage": "Usage",
             "title": "DataSource statistics (time in millisecond)",
             "name": "Pool usage",
             "count": "Count",

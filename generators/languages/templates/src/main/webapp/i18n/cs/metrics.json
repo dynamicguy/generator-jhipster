@@ -75,11 +75,10 @@
             "objects": "Objekty",
             "hits": "Zásahy",
             "misses": "Minutí",
-            "evictioncount": "Počet eviction",
-            "mean": "Průměrný čas odezvy (ms)"
+            "evictioncount": "Počet eviction"
         },
         "datasource": {
-        	"usage": "Používání",
+            "usage": "Používání",
             "title": "DataSource statistiky (čas v milisekundách)",
             "name": "Využití poolu",
             "count": "Počet",

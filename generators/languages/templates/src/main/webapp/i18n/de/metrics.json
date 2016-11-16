@@ -75,11 +75,10 @@
             "objects": "Objekte",
             "hits": "Treffer",
             "misses": "Keine Treffer",
-            "evictioncount": "Anzahl entfernter Objekte",
-            "mean": "Durchschnittliche Zugriffszeit (ms)"
+            "evictioncount": "Anzahl entfernter Objekte"
         },
         "datasource": {
-        	"usage": "Usage",
+            "usage": "Usage",
             "title": "Datenquelle (Zeit in Millisekunden)",
             "name": "Pool-Auslastung",
             "count": "Anzahl",

@@ -4,7 +4,7 @@ services:
   - docker
 language: node_js
 node_js:
-  - "4.4.7"
+  - "6.9.1"
 jdk:
   - oraclejdk8
 cache:
@@ -34,14 +34,18 @@ env:
     - JHIPSTER=app-mongodb
     - JHIPSTER=app-oauth2
     - JHIPSTER=app-jwt
-    - JHIPSTER=app-gateway
-    - JHIPSTER=app-microservice
+    - JHIPSTER=app-mariadb-kafka
+    - JHIPSTER=app-gateway-eureka
+    - JHIPSTER=app-microservice-eureka
+    - JHIPSTER=app-gateway-consul
+    - JHIPSTER=app-microservice-consul
+    - JHIPSTER=app-gateway-uaa
+
 before_install:
   - sudo /etc/init.d/postgresql stop
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
 install:
-  - $JHIPSTER_INSTALL/01-install-docker-compose.sh
   - $JHIPSTER_INSTALL/02-install-jhipster-stack.sh
   - $JHIPSTER_INSTALL/03-checkVersion.sh
   - $JHIPSTER_INSTALL/04-cache.sh

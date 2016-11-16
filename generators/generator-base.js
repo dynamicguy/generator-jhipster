@@ -48,7 +48,7 @@ Generator.prototype.addElementToMenu = function (routerName, glyphiconName, enab
             splicable: [`<li ui-sref-active="active">
                             <a ui-sref="${routerName}" ng-click="vm.collapseNavbar()">
                                 <span class="glyphicon glyphicon-${glyphiconName}"></span>&nbsp;
-                                <span ${enableTranslation ? 'data-translate="global.menu.admin.' + routerName + '"' : ''}>${_.startCase(routerName)}</span>
+                                <span ${enableTranslation ? 'data-translate="global.menu.' + routerName + '"' : ''}>${_.startCase(routerName)}</span>
                             </a>
                         </li>`
             ]
@@ -428,22 +428,20 @@ Generator.prototype.addAngularJsInterceptor = function (interceptorName) {
  */
 Generator.prototype.addEntityToEhcache = function (entityClass, relationships) {
     // Add the entity to ehcache
-    this.addEntryToEhcache(entityClass);
+    this.addEntryToEhcache(`${this.packageName}.domain.${entityClass}`);
     // Add the collections linked to that entity to ehcache
     for (var idx in relationships) {
         var relationshipType = relationships[idx].relationshipType;
-        if (relationshipType === 'one-to-many') {
-            this.addEntryToEhcache(entityClass + '.' + relationships[idx].relationshipFieldNamePlural);
-        } else if (relationshipType === 'many-to-many') {
-            this.addEntryToEhcache(entityClass + '.' + relationships[idx].relationshipFieldNamePlural);
+        if (relationshipType === 'one-to-many' || relationshipType === 'many-to-many') {
+            this.addEntryToEhcache(`${this.packageName}.domain.${entityClass}.${relationships[idx].relationshipFieldNamePlural}`);
         }
     }
 };
 
 /**
- * Add a new entry to the ehcache.xml file, for both entities and relationships.
+ * Add a new entry to the ehcache.xml file
  *
- * @param {string} name - the entry (either entity or relationship) to cache.
+ * @param {string} name - the entry (including package name) to cache.
  */
 Generator.prototype.addEntryToEhcache = function (entry) {
     try {
@@ -451,10 +449,10 @@ Generator.prototype.addEntryToEhcache = function (entry) {
         jhipsterUtils.rewriteFile({
             file: fullPath,
             needle: 'jhipster-needle-ehcache-add-entry',
-            splicable: [`<cache name="${this.packageName}.domain.${entry}"
-                               timeToLiveSeconds="3600">
-                        </cache>
-                        `
+            splicable: [`<cache name="${entry}"
+        timeToLiveSeconds="3600">
+    </cache>
+`
             ]
         }, this);
     } catch (e) {
@@ -1062,6 +1060,30 @@ Generator.prototype.getModuleHooks = function () {
 };
 
 /**
+ * Call all the module hooks with the given options.
+ * @param {string} hookFor : "app" or "entity"
+ * @param {string} hookType : "pre" or "post"
+ * @param options : the options to pass to the hooks
+ */
+Generator.prototype.callHooks = function(hookFor, hookType, options) {
+    var modules = this.getModuleHooks();
+    // run through all module hooks, which matches the hookFor and hookType
+    modules.forEach(function (module) {
+        if (module.hookFor === hookFor && module.hookType === hookType) {
+            // compose with the modules callback generator
+            try {
+                this.composeWith(module.generatorCallback, {
+                    options: options
+                });
+            } catch (err) {
+                this.log(chalk.red('Could not compose module ') + chalk.bold.yellow(module.npmPackageName) +
+                    chalk.red('. \nMake sure you have installed the module with ') + chalk.bold.yellow('\'npm -g ' + module.npmPackageName + '\''));
+            }
+        }
+    }, this);
+};
+
+/**
  * get a property of an entity from the configuration file
  * @param {string} file - configuration file name for the entity
  * @param {string} key - key to read
@@ -1154,7 +1176,7 @@ Generator.prototype.gitExec = function (args, options, callback) {
  * @param {string} value - table name string
  */
 Generator.prototype.getTableName = function (value) {
-    return _.snakeCase(value).toLowerCase();
+    return this.hibernateSnakeCase(value);
 };
 
 /**
@@ -1163,7 +1185,7 @@ Generator.prototype.getTableName = function (value) {
  * @param {string} value - table column name string
  */
 Generator.prototype.getColumnName = function (value) {
-    return _.snakeCase(value).toLowerCase();
+    return this.hibernateSnakeCase(value);
 };
 
 /**
@@ -1196,8 +1218,8 @@ Generator.prototype.getJoinTableName = function (entityName, relationshipName, p
     }
     if (limit > 0) {
         var halfLimit = Math.floor(limit/2),
-            entityTable = this.getTableName(entityName.substring(0, halfLimit)),
-            relationTable = this.getTableName(relationshipName.substring(0, halfLimit - 1));
+            entityTable = _.snakeCase(this.getTableName(entityName).substring(0, halfLimit)),
+            relationTable = _.snakeCase(this.getTableName(relationshipName).substring(0, halfLimit - 1));
         return `${entityTable}_${relationTable}`;
     }
     return joinTableName;
@@ -1231,8 +1253,8 @@ Generator.prototype.getConstraintName = function (entityName, relationshipName, 
     }
     if (limit > 0) {
         var halfLimit = Math.floor(limit/2),
-            entityTable = noSnakeCase ? entityName.substring(0, halfLimit) : this.getTableName(entityName.substring(0, halfLimit)),
-            relationTable = noSnakeCase ? relationshipName.substring(0, halfLimit - 1) : this.getTableName(relationshipName.substring(0, halfLimit - 1));
+            entityTable = noSnakeCase ? entityName.substring(0, halfLimit) : _.snakeCase(this.getTableName(entityName).substring(0, halfLimit)),
+            relationTable = noSnakeCase ? relationshipName.substring(0, halfLimit - 1) : _.snakeCase(this.getTableName(relationshipName).substring(0, halfLimit - 1));
         return `${entityTable}_${relationTable}_id`;
     }
     return constraintName;
@@ -1631,14 +1653,6 @@ Generator.prototype.formatAsFieldJavadoc = function (text) {
     return '    /**' + jhipsterUtils.wordwrap(text, WORD_WRAP_WIDTH - 8, '\n     * ', false) + '\n     */';
 };
 
-Generator.prototype.formatAsApiModel = function (text) {
-    return jhipsterUtils.wordwrap(text.replace(/\\/g, '\\\\').replace(/\"/g, '\\\"'), WORD_WRAP_WIDTH - 9, '"\n    + "', true);
-};
-
-Generator.prototype.formatAsApiModelProperty = function (text) {
-    return jhipsterUtils.wordwrap(text.replace(/\\/g, '\\\\').replace(/\"/g, '\\\"'), WORD_WRAP_WIDTH - 13, '"\n        + "', true);
-};
-
 Generator.prototype.isNumber = function (input) {
     if (isNaN(this.filterNumber(input))) {
         return false;
@@ -1690,6 +1704,33 @@ Generator.prototype.getOptionFromArray = function (array, option) {
     });
     optionValue = optionValue === 'true' ? true : optionValue;
     return optionValue;
+};
+
+/**
+ * get hibernate SnakeCase in JHipster preferred style.
+ *
+ * @param {string} value - table column name or table name string
+ * @see org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
+ */
+Generator.prototype.hibernateSnakeCase = function (value) {
+    var res = '';
+    if (value) {
+        value = value.replace('.', '_');
+        res = value[0];
+        for (let i = 1, len = value.length - 1; i < len; i++) {
+            if (value[i-1] !== value[i-1].toUpperCase() &&
+                value[i] !== value[i].toLowerCase() &&
+                value[i+1] !== value[i+1].toUpperCase()
+            ) {
+                res += '_' + value[i];
+            } else {
+                res += value[i];
+            }
+        }
+        res += value[value.length -1];
+        res = res.toLowerCase();
+    }
+    return res;
 };
 
 Generator.prototype.contains = _.includes;

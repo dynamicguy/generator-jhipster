@@ -3,35 +3,33 @@ package <%=packageName%>.web.rest;
 import <%=packageName%>.config.DefaultProfileUtil;
 import <%=packageName%>.config.JHipsterProperties;
 import org.springframework.core.env.Environment;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Resource to return information about the currently running Spring profiles.
+ */
 @RestController
 @RequestMapping("/api")
 public class ProfileInfoResource {
 
     @Inject
-    Environment env;
+    private Environment env;
 
     @Inject
     private JHipsterProperties jHipsterProperties;
 
-    @RequestMapping(value = "/profile-info",
-        method = RequestMethod.GET,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/profile-info")
     public ProfileInfoResponse getActiveProfiles() {
-        return new ProfileInfoResponse(DefaultProfileUtil.getActiveProfiles(env), getRibbonEnv());
+        String[] activeProfiles = DefaultProfileUtil.getActiveProfiles(env);
+        return new ProfileInfoResponse(activeProfiles, getRibbonEnv(activeProfiles));
     }
 
-    private String getRibbonEnv() {
-        String[] activeProfiles = DefaultProfileUtil.getActiveProfiles(env);
+    private String getRibbonEnv(String[] activeProfiles) {
         String[] displayOnActiveProfiles = jHipsterProperties.getRibbon().getDisplayOnActiveProfiles();
 
         if (displayOnActiveProfiles == null) {

@@ -69,6 +69,13 @@ module.exports = JhipsterGenerator.extend({
             defaults: 'jhi'
         });
 
+        // This adds support for a `--yarn` flag
+        this.option('yarn', {
+            desc: 'Use yarn instead of npm install',
+            type: Boolean,
+            defaults: false
+        });
+
         this.currentQuestion = 0;
         this.totalQuestions = constants.QUESTIONS;
         this.skipClient = this.configOptions.skipClient = this.options['skip-client'] || this.config.get('skipClient');
@@ -77,8 +84,9 @@ module.exports = JhipsterGenerator.extend({
         this.jhiPrefix = this.configOptions.jhiPrefix || this.config.get('jhiPrefix') || this.options['jhi-prefix'];
         this.withEntities = this.options['with-entities'];
         this.checkInstall = this.options['check-install'];
-
+        this.yarnInstall = this.configOptions.yarnInstall = this.options['yarn'];
     },
+
     initializing: {
         displayLogo: function () {
             this.printJHipsterLogo();
@@ -144,6 +152,21 @@ module.exports = JhipsterGenerator.extend({
                     this.warning('gulp is not found on your computer.\n',
                         ' Install gulp using npm command: ' + chalk.yellow('npm install -g gulp-cli')
                     );
+                }
+                done();
+            }.bind(this));
+        },
+
+        checkYarn: function () {
+            if (!this.checkInstall || this.skipClient || !this.yarnInstall) return;
+            var done = this.async();
+            exec('yarn --version', function (err) {
+                if (err) {
+                    this.warning('yarn is not found on your computer.\n',
+                        ' Using npm instead');
+                    this.yarnInstall = false;
+                } else {
+                    this.yarnInstall = true;
                 }
                 done();
             }.bind(this));
@@ -284,7 +307,6 @@ module.exports = JhipsterGenerator.extend({
     },
 
     writing: {
-
         cleanup: function () {
             cleanup.cleanupOldFiles(this, this.javaDir, this.testDir);
         },
@@ -314,22 +336,10 @@ module.exports = JhipsterGenerator.extend({
                 if (modules.length > 0) {
                     this.log('\n' + chalk.bold.green('Running post run module hooks\n'));
                     // run through all post app creation module hooks
-                    modules.forEach(function (module) {
-                        if (module.hookFor === 'app' && module.hookType === 'post') {
-                            // compose with the modules callback generator
-                            try {
-                                this.composeWith(module.generatorCallback, {
-                                    options: {
-                                        appConfig: this.configOptions,
-                                        force: this.options['force']
-                                    }
-                                });
-                            } catch (err) {
-                                this.log(chalk.red('Could not compose module ') + chalk.bold.yellow(module.npmPackageName) +
-                                    chalk.red('. \nMake sure you have installed the module with ') + chalk.bold.yellow('\'npm -g ' + module.npmPackageName + '\''));
-                            }
-                        }
-                    }, this);
+                    this.callHooks('app', 'post', {
+                        appConfig: this.configOptions,
+                        force: this.options['force']
+                    });
                 }
             } catch (err) {
                 this.log('\n' + chalk.bold.red('Running post run module hooks failed. No modification done to the generated app.'));

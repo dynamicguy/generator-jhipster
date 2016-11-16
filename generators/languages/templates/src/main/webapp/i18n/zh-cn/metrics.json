@@ -75,11 +75,10 @@
             "objects": "对象",
             "hits": "缓存命中计数",
             "misses": "缓存遗漏计数",
-            "evictioncount": "收回计数",
-            "mean": "平均读取时间 (毫秒)"
+            "evictioncount": "收回计数"
         },
         "datasource": {
-        	"usage": "用法",
+            "usage": "用法",
             "title": "数据源统计 (时间单位为毫秒)",
             "name": "池使用情况",
             "count": "计数",

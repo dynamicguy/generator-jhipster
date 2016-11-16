@@ -75,11 +75,10 @@
             "objects": "Obiecte",
             "hits": "Hits",
             "misses": "Misses",
-            "evictioncount": "Eviction count",
-            "mean": "Timp mediu get (ms)"
+            "evictioncount": "Eviction count"
         },
         "datasource": {
-        	"usage": "Folosire",
+            "usage": "Folosire",
             "title": "Statistici sursă date(timpi in milisecunde)",
             "name": "Folosire pool",
             "count": "Număr",

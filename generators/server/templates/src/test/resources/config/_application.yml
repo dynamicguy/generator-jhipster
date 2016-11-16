@@ -10,15 +10,15 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
-<%_ if (applicationType == 'microservice' || applicationType == 'gateway' || applicationType == 'uaa') { _%>
+<%_ if (serviceDiscoveryType == 'eureka') { _%>
 eureka:
     client:
         enabled: false
     instance:
         appname: <%= baseName %>
         instanceId: <%= baseName %>:${spring.application.instance_id:${random.value}}
-
 <%_ } _%>
+
 spring:
     application:
         name: <%= baseName %>
@@ -89,14 +89,6 @@ spring:
                 path:
                   logs: target/elasticsearch/log
                   data: target/elasticsearch/data
-    <%_ } _%>
-    <%_ if (searchEngine == 'solr') { _%>
-        solr:
-            host: http://localhost:8983/solr
-            alternate-host: http://127.0.0.1:8983/solr
-            zk-host: localhost:9983
-            repositories:
-                enabled: true
     <%_ } _%>
     mail:
         host: localhost

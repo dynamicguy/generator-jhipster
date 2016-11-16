@@ -13,9 +13,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;<% } %><% if (database
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;<% } %><% if (searchEngine == 'elasticsearch') { %>
-import org.springframework.data.elasticsearch.annotations.Document;<% } %><% if (searchEngine == 'solr') { %>
-import org.springframework.data.solr.core.mapping.SolrDocument;
-import org.apache.solr.client.solrj.beans.Field;<% } %>    
+import org.springframework.data.elasticsearch.annotations.Document;<% } %>
 <% if (databaseType == 'sql') { %>
 import javax.persistence.*;<% } %><% if (validation) { %>
 import javax.validation.constraints.*;<% } %>
@@ -37,7 +35,7 @@ import <%=packageName%>.domain.enumeration.<%= element %>;<% }); %>
  */
 <% } else { -%>
 <%- formatAsClassJavadoc(javadoc) %>
-@ApiModel(description = "<%- formatAsApiModel(javadoc) %>")
+@ApiModel(description = "<%- javadoc %>")
 <% } -%>
 <% if (databaseType == 'sql') { -%>
 @Entity
@@ -45,8 +43,7 @@ import <%=packageName%>.domain.enumeration.<%= element %>;<% }); %>
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)<% } %><% } %><% if (databaseType == 'mongodb') { %>
 @Document(collection = "<%= entityTableName %>")<% } %><% if (databaseType == 'cassandra') { %>
 @Table(name = "<%= entityInstance %>")<% } %><% if (searchEngine == 'elasticsearch') { %>
-@Document(indexName = "<%= entityInstance.toLowerCase() %>")<% } %><% if (searchEngine == 'solr') { %>
-@SolrDocument(solrCoreName = "<%= entityInstancePlural %>")<% } %>
+@Document(indexName = "<%= entityInstance.toLowerCase() %>")<% } %>
 public class <%= entityClass %> implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -62,7 +59,6 @@ public class <%= entityClass %> implements Serializable {
 <%_ for (idx in fields) {
     if (typeof fields[idx].javadoc != 'undefined') { _%>
 <%- formatAsFieldJavadoc(fields[idx].javadoc) %>
-    @ApiModelProperty(value = "<%- formatAsApiModelProperty(fields[idx].javadoc) %>")
     <%_ }
     var required = false;
     var fieldValidate = fields[idx].fieldValidate;
@@ -77,6 +73,9 @@ public class <%= entityClass %> implements Serializable {
             required = true;
         } _%>
     <%- include ../common/field_validators -%>
+    <%_ } _%>
+    <%_ if (typeof fields[idx].javadoc != 'undefined') { _%>
+    @ApiModelProperty(value = "<%- fields[idx].javadoc %>"<% if (required) { %>, required = true<% } %>)
     <%_ } _%>
     <%_ if (databaseType == 'sql') {
         if (fields[idx].fieldIsEnum) { _%>
@@ -93,7 +92,7 @@ public class <%= entityClass %> implements Serializable {
     @Column(name = "<%=fieldNameUnderscored %>"<% if (fieldValidate == true) { %><% if (fieldValidateRules.indexOf('maxlength') != -1) { %>, length = <%= fieldValidateRulesMaxlength %><% } %><% if (required) { %>, nullable = false<% } %><% } %>)
     <%_     }
         } _%>
-    <%_ if (databaseType == 'mongodb' || searchEngine == 'solr') { _%>
+    <%_ if (databaseType == 'mongodb') { _%>
     @Field("<%=fieldNameUnderscored %>")
     <%_ } _%>
     <%_ if (fieldTypeBlobContent != 'text') { _%>
@@ -133,7 +132,7 @@ public class <%= entityClass %> implements Serializable {
         }
         if (typeof relationships[idx].javadoc != 'undefined') { _%>
 <%- formatAsFieldJavadoc(relationships[idx].javadoc) %>
-    @ApiModelProperty(value = "<%- formatAsApiModelProperty(relationships[idx].javadoc) %>")
+    @ApiModelProperty(value = "<%- relationships[idx].javadoc %>")
     <%_ }
         if (relationshipType == 'one-to-many') {
     _%>

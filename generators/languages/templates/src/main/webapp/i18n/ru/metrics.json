@@ -75,11 +75,10 @@
             "objects": "Объектов",
             "hits": "Попаданий",
             "misses": "Промахов",
-            "evictioncount": "Количество очисток",
-            "mean": "Среднее по времени (мс)"
+            "evictioncount": "Количество очисток"
         },
         "datasource": {
-        	"usage": "Usage",
+            "usage": "Usage",
             "title": "Статистика DataSource (время в миллисекундах)",
             "name": "Pool usage",
             "count": "Count",

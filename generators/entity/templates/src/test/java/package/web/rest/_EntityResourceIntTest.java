@@ -13,7 +13,7 @@ import <%=packageName%>.domain.<%= entityClass %>;
 import <%=packageName%>.domain.<%= otherEntityNameCapitalized %>;
 <%_ } } _%>
 import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (service != 'no') { %>
-import <%=packageName%>.service.<%= entityClass %>Service;<% } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
+import <%=packageName%>.service.<%= entityClass %>Service;<% } if (searchEngine == 'elasticsearch') { %>
 import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;<% } if (dto == 'mapstruct') { %>
 import <%=packageName%>.service.dto.<%= entityClass %>DTO;
 import <%=packageName%>.service.mapper.<%= entityClass %>Mapper;<% } %>
@@ -34,12 +34,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;<% if (databas
 import org.springframework.transaction.annotation.Transactional;<% } %><% if (fieldsContainBlob == true) { %>
 import org.springframework.util.Base64Utils;<% } %>
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;<% if (databaseType == 'sql') { %>
 import javax.persistence.EntityManager;<% } %><% if (fieldsContainLocalDate == true) { %>
 import java.time.LocalDate;<% } %><% if (fieldsContainZonedDateTime == true) { %>
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;<% } %><% if (fieldsContainLocalDate == true || fieldsContainZonedDateTime == true) { %>
 import java.time.ZoneId;<% } %><% if (fieldsContainBigDecimal == true) { %>
 import java.math.BigDecimal;<% } %><% if (fieldsContainBlob == true && databaseType === 'cassandra') { %>
@@ -59,16 +59,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @see <%= entityClass %>Resource
  */
 @RunWith(SpringRunner.class)
-<%_ if (authenticationType === 'uaa') { _%>
+<%_ if (authenticationType === 'uaa' && applicationType !== 'uaa') { _%>
 @SpringBootTest(classes = {<%= mainClass %>.class, SecurityBeanOverrideConfiguration.class})
 <%_ } else { _%>
 @SpringBootTest(classes = <%= mainClass %>.class)
 <%_ } _%>
 public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra') { %>extends AbstractCassandraTest <% } %>{
-    <%_ if (fieldsContainZonedDateTime == true) { _%>
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneId.of("Z"));
-    <%_ } _%>
     <%_ for (idx in fields) {
     var defaultValueName = 'DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase();
     var updatedValueName = 'UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase();
@@ -109,52 +105,62 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         }
     }
 
-    if (fieldType == 'String') {
+    if (fieldType == 'String' || fieldTypeBlobContent == 'text') {
         // Generate Strings, using the min and max string length if they are configured
         var sampleTextString = "";
         var updatedTextString = "";
-        var sampleTextMinLength = fields[idx].fieldValidateRulesMinlength;
-        if (sampleTextMinLength == undefined) {
-            sampleTextMinLength = fields[idx].fieldValidateRulesMaxlength;
-            if (sampleTextMinLength == undefined) {
-                sampleTextMinLength = 5;
-            }
+        var sampleTextLength = 10;
+        if (fields[idx].fieldValidateRulesMinlength > sampleTextLength) {
+            sampleTextLength = fields[idx].fieldValidateRulesMinlength;
         }
-        for( var i = 0; i < sampleTextMinLength; i++ ) {
+        if (fields[idx].fieldValidateRulesMaxlength < sampleTextLength) {
+            sampleTextLength = fields[idx].fieldValidateRulesMaxlength;
+        }
+        for (var i = 0; i < sampleTextLength; i++ ) {
             sampleTextString += "A";
             updatedTextString += "B";
         }_%>
 
     private static final String <%=defaultValueName %> = "<%=sampleTextString %>";
-    private static final String <%=updatedValueName %> = "<%=updatedTextString %>";<% } else if (fieldType == 'Integer') { %>
+    private static final String <%=updatedValueName %> = "<%=updatedTextString %>";
+    <%_ } else if (fieldType == 'Integer') { _%>
 
     private static final Integer <%=defaultValueName %> = <%= defaultValue %>;
-    private static final Integer <%=updatedValueName %> = <%= updatedValue %>;<% } else if (fieldType == 'Long') { %>
+    private static final Integer <%=updatedValueName %> = <%= updatedValue %>;
+    <%_ } else if (fieldType == 'Long') { _%>
 
     private static final Long <%=defaultValueName %> = <%= defaultValue %>L;
-    private static final Long <%=updatedValueName %> = <%= updatedValue %>L;<% } else if (fieldType == 'Float') { %>
+    private static final Long <%=updatedValueName %> = <%= updatedValue %>L;
+    <%_ } else if (fieldType == 'Float') { _%>
 
     private static final <%=fieldType %> <%=defaultValueName %> = <%= defaultValue %>F;
-    private static final <%=fieldType %> <%=updatedValueName %> = <%= updatedValue %>F;<% } else if (fieldType == 'Double') { %>
+    private static final <%=fieldType %> <%=updatedValueName %> = <%= updatedValue %>F;
+    <%_ } else if (fieldType == 'Double') { _%>
 
     private static final <%=fieldType %> <%=defaultValueName %> = <%= defaultValue %>D;
-    private static final <%=fieldType %> <%=updatedValueName %> = <%= updatedValue %>D;<% } else if (fieldType == 'BigDecimal') { %>
+    private static final <%=fieldType %> <%=updatedValueName %> = <%= updatedValue %>D;
+    <%_ } else if (fieldType == 'BigDecimal') { _%>
 
     private static final BigDecimal <%=defaultValueName %> = new BigDecimal(<%= defaultValue %>);
-    private static final BigDecimal <%=updatedValueName %> = new BigDecimal(<%= updatedValue %>);<% } else if (fieldType == 'UUID') { %>
+    private static final BigDecimal <%=updatedValueName %> = new BigDecimal(<%= updatedValue %>);
+    <%_ } else if (fieldType == 'UUID') { _%>
 
     private static final UUID <%=defaultValueName %> = UUID.randomUUID();
-    private static final UUID <%=updatedValueName %> = UUID.randomUUID();<% } else if (fieldType == 'LocalDate') { %>
+    private static final UUID <%=updatedValueName %> = UUID.randomUUID();
+    <%_ } else if (fieldType == 'LocalDate') { _%>
 
     private static final LocalDate <%=defaultValueName %> = LocalDate.ofEpochDay(0L);
-    private static final LocalDate <%=updatedValueName %> = LocalDate.now(ZoneId.systemDefault());<% } else if (fieldType == 'ZonedDateTime') { %>
+    private static final LocalDate <%=updatedValueName %> = LocalDate.now(ZoneId.systemDefault());
+    <%_ } else if (fieldType == 'ZonedDateTime') { _%>
 
-    private static final ZonedDateTime <%=defaultValueName %> = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneId.systemDefault());
+    private static final ZonedDateTime <%=defaultValueName %> = ZonedDateTime.ofInstant(Instant.ofEpochMilli(0L), ZoneOffset.UTC);
     private static final ZonedDateTime <%=updatedValueName %> = ZonedDateTime.now(ZoneId.systemDefault()).withNano(0);
-    private static final String <%=defaultValueName %>_STR = dateTimeFormatter.format(<%= defaultValueName %>);<% } else if (fieldType == 'Boolean') { %>
+    private static final String <%=defaultValueName %>_STR = DateTimeFormatter.ISO_INSTANT.format(<%= defaultValueName %>);
+    <%_ } else if (fieldType == 'Boolean') { _%>
 
     private static final Boolean <%=defaultValueName %> = false;
-    private static final Boolean <%=updatedValueName %> = true;<% } else if ((fieldType == 'byte[]' || fieldType === 'ByteBuffer') && fieldTypeBlobContent != 'text') { %>
+    private static final Boolean <%=updatedValueName %> = true;
+    <%_ } else if ((fieldType == 'byte[]' || fieldType === 'ByteBuffer') && fieldTypeBlobContent != 'text') { _%>
 
     <%_ if (databaseType !== 'cassandra') { _%>
     private static final byte[] <%=defaultValueName %> = TestUtil.createByteArray(<%= defaultValue %>, "0");
@@ -164,13 +170,12 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
     private static final ByteBuffer <%=updatedValueName %> = ByteBuffer.wrap(TestUtil.createByteArray(<%= updatedValue %>, "1"));
     <%_ } _%>
     private static final String <%=defaultValueName %>_CONTENT_TYPE = "image/jpg";
-    private static final String <%=updatedValueName %>_CONTENT_TYPE = "image/png";<% } else if (fieldTypeBlobContent == 'text') { %>
-
-    private static final String <%=defaultValueName %> = "<%=sampleTextString %>";
-    private static final String <%=updatedValueName %> = "<%=updatedTextString %>";<% } else if (isEnum) { %>
+    private static final String <%=updatedValueName %>_CONTENT_TYPE = "image/png";
+    <%_ } else if (isEnum) { _%>
 
     private static final <%=fieldType %> <%=defaultValueName %> = <%=fieldType %>.<%=enumValue1 %>;
-    private static final <%=fieldType %> <%=updatedValueName %> = <%=fieldType %>.<%=enumValue2 %>;<% } } %>
+    private static final <%=fieldType %> <%=updatedValueName %> = <%=fieldType %>.<%=enumValue2 %>;
+    <%_ } } _%>
 
     @Inject
     private <%= entityClass %>Repository <%= entityInstance %>Repository;<% if (dto == 'mapstruct') { %>
@@ -179,7 +184,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
     private <%= entityClass %>Mapper <%= entityInstance %>Mapper;<% } if (service != 'no') { %>
 
     @Inject
-    private <%= entityClass %>Service <%= entityInstance %>Service;<% } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
+    private <%= entityClass %>Service <%= entityInstance %>Service;<% } if (searchEngine == 'elasticsearch') { %>
 
     @Inject
     private <%= entityClass %>SearchRepository <%= entityInstance %>SearchRepository;<% } %>
@@ -199,14 +204,14 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
 
     private <%= entityClass %> <%= entityInstance %>;
 
-    @PostConstruct
+    @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         <%= entityClass %>Resource <%= entityInstance %>Resource = new <%= entityClass %>Resource();
         <%_ if (service != 'no') { _%>
         ReflectionTestUtils.setField(<%= entityInstance %>Resource, "<%= entityInstance %>Service", <%= entityInstance %>Service);
         <%_ } else { _%>
-            <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
+            <%_ if (searchEngine == 'elasticsearch') { _%>
         ReflectionTestUtils.setField(<%= entityInstance %>Resource, "<%= entityInstance %>SearchRepository", <%= entityInstance %>SearchRepository);
             <%_ } _%>
         ReflectionTestUtils.setField(<%= entityInstance %>Resource, "<%= entityInstance %>Repository", <%= entityInstance %>Repository);
@@ -264,7 +269,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
     public void initTest() {
         <%_ if (databaseType == 'mongodb' || databaseType == 'cassandra') { _%>
         <%= entityInstance %>Repository.deleteAll();
-        <%_ } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
+        <%_ } if (searchEngine == 'elasticsearch') { _%>
         <%= entityInstance %>SearchRepository.deleteAll();
         <%_ } _%>
         <%= entityInstance %> = createEntity(<% if (databaseType == 'sql') { %>em<% } %>);
@@ -296,7 +301,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         assertThat(test<%= entityClass %>.is<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
         <%_ } else { _%>
         assertThat(test<%= entityClass %>.get<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
-        <%_ }} if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
+        <%_ }} if (searchEngine == 'elasticsearch') { _%>
 
         // Validate the <%= entityClass %> in ElasticSearch
         <%= entityClass %> <%= entityInstance %>Es = <%= entityInstance %>SearchRepository.findOne(test<%= entityClass %>.getId());
@@ -381,7 +386,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
 <%_ if (service != 'no' && dto != 'mapstruct') { _%>
         <%= entityInstance %>Service.save(<%= entityInstance %>);
 <%_ } else { _%>
-        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
+        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch') { %>
         <%= entityInstance %>SearchRepository.save(<%= entityInstance %>);<%_ } _%>
 <%_ } _%>
 
@@ -423,9 +428,9 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         assertThat(test<%= entityClass %>.is<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
         <%_ } else { _%>
         assertThat(test<%= entityClass %>.get<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
-        <%_ } } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
+        <%_ } } if (searchEngine == 'elasticsearch') { _%>
 
-        // Validate the <%= entityClass %> in Search Engine
+        // Validate the <%= entityClass %> in ElasticSearch
         <%= entityClass %> <%= entityInstance %>Es = <%= entityInstance %>SearchRepository.findOne(test<%= entityClass %>.getId());
         assertThat(<%= entityInstance %>Es).isEqualToComparingFieldByField(test<%= entityClass %>);
         <%_ } _%>
@@ -438,7 +443,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
 <%_ if (service != 'no' && dto != 'mapstruct') { _%>
         <%= entityInstance %>Service.save(<%= entityInstance %>);
 <%_ } else { _%>
-        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
+        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch') { %>
         <%= entityInstance %>SearchRepository.save(<%= entityInstance %>);<%_ } _%>
 <%_ } _%>
 
@@ -447,7 +452,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         // Get the <%= entityInstance %>
         rest<%= entityClass %>MockMvc.perform(delete("/api/<%= entityApiUrl %>/{id}", <%= entityInstance %>.getId())
                 .accept(TestUtil.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk());<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
+                .andExpect(status().isOk());<% if (searchEngine == 'elasticsearch') { %>
 
         // Validate ElasticSearch is empty
         boolean <%= entityInstance %>ExistsInEs = <%= entityInstance %>SearchRepository.exists(<%= entityInstance %>.getId());
@@ -456,7 +461,7 @@ public class <%= entityClass %>ResourceIntTest <% if (databaseType == 'cassandra
         // Validate the database is empty
         List<<%= entityClass %>> <%= entityInstancePlural %> = <%= entityInstance %>Repository.findAll();
         assertThat(<%= entityInstancePlural %>).hasSize(databaseSizeBeforeDelete - 1);
-    }<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
+    }<% if (searchEngine == 'elasticsearch') { %>
 
     @Test<% if (databaseType == 'sql') { %>
     @Transactional<% } %>

@@ -57,12 +57,12 @@
                     <%_ } else { _%>
                     <span class="pull-left">{{vm.<%= entityInstance %>.<%= fieldName %>ContentType}}, {{vm.byteSize(vm.<%= entityInstance %>.<%= fieldName %>)}}</span>
                     <%_ } _%>
-                    <button ng-click="vm.<%= entityInstance %>.<%= fieldName %>=null;vm.<%= entityInstance %>.<%= fieldName %>ContentType=null;"
-                            class="btn btn-raised btn-default btn-xs pull-right">
+                    <button type="button" ng-click="vm.<%= entityInstance %>.<%= fieldName %>=null;vm.<%= entityInstance %>.<%= fieldName %>ContentType=null;"
+                            class="btn btn-default btn-xs pull-right">
                         <span class="glyphicon glyphicon-remove"></span>
                     </button>
                 </div>
-                <button type="file" ngf-select class="btn btn-default btn-block btn-raised"
+                <button type="button" ngf-select class="btn btn-default btn-block"
                         ngf-change="vm.set<%=fieldNameCapitalized %>($file, vm.<%= entityInstance %>)"<% if (fieldTypeBlobContent == 'image') { %> accept="image/*" data-translate="entity.action.addimage"<% } else { %> data-translate="entity.action.addblob"<% } %>>
                     <% if (fieldTypeBlobContent == 'image') { %>Add image<% } else { %>Add blob<% } %>
                 </button>
@@ -182,11 +182,11 @@
             <label data-translate="<%= translationKey %>" for="field_<%= relationshipName %>"><%= relationshipNameHumanized %></label>
                 <%_ if (dto == 'no') { _%>
             <select class="form-control" id="field_<%= relationshipName %>" name="<%= relationshipName %>" ng-model="vm.<%= entityInstance %>.<%=relationshipFieldName %>" ng-options="<%=otherEntityName %> as <%=otherEntityName %>.<%=otherEntityField %> for <%=otherEntityName %> in vm.<%=otherEntityNamePlural.toLowerCase() %> track by <%=otherEntityName %>.id"<% if (relationshipRequired) { %> required<% } %>>
-                <option value="">{{'entity.action.select'|translate}}</option>
+                <option value=""></option>
             </select>
                 <%_ } else { _%>
             <select class="form-control" id="field_<%= relationshipName %>" name="<%= relationshipName %>" ng-model="vm.<%= entityInstance %>.<%=relationshipFieldName %>Id" ng-options="<%=otherEntityName %>.id as <%=otherEntityName %>.<%=otherEntityField %> for <%=otherEntityName %> in vm.<%=otherEntityNamePlural.toLowerCase() %>"            <% if (relationshipRequired) { %> required<% } %>>
-                <option value="">{{'entity.action.select'|translate}}</option>
+                <option value=""></option>
             </select>
             <%_ } _%>
         </div>
@@ -195,11 +195,11 @@
             <label data-translate="<%= translationKey %>" for="field_<%= relationshipName %>"><%= relationshipNameHumanized %></label>
                 <%_ if (dto == 'no') { _%>
             <select class="form-control" id="field_<%= relationshipName %>" name="<%= relationshipName %>" ng-model="vm.<%= entityInstance %>.<%=relationshipFieldName %>" ng-options="<%=otherEntityName %> as <%=otherEntityName %>.<%=otherEntityField %> for <%=otherEntityName %> in vm.<%=relationshipFieldNamePlural.toLowerCase() %> | orderBy:'id' track by <%=otherEntityName %>.id"<% if (relationshipRequired) { %> required<% } %>>
-                <option value="">{{'entity.action.select'|translate}}</option>
+                <option value=""></option>
             </select>
                 <%_ } else { _%>
             <select class="form-control" id="field_<%= relationshipName %>" name="<%= relationshipName %>" ng-model="vm.<%= entityInstance %>.<%=relationshipFieldName %>Id" ng-options="<%=otherEntityName %>.id as <%=otherEntityName %>.<%=otherEntityField %> for <%=otherEntityName %> in vm.<%=relationshipFieldNamePlural.toLowerCase() %> | orderBy:'id'"<% if (relationshipRequired) { %> required<% } %>>
-                <option value="">{{'entity.action.select'|translate}}</option>
+                <option value=""></option>
             </select>
                 <%_ } _%>
         </div>

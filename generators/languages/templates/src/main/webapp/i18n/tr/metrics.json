@@ -75,11 +75,10 @@
             "objects": "Nesneler",
             "hits": "Hits",
             "misses": "Misses",
-            "evictioncount": "Eviction count",
-            "mean": "Mean get time (ms)"
+            "evictioncount": "Eviction count"
         },
         "datasource": {
-        	"usage": "Kullanım",
+            "usage": "Kullanım",
             "title": "Veri kaynağı istatistikleri (milisaniye cinsinden)",
             "name": "Havuz kullanımı",
             "count": "Sayaç",

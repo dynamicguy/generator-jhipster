@@ -75,11 +75,10 @@
             "objects": "Objects",
             "hits": "हिट्स कूल",
             "misses": "मिस",
-            "evictioncount": "बेदखली गणना",
-            "mean": "Mean get time (ms)"
+            "evictioncount": "बेदखली गणना"
         },
         "datasource": {
-        	"usage": "उपयोग",
+            "usage": "उपयोग",
             "title": "डेटास्रोत सांख्यिकी (मिलीसेकंड में समय)",
             "name": "पूल उपयोग",
             "count": "गिनती",

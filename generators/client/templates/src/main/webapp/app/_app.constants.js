@@ -4,6 +4,5 @@
     angular
         .module('<%=angularAppName%>')
         .constant('VERSION', '0.0.1-SNAPSHOT')
-        .constant('API_BASE', "http://localhost:8764")    
         .constant('DEBUG_INFO_ENABLED', true);
 })();

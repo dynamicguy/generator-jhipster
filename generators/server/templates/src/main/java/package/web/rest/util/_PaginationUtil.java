@@ -13,7 +13,10 @@ import java.net.URISyntaxException;
  * Pagination uses the same principles as the <a href="https://developer.github.com/v3/#pagination">Github API</a>,
  * and follow <a href="http://tools.ietf.org/html/rfc5988">RFC 5988 (Link header)</a>.
  */
-public class PaginationUtil {
+public final class PaginationUtil {
+
+    private PaginationUtil() {
+    }
 
     public static HttpHeaders generatePaginationHttpHeaders(Page<?> page, String baseUrl)
         throws URISyntaxException {
@@ -42,7 +45,7 @@ public class PaginationUtil {
     private static String generateUri(String baseUrl, int page, int size) throws URISyntaxException {
         return UriComponentsBuilder.fromUriString(baseUrl).queryParam("page", page).queryParam("size", size).toUriString();
     }
-    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
+    <%_ if (searchEngine === 'elasticsearch') { _%>
 
     public static HttpHeaders generateSearchPaginationHttpHeaders(String query, Page<?> page, String baseUrl)
         throws URISyntaxException {

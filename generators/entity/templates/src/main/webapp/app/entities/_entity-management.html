@@ -4,71 +4,54 @@
     <jhi-alert></jhi-alert>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-xs-5 no-padding-left">
+            <div class="col-xs-4 no-padding-left">
                 <button class="btn btn-primary btn-raised" ui-sref="<%= entityStateName %>.new" >
                     <span class="glyphicon glyphicon-plus"></span>
-                    <span <% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>class="hidden-xs" <% } %> data-translate="<%= keyPrefix %>home.createLabel">
+                    <span <% if (searchEngine == 'elasticsearch') { %>class="hidden-xs" <% } %> data-translate="<%= keyPrefix %>home.createLabel">
                         Create new <%= entityClassHumanized %>
                     </span>
                 </button>
-				<select class="form-control pager-control"
-					ng-options="perPage as perPage for perPage in vm.perPages track by perPage"
-					class="form-control" name="itemsPerPage" id="itemsPerPage"
-					ng-model="vm.itemsPerPage" ng-change="vm.loadAll()">
-					<option value="">Per page</option>
-				</select>                
             </div>
-            <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
-            <div class="col-xs-7 no-padding-right">
-                <div class="text-right">
-                    <form name="searchForm" class="form-inline" ng-submit="vm.search(vm.searchQuery)" role="form" novalidate show-validation>
-                        <div class="input-group input-group-sm">
-                            <input type="text" class="form-control" ng-model="vm.searchQuery" id="searchQuery" placeholder="<% if (enableTranslation) { %>{{ '<%= keyPrefix %>home.search' | translate }}<% } else { %>Query<% } %>" required>
-                            <span  class="input-group-btn width-min">                     
-                                <button class="btn btn-raised btn-default" ng-click="vm.search(vm.searchQuery)">
-                                    <i class="glyphicon glyphicon-search" aria-label="search"></i> <span
-                                    translate="entity.action.search">search</span>
-                                </button>
-                                <button ng-show="vm.currentSearch" class="btn btn-danger btn-raised" ng-click="vm.clear()">
-                                    <i class="glyphicon glyphicon-trash" aria-label="trash"></i> <span
-                                    translate="entity.action.trash">trash</span>
-                                </button>                                
-                                <button ng-disabled="!vm.areAll<%= entityClass %>sSelected && !vm.<%= entityInstancePlural %>Selected.length" class="btn btn-raised btn-default" ng-click="vm.syncSelected()">
-                                    <i class="glyphicon glyphicon-refresh" aria-label="sync"></i>
-                                    <span translate="entity.action.sync">sync</span>
-                                </button>
-                                <button ng-disabled="!vm.areAll<%= entityClass %>sSelected && !vm.<%= entityInstancePlural %>Selected.length"
-                                        class="btn btn-raised btn-default" ng-click="vm.exportSelected()">
-                                    <i class="glyphicon glyphicon-export" aria-label="export"></i> <span
-                                    translate="entity.action.export">export</span>
-                                </button>
-                                <button ng-disabled="!vm.areAll<%= entityClass %>sSelected && !vm.<%= entityInstancePlural %>Selected.length"
-                                        class="btn btn-raised btn-default" ng-click="vm.import<%= entityClass %>s()">
-                                    <i class="glyphicon glyphicon-import" aria-label="import"></i> <span
-                                    translate="entity.action.import">import</span>
-                                </button>
-                                <button ng-disabled="!vm.areAll<%= entityClass %>sSelected && !vm.<%= entityInstancePlural %>Selected.length"
-                                        class="btn btn-raised btn-default btn-danger"
-                                        ng-click="vm.deleteSelected()">
-                                    <i class="glyphicon glyphicon-trash" aria-label="delete"></i> <span
-                                    translate="entity.action.delete">delete</span>
-                                </button>
-                            </span>
-                        </div>
-                    </form>
-                </div>
+            <%_ if (searchEngine == 'elasticsearch') { _%>
+            <div class="col-xs-8 no-padding-right">
+                <form name="searchForm" class="form-inline">
+                    <div class="input-group pull-right" >
+                        <input type="text" class="form-control" ng-model="vm.searchQuery" id="searchQuery" placeholder="<% if (enableTranslation) { %>{{ '<%= keyPrefix %>home.search' | translate }}<% } else { %>Query<% } %>">
+                        <span  class="input-group-btn width-min" >
+                            <button class="btn btn-info btn-raised" ng-click="vm.search(vm.searchQuery)">
+                                <span class="glyphicon glyphicon-search"></span>
+                                <span data-translate="entity.action.search">Search</span>
+                            </button>
+                        </span>
+                        <span class="input-group-btn width-min">
+                            <button ng-if="vm.currentSearch" class="btn btn-danger btn-raised" ng-click="vm.clear()">
+                                <i class="glyphicon glyphicon-trash" aria-label="trash"></i>
+                                <span data-translate="entity.action.trash">trash</span>
+                            </button>
+                            <button ng-disabled="!vm.areAll<%= entityClassPlural %>Selected && !vm.<%= entityInstancePlural %>Selected.length" class="btn btn-raised btn-default" ng-click="vm.syncSelected()">
+                                <i class="glyphicon glyphicon-refresh" aria-label="sync"></i>
+                                <span data-translate="entity.action.sync">sync</span>
+                            </button>
+                            <button ng-disabled="!vm.areAll<%= entityClassPlural %>Selected && !vm.<%= entityInstancePlural %>Selected.length" class="btn btn-raised btn-default btn-danger" ng-click="vm.deleteSelected()">
+                                <i class="glyphicon glyphicon-trash" aria-label="delete"></i>
+                                <span data-translate="entity.action.delete">delete</span>
+                            </button>
+                        </span>
+                    </div>
+                </form>
             </div>
             <%_ } _%>
         </div>
     </div>
+    <br/>
     <div class="table-responsive">
         <table class="jh-table table table-striped table-hover">
             <caption class="text-center">
                 <jhi-item-count page="vm.page" total="vm.queryCount" items-per-page="vm.itemsPerPage"></jhi-item-count>
-            </caption>            
-            <thead>                
-                <tr<% if (pagination != 'no') { %> jh-sort="vm.predi<%= entityInstance %>e" ascending="vm.reverse" callback="vm.<%=pagination != 'infinite-scroll' ? 'transition' : 'reset'%>()"<% } %> class="info">
-                    <th><input type="checkbox" ng-model="vm.areAll<%=entityClass %>sSelected" ng-change="vm.update<%=entityClass %>sSelection(vm.<%=entityInstancePlural %>, vm.areAll<%=entityClass %>sSelected)"/></th>                    
+            </caption>
+            <thead>
+                <tr<% if (pagination != 'no') { %> jh-sort="vm.predicate" ascending="vm.reverse" callback="vm.<%=pagination != 'infinite-scroll' ? 'transition' : 'reset'%>()"<% } %>>
+                <th><input type="checkbox" ng-model="vm.areAll<%=entityClassPlural %>Selected" ng-change="vm.update<%=entityClassPlural %>Selection(vm.<%=entityInstancePlural %>, vm.areAll<%=entityClassPlural %>Selected)"/></th>
                     <th<% if (pagination != 'no') { %> jh-sort-by="id"<% } %>><span data-translate="global.field.id">ID</span><% if (pagination != 'no') { %> <span class="glyphicon glyphicon-sort"></span><% } %></th>
                     <%_ for (idx in fields) { _%>
                     <th<% if (pagination != 'no') { %> jh-sort-by="<%= fields[idx].fieldName%>"<% } %>><span data-translate="<%=keyPrefix + fields[idx].fieldName %>"><%= fields[idx].fieldNameHumanized %></span><% if (pagination != 'no') { %> <span class="glyphicon glyphicon-sort"></span><% } %></th>
@@ -86,7 +69,7 @@
             </thead>
             <tbody<% if (pagination == 'infinite-scroll') { %> infinite-scroll="vm.loadPage(vm.page + 1)" infinite-scroll-disabled="vm.page >= vm.links['last']"<% } %>>
                 <tr ng-repeat="<%=entityInstance %> in vm.<%=entityInstancePlural %> track by <%=entityInstance %>.id">
-                    <td><input type="checkbox" ng-change="vm.updateSelected<%=entityClass %>s(<%=entityInstance %>, <%=entityInstance %>.isSelected)" ng-model="<%=entityInstance %>.isSelected"/></td>                    
+                    <td><input type="checkbox" ng-change="vm.updateSelected<%=entityClassPlural %>(<%=entityInstance %>, <%=entityInstance %>.isSelected)" ng-model="<%=entityInstance %>.isSelected"/></td>
                     <td><a ui-sref="<%= entityStateName %>-detail({id:<%= entityInstance %>.id})">{{<%=entityInstance %>.id}}</a></td>
                     <%_ for (idx in fields) {
                         var fieldName = fields[idx].fieldName;
@@ -190,7 +173,7 @@
     <%_ } else if (pagination == 'pagination') { _%>
     <div class="text-center">
         <jhi-item-count page="vm.page" total="vm.queryCount" items-per-page="vm.itemsPerPage"></jhi-item-count>
-        <uib-pagination class="pagination-sm" total-items="vm.totalItems" ng-model="vm.page" ng-change="vm.transition()"></uib-pagination>
+        <uib-pagination class="pagination-sm" total-items="vm.totalItems" items-per-page="vm.itemsPerPage" ng-model="vm.page" ng-change="vm.transition()"></uib-pagination>
     </div>
     <%_ } _%>
 </div>
