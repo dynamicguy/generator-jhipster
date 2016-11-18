@@ -3,10 +3,9 @@
         vm.<%= entityInstancePlural %>Selected = [];
         vm.update<%= entityClassPlural %>Selection = update<%= entityClassPlural %>Selection;
         vm.updateSelected<%= entityClassPlural %> = updateSelected<%= entityClassPlural %>;
-        vm.import<%= entityClassPlural %> = import<%= entityClassPlural %>;
         vm.syncSelected = syncSelected;
         vm.deleteSelected = deleteSelected;
-        vm.exportSelected = exportSelected;
+        vm.perPages = [10, 20, 30, 50, 100, 200, 500];
 
         function update<%= entityClassPlural %>Selection(<%= entityInstance %>Array, selectionValue) {
             for (var i = 0; i < <%= entityInstance %>Array.length; i++) {

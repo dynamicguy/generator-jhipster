@@ -11,6 +11,12 @@
                         Create new <%= entityClassHumanized %>
                     </span>
                 </button>
+                <select class="form-control pager-control"
+                    ng-options="perPage as perPage for perPage in vm.perPages track by perPage"
+                    class="form-control" name="itemsPerPage" id="itemsPerPage"
+                    ng-model="vm.itemsPerPage" ng-change="vm.loadAll()">
+                    <option value="">Per page</option>
+                </select>
             </div>
             <%_ if (searchEngine == 'elasticsearch') { _%>
             <div class="col-xs-8 no-padding-right">
