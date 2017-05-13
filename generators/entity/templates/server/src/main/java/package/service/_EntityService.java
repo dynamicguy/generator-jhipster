@@ -28,6 +28,9 @@ import <%=packageName%>.domain.<%= entityClass %>;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 <%_ } _%>
+<%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
+import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;
+<%_ } _%>
 import java.util.List;
 
 /**

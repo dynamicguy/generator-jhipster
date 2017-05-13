@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -19,21 +19,27 @@
 package <%=packageName%>.repository.search;
 
 import <%=packageName%>.domain.<%=entityClass%>;
-import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;<% if (databaseType == 'cassandra') { %>
-
+<% if (databaseType == 'cassandra') { %>
 import java.util.UUID;<% } %>
-
 <% if (searchEngine == 'elasticsearch') { %>
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+
 /**
- * Spring Data ElasticSearch repository for the <%=entityClass%> entity.
+ * Spring Data Elasticsearch repository for the <%=entityClass%> entity.
  */
 public interface <%=entityClass%>SearchRepository extends ElasticsearchRepository<<%=entityClass%>, <% if (databaseType=='sql' || databaseType=='mongodb') { %>Long<% } %><% if (databaseType == 'cassandra') { %>UUID<% } %>> {
-}
-%>
-<% if (searchEngine == 'solr') { %>
+}<% } %><% if (searchEngine == 'solr') { %>
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.solr.core.query.result.SolrResultPage;
+import org.springframework.data.solr.repository.Highlight;
+import org.springframework.data.solr.repository.Query;
+import org.springframework.data.solr.repository.SolrCrudRepository;
+
 /**
  * Spring Data SOLR repository for the <%=entityClass%> entity.
  */
 public interface <%=entityClass%>SearchRepository extends SolrCrudRepository<<%=entityClass%>, <% if (databaseType=='sql' || databaseType=='mongodb') { %>Long<% } %><% if (databaseType == 'cassandra') { %>UUID<% } %>> {
-}
-%>    
+    @Highlight(prefix = "<[[", postfix = "]]>", fields = { <% for (idx in fields) {%>"<%=fields[idx].fieldName%>", <%} %> })
+    @Query(value = "_text_:?0")
+    SolrResultPage<<%=entityClass%>> findByAllFields(String term, Pageable pageable);
+}<% } %>

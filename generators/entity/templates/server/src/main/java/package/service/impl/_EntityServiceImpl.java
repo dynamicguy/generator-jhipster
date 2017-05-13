@@ -30,7 +30,7 @@ package <%=packageName%>.service<% if (service == 'serviceImpl') { %>.impl<% } %
     if (service == 'serviceImpl') { %>
 import <%=packageName%>.service.<%= entityClass %>Service;<% } %>
 import <%=packageName%>.domain.<%= entityClass %>;
-import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (searchEngine == 'elasticsearch') { %>
+import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;<% } if (dto == 'mapstruct') { %>
 import <%=packageName%>.service.dto.<%= entityClass %>DTO;
 import <%=packageName%>.service.mapper.<%= entityClass %>Mapper;<% } %>
@@ -151,6 +151,32 @@ public class <%= serviceClassName %> <% if (service == 'serviceImpl') { %>implem
         <%_ } else { _%>
         log.debug("Request to search for a page of <%= entityClassPlural %> for query {}", query);
         Page<<%= entityClass %>> result = <%= entityInstance %>SearchRepository.search(queryStringQuery(query), pageable);
+            <%_ if (dto == 'mapstruct') { _%>
+        return result.map(<%= entityInstance %> -> <%= entityToDto %>(<%= entityInstance%>));
+            <%_ } else { _%>
+        return result;
+        <%_ } } _%>
+    }
+    <%_ } _%><%_ if (searchEngine == 'solr') { _%>
+    /**
+     * Search for the <%= entityInstance %> corresponding to the query.
+     *
+     *  @param query the query of the search<% if (pagination != 'no') { %>
+     *  @param pageable the pagination information<% } %>
+     *  @return the list of entities
+     */
+    <%_ if (service == 'serviceImpl') { _%>
+    @Override
+    <%_ } _%>
+    <%_ if (databaseType == 'sql') { _%>
+    @Transactional(readOnly = true)
+    <%_ } _%>
+    public <% if (pagination != 'no') { %>Page<<%= instanceType %><% } else { %>List<<%= instanceType %><% } %>> search(String query<% if (pagination != 'no') { %>, Pageable pageable<% } %>) {
+        <%_ if (pagination == 'no') { _%>
+        log.debug("Request to search <%= entityClassPlural %> for query {}", query);<%- include('../../common/solr_search_stream_template', {viaService: viaService}); -%>
+        <%_ } else { _%>
+        log.debug("Request to search for a page of <%= entityClassPlural %> for query {}", query);
+        Page<<%= entityClass %>> result = <%= entityInstance %>SearchRepository.findByAllFields(query, pageable);
             <%_ if (dto == 'mapstruct') { _%>
         return result.map(<%= entityInstance %> -> <%= entityToDto %>(<%= entityInstance%>));
             <%_ } else { _%>
