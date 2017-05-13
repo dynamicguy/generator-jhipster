@@ -31,7 +31,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;<% } %><% if (database
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;<% } %><% if (searchEngine == 'elasticsearch') { %>
-import org.springframework.data.elasticsearch.annotations.Document;<% } %>
+import org.springframework.data.elasticsearch.annotations.Document;<% } %><% if (searchEngine == 'solr') { %>
+import org.springframework.data.solr.core.mapping.SolrDocument;
+import org.apache.solr.client.solrj.beans.Field;<% } %>
 <% if (databaseType == 'sql') { %>
 import javax.persistence.*;<% } %><% if (validation) { %>
 import javax.validation.constraints.*;<% } %>
@@ -62,7 +64,8 @@ import <%=packageName%>.domain.enumeration.<%= element %>;<% }); %>
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)<% } %><% } %><% if (databaseType == 'mongodb') { %>
 @Document(collection = "<%= entityTableName %>")<% } %><% if (databaseType == 'cassandra') { %>
 @Table(name = "<%= entityInstance %>")<% } %><% if (searchEngine == 'elasticsearch') { %>
-@Document(indexName = "<%= entityInstance.toLowerCase() %>")<% } %>
+@Document(indexName = "<%= entityInstance.toLowerCase() %>")<% } %><% if (searchEngine == 'solr') { %>
+@SolrDocument(solrCoreName = "<%= entityInstancePlural %>")<% } %>
 public class <%= entityClass %> implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -117,7 +120,7 @@ public class <%= entityClass %> implements Serializable {
     @Column(name = "<%-fieldNameAsDatabaseColumn %>"<% if (fieldValidate == true) { %><% if (fieldValidateRules.indexOf('maxlength') != -1) { %>, length = <%= fieldValidateRulesMaxlength %><% } %><% if (required) { %>, nullable = false<% } %><% } %>)
     <%_     }
         } _%>
-    <%_ if (databaseType == 'mongodb') { _%>
+    <%_ if (databaseType == 'mongodb' || searchEngine == 'solr') { _%>
     @Field("<%=fieldNameUnderscored %>")
     <%_ } _%>
     <%_ if (fieldTypeBlobContent != 'text') { _%>
@@ -133,7 +136,7 @@ public class <%= entityClass %> implements Serializable {
     @NotNull
         <%_ } _%>
       <%_ } _%>
-      <%_ if (databaseType == 'mongodb') { _%>
+      <%_ if (databaseType == 'mongodb' || searchEngine == 'solr') { _%>
     @Field("<%=fieldNameUnderscored %>_content_type")
       <%_ } _%>
     private String <%= fieldName %>ContentType;

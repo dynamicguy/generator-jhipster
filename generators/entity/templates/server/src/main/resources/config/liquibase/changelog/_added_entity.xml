@@ -147,5 +147,6 @@
 
         <addPrimaryKey columnNames="<%= getPluralColumnName(name) %>_id, <%= getPluralColumnName(relationshipName) %>_id" tableName="<%= joinTableName %>"/>
         <% } %><% } %>
+        <!--<loadData encoding="UTF-8" file="config/liquibase/<%= entityTableName %>.csv" separator="," tableName="<%= entityTableName %>"/>-->
     </changeSet>
 </databaseChangeLog>

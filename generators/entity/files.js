@@ -96,6 +96,14 @@ const serverFiles = {
             }]
         },
         {
+            condition: generator => generator.searchEngine === 'solr',
+            path: SERVER_MAIN_SRC_DIR,
+            templates: [{
+                file: 'package/repository/search/_EntitySearchRepository.java',
+                renameTo: generator => `${generator.packageFolder}/repository/search/${generator.entityClass}SearchRepository.java`
+            }]
+        },
+        {
             condition: generator => generator.service === 'serviceImpl',
             path: SERVER_MAIN_SRC_DIR,
             templates: [
@@ -215,6 +223,14 @@ const angularjsFiles = {
         },
         {
             condition: generator => generator.searchEngine === 'elasticsearch',
+            path: ANGULAR_DIR,
+            templates: [{
+                file: 'entities/_entity-search.service.js',
+                renameTo: generator => `entities/${generator.entityFolderName}/${generator.entityServiceFileName}.search.service.js`
+            }]
+        },
+        {
+            condition: generator => generator.searchEngine === 'solr',
             path: ANGULAR_DIR,
             templates: [{
                 file: 'entities/_entity-search.service.js',

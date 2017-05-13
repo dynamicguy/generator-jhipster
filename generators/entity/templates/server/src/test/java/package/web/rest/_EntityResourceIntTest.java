@@ -31,7 +31,7 @@ import <%=packageName%>.domain.<%= entityClass %>;
 import <%=packageName%>.domain.<%= otherEntityNameCapitalized %>;
 <%_ } } _%>
 import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (service != 'no') { %>
-import <%=packageName%>.service.<%= entityClass %>Service;<% } if (searchEngine == 'elasticsearch') { %>
+import <%=packageName%>.service.<%= entityClass %>Service;<% } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;<% } if (dto == 'mapstruct') { %>
 import <%=packageName%>.service.dto.<%= entityClass %>DTO;
 import <%=packageName%>.service.mapper.<%= entityClass %>Mapper;<% } %>
@@ -248,7 +248,7 @@ _%>
     private <%= entityClass %>Mapper <%= entityInstance %>Mapper;<% } if (service != 'no') { %>
 
     @Autowired
-    private <%= entityClass %>Service <%= entityInstance %>Service;<% } if (searchEngine == 'elasticsearch') { %>
+    private <%= entityClass %>Service <%= entityInstance %>Service;<% } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 
     @Autowired
     private <%= entityClass %>SearchRepository <%= entityInstance %>SearchRepository;<% } %>
@@ -277,7 +277,7 @@ _%>
         <%_ if (service != 'no') { _%>
         <%= entityClass %>Resource <%= entityInstance %>Resource = new <%= entityClass %>Resource(<%= entityInstance %>Service);
         <%_ } else { _%>
-        <%= entityClass %>Resource <%= entityInstance %>Resource = new <%= entityClass %>Resource(<%= entityInstance %>Repository<% if (dto == 'mapstruct') { %>, <%= entityInstance %>Mapper<% } %><% if (searchEngine == 'elasticsearch') { %>, <%= entityInstance %>SearchRepository<% } %>);
+        <%= entityClass %>Resource <%= entityInstance %>Resource = new <%= entityClass %>Resource(<%= entityInstance %>Repository<% if (dto == 'mapstruct') { %>, <%= entityInstance %>Mapper<% } %><% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>, <%= entityInstance %>SearchRepository<% } %>);
         <%_ } _%>
         this.rest<%= entityClass %>MockMvc = MockMvcBuilders.standaloneSetup(<%= entityInstance %>Resource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
@@ -330,7 +330,7 @@ _%>
     public void initTest() {
         <%_ if (databaseType == 'mongodb' || databaseType == 'cassandra') { _%>
         <%= entityInstance %>Repository.deleteAll();
-        <%_ } if (searchEngine == 'elasticsearch') { _%>
+        <%_ } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
         <%= entityInstance %>SearchRepository.deleteAll();
         <%_ } _%>
         <%= entityInstance %> = createEntity(<% if (databaseType == 'sql') { %>em<% } %>);
@@ -363,7 +363,7 @@ _%>
         assertThat(test<%= entityClass %>.is<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
         <%_ } else { _%>
         assertThat(test<%= entityClass %>.get<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='DEFAULT_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
-        <%_ }} if (searchEngine == 'elasticsearch') { _%>
+        <%_ }} if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
         // Validate the <%= entityClass %> in Elasticsearch
         <%= entityClass %> <%= entityInstance %>Es = <%= entityInstance %>SearchRepository.findOne(test<%= entityClass %>.getId());
@@ -470,7 +470,7 @@ _%>
 <%_ if (service != 'no' && dto != 'mapstruct') { _%>
         <%= entityInstance %>Service.save(<%= entityInstance %>);
 <%_ } else { _%>
-        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch') { %>
+        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
         <%= entityInstance %>SearchRepository.save(<%= entityInstance %>);<%_ } _%>
 <%_ } _%>
 
@@ -512,11 +512,11 @@ _%>
         assertThat(test<%= entityClass %>.is<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
         <%_ } else { _%>
         assertThat(test<%= entityClass %>.get<%=fields[idx].fieldInJavaBeanMethod%>()).isEqualTo(<%='UPDATED_' + fields[idx].fieldNameUnderscored.toUpperCase()%>);
-        <%_ } } if (searchEngine == 'elasticsearch') { _%>
+        <%_ } } if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
-        // Validate the <%= entityClass %> in Elasticsearch
+        // Validate the <%= entityClass %> in <%= searchEngine %>
         <%= entityClass %> <%= entityInstance %>Es = <%= entityInstance %>SearchRepository.findOne(test<%= entityClass %>.getId());
-        assertThat(<%= entityInstance %>Es).isEqualToComparingFieldByField(test<%= entityClass %>);
+        assertThat(<%= entityInstance %>Es).isEqualToComparingOnlyGivenFields(test<%= entityClass %>);
         <%_ } _%>
     }
 
@@ -546,7 +546,7 @@ _%>
 <%_ if (service != 'no' && dto != 'mapstruct') { _%>
         <%= entityInstance %>Service.save(<%= entityInstance %>);
 <%_ } else { _%>
-        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch') { %>
+        <%= entityInstance %>Repository.save<% if (databaseType == 'sql') { %>AndFlush<% } %>(<%= entityInstance %>);<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
         <%= entityInstance %>SearchRepository.save(<%= entityInstance %>);<%_ } _%>
 <%_ } _%>
 
@@ -555,16 +555,16 @@ _%>
         // Get the <%= entityInstance %>
         rest<%= entityClass %>MockMvc.perform(delete("/api/<%= entityApiUrl %>/{id}", <%= entityInstance %>.getId())
             .accept(TestUtil.APPLICATION_JSON_UTF8))
-            .andExpect(status().isOk());<% if (searchEngine == 'elasticsearch') { %>
+            .andExpect(status().isOk());<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 
-        // Validate Elasticsearch is empty
+        // Validate <%= searchEngine %> is empty
         boolean <%= entityInstance %>ExistsInEs = <%= entityInstance %>SearchRepository.exists(<%= entityInstance %>.getId());
         assertThat(<%= entityInstance %>ExistsInEs).isFalse();<% } %>
 
         // Validate the database is empty
         List<<%= entityClass %>> <%= entityInstance %>List = <%= entityInstance %>Repository.findAll();
         assertThat(<%= entityInstance %>List).hasSize(databaseSizeBeforeDelete - 1);
-    }<% if (searchEngine == 'elasticsearch') { %>
+    }<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 
     @Test<% if (databaseType == 'sql') { %>
     @Transactional<% } %>

@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -72,7 +72,7 @@ public interface <%= entityClass %>Service {
      *
      *  @param id the id of the entity
      */
-    void delete(<%= pkType %> id);<% if (searchEngine == 'elasticsearch') { %>
+    void delete(<%= pkType %> id);<% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>
 
     /**
      * Search for the <%= entityInstance %> corresponding to the query.
