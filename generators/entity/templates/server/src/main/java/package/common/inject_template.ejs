@@ -23,7 +23,7 @@
 
     private final <%= entityClass %>Mapper <%= entityInstance %>Mapper;
     <%_ } _%>
-    <%_ if (searchEngine == 'elasticsearch') { _%>
+    <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
 
     private final <%= entityClass %>SearchRepository <%= entityInstance %>SearchRepository;
     <%_ } _%>
