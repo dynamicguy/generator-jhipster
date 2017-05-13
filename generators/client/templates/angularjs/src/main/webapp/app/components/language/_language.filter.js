@@ -28,6 +28,7 @@
 
         function findLanguageFromKeyFilter(lang) {
             return {
+                'bn': 'বাংলা',
                 'ca': 'Català',
                 'cs': 'Český',
                 'da': 'Dansk',

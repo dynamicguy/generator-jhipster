@@ -19,6 +19,7 @@
 {
     "global": {
         "title": "<%= capitalizedBaseName %>",
+        "subtitle": "<%= capitalizedBaseName %>",
         "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"http://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
         "menu": {
             "home": "Home",
@@ -121,7 +122,15 @@
             "edit": "Edit",
             "open": "Open",
             "save": "Save",
-            "view": "View"
+            "view": "View",
+            "found": "[<b>{{found}}</b>] items retrieved from total of [<b>{{total}}</b>] items.",
+            "searchPlaceholder": "Search for...",
+            "search": "Search",
+            "sync": "Sync",
+            "trash": "Trash",
+            "clear": "Clear",
+            "reset": "Reset",
+            "select": "Select"
         },
         "detail": {
             "field": "Field",

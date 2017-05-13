@@ -1,0 +1,19 @@
+{
+    "home": {
+        "title": "খুঁজুন.কম",
+        "subtitle": "বাংলাদেশের পুর্নাঙ্গ সার্চ ইঞ্জিন।",
+        "logged": {
+            "message": "আপনি \"{{username}}\" ব্যবহারকারী হিসাবে লগইন করেছেন।"
+        },
+        "question": "আপনি যদি কোন প্রশ্ন থাকে: ",
+        "link": {
+            "homepage": "হোমপেজে",
+            "stackoverflow": "Stack Overflow",
+            "bugtracker": " bug tracker",
+            "chat": " public chat room",
+            "follow": "follow @khujun on Twitter"
+        },
+        "like": "If you like, don't forget to give us a star on",
+        "github": "GitHub"
+    }
+}

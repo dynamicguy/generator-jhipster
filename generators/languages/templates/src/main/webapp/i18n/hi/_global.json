@@ -19,6 +19,7 @@
 {
     "global": {
         "title": "<%= capitalizedBaseName %>",
+        "subtitle": "<%= capitalizedBaseName %>",
         "browsehappy": "आप एक <strong>पुराने</strong> ब्राउज़र का उपयोग कर रहे हैं। कृपया अपने अनुभव में सुधार करने के लिए अपने <a href=\"http://browsehappy.com/?locale=en\">ब्राउज़र को अपग्रेड करें</a>",
         "menu": {
             "home": "होम",
@@ -121,7 +122,15 @@
             "edit": "संपादित करें",
             "open": "Open",
             "save": "सहेजें",
-            "view": "देखें"
+            "view": "देखें",
+            "found": "[<b>{{found}}</b>] items retrieved from total of [<b>{{total}}</b>] items.",
+            "searchPlaceholder": "Search for...",
+            "search": "Search",
+            "sync": "Sync",
+            "trash": "Trash",
+            "clear": "Clear",
+            "reset": "Reset",
+            "select": "Select"
         },
         "detail": {
             "field": "फ़ील्ड",
