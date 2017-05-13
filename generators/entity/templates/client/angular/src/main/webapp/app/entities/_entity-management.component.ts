@@ -32,6 +32,8 @@ import { PaginationConfig } from '../../blocks/config/uib-pagination.config';
     templateUrl: './<%= entityFileName %>.component.html'
 })
 export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
+    areAll<%= entityClassPlural %>Selected: boolean;
+    <%= entityInstancePlural %>Selected: any;
     <%_ if (pagination === 'pagination' || pagination === 'pager') { _%>
 <%- include('pagination-template', {toArrayString: toArrayString}); -%>
     <%_ } else if (pagination === 'infinite-scroll') { _%>
@@ -39,6 +41,7 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
     <%_ } else if (pagination === 'no') { _%>
 <%- include('no-pagination-template', {toArrayString: toArrayString}); -%>
     <%_ } _%>
+<%- include('bulk-template', {toArrayString: toArrayString}); -%>
     ngOnInit() {
         this.loadAll();
         this.principal.identity().then((account) => {

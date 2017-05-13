@@ -24,10 +24,10 @@ for (const idx in fields) {
     }
 }
 _%>
-<%= entityInstancePlural %>: <%= entityAngularName %>[];
+    <%= entityInstancePlural %>: <%= entityAngularName %>[];
     currentAccount: any;
     eventSubscriber: Subscription;
-    <%_ if (searchEngine === 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
     currentSearch: string;
     <%_ } _%>
 
@@ -38,18 +38,18 @@ _%>
         private dataUtils: DataUtils,
         <%_ } _%>
         private eventManager: EventManager,
-        <%_ if (searchEngine === 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         private activatedRoute: ActivatedRoute,
         <%_ } _%>
         private principal: Principal
     ) {
-        <%_ if (searchEngine === 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         this.currentSearch = activatedRoute.snapshot.params['search'] ? activatedRoute.snapshot.params['search'] : '';
         <%_ } _%>
     }
 
     loadAll() {
-        <%_ if (searchEngine === 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         if (this.currentSearch) {
             this.<%= entityInstance %>Service.search({
                 query: this.currentSearch,
@@ -63,14 +63,14 @@ _%>
         this.<%= entityInstance %>Service.query().subscribe(
             (res: Response) => {
                 this.<%= entityInstancePlural %> = res.json();
-                <%_ if (searchEngine === 'elasticsearch') { _%>
+                <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
                 this.currentSearch = '';
                 <%_ } _%>
             },
             (res: Response) => this.onError(res.json())
         );
     }
-    <%_ if (searchEngine === 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
 
     search(query) {
         if (!query) {

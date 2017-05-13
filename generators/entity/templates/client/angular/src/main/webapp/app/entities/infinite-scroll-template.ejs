@@ -35,7 +35,7 @@ _%>
     queryCount: any;
     reverse: any;
     totalItems: number;
-    <%_ if (searchEngine === 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
     currentSearch: string;
     <%_ } _%>
 
@@ -47,7 +47,7 @@ _%>
         <%_ } _%>
         private eventManager: EventManager,
         private parseLinks: ParseLinks,
-        <%_ if (searchEngine === 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         private activatedRoute: ActivatedRoute,
         <%_ } _%>
         private principal: Principal
@@ -60,13 +60,13 @@ _%>
         };
         this.predicate = 'id';
         this.reverse = true;
-        <%_ if (searchEngine === 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         this.currentSearch = activatedRoute.snapshot.params['search'] ? activatedRoute.snapshot.params['search'] : '';
         <%_ } _%>
     }
 
     loadAll() {
-    <%_ if (searchEngine === 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         if (this.currentSearch) {
             this.<%= entityInstance %>Service.search({
                 query: this.currentSearch,
@@ -100,7 +100,7 @@ _%>
         this.page = page;
         this.loadAll();
     }
-    <%_ if (searchEngine === 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
 
     clear() {
         this.<%= entityInstancePlural %> = [];
