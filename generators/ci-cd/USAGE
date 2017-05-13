@@ -2,4 +2,4 @@ Description:
     Creates pipeline scripts for various CI/CD tools based on the selected options
 
 Example:
-    jhipster ci-cd
+    yo jhipster:ci-cd

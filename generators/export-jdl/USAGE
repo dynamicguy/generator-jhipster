@@ -1,5 +1,5 @@
 Description:
     Creates JDL from the json entities
 Example:
-    jhipster export-jdl
-    jhipster export-jdl jhipster.jh
+    yo jhipster:export-jdl
+    yo jhipster:export-jdl jhipster.jh

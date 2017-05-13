@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors from the JHipster project.
+ Copyright 2013-2017 the original author or authors.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -37,9 +37,6 @@ public final class HeaderUtil {
 
     private static final String APPLICATION_NAME = "<%= angularAppName %>";
     <%_ } _%>
-
-    private HeaderUtil() {
-    }
 
     private HeaderUtil() {
     }

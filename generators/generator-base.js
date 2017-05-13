@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors from the JHipster project.
+ * Copyright 2013-2017 the original author or authors.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -1923,7 +1923,7 @@ module.exports = class extends Generator {
             }
             content +=
                 '                        // jhipster-needle-i18n-language-webpack - JHipster will add/remove languages in this array\n' +
-                '                    ]';
+                '                 ]';
 
             jhipsterUtils.replaceContent({
                 file: fullPath,

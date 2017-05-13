@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors from the JHipster project.
+ Copyright 2013-2017 the original author or authors.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -56,7 +56,7 @@ public class CustomAuditEventRepository implements AuditEventRepository {
     @Override
     public List<AuditEvent> find(Date after) {
         Iterable<PersistentAuditEvent> persistentAuditEvents =
-            persistenceAuditEventRepository.findByAuditEventDateAfter(after.toInstant());
+            persistenceAuditEventRepository.findByAuditEventDateAfter(LocalDateTime.from(after.toInstant()));
         return auditEventConverter.convertToAuditEvent(persistentAuditEvents);
     }
 
@@ -69,7 +69,7 @@ public class CustomAuditEventRepository implements AuditEventRepository {
             persistentAuditEvents = persistenceAuditEventRepository.findByPrincipal(principal);
         } else {
             persistentAuditEvents =
-                persistenceAuditEventRepository.findByPrincipalAndAuditEventDateAfter(principal, after.toInstant());
+                persistenceAuditEventRepository.findByPrincipalAndAuditEventDateAfter(principal, LocalDateTime.from(after.toInstant()));
         }
         return auditEventConverter.convertToAuditEvent(persistentAuditEvents);
     }
@@ -77,7 +77,7 @@ public class CustomAuditEventRepository implements AuditEventRepository {
     @Override
     public List<AuditEvent> find(String principal, Date after, String type) {
         Iterable<PersistentAuditEvent> persistentAuditEvents =
-            persistenceAuditEventRepository.findByPrincipalAndAuditEventDateAfterAndAuditEventType(principal, after.toInstant(), type);
+            persistenceAuditEventRepository.findByPrincipalAndAuditEventDateAfterAndAuditEventType(principal, LocalDateTime.from(after.toInstant()), type);
         return auditEventConverter.convertToAuditEvent(persistentAuditEvents);
     }
 
@@ -90,7 +90,8 @@ public class CustomAuditEventRepository implements AuditEventRepository {
             PersistentAuditEvent persistentAuditEvent = new PersistentAuditEvent();
             persistentAuditEvent.setPrincipal(event.getPrincipal());
             persistentAuditEvent.setAuditEventType(event.getType());
-            persistentAuditEvent.setAuditEventDate(event.getTimestamp().toInstant());
+            Instant instant = Instant.ofEpochMilli(event.getTimestamp().getTime());
+            persistentAuditEvent.setAuditEventDate(LocalDateTime.ofInstant(instant, ZoneId.systemDefault()));
             persistentAuditEvent.setData(auditEventConverter.convertDataToStrings(event.getData()));
             persistenceAuditEventRepository.save(persistentAuditEvent);
         }

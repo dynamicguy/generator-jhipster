@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors from the JHipster project.
+ Copyright 2013-2017 the original author or authors.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -19,7 +19,6 @@
 {
     "global": {
         "title": "<%= capitalizedBaseName %>",
-        "subtitle": "<%= capitalizedBaseName %>",
         "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"http://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
         "menu": {
             "home": "Home",
@@ -122,15 +121,7 @@
             "edit": "Edit",
             "open": "Open",
             "save": "Save",
-            "view": "View",
-            "found": "[<b>{{found}}</b>] items retrieved from total of [<b>{{total}}</b>] items.",
-            "searchPlaceholder": "Search for...",
-            "search": "Search",
-            "sync": "Sync",
-            "trash": "Trash",
-            "clear": "Clear",
-            "reset": "Reset",
-            "select": "Select"
+            "view": "View"
         },
         "detail": {
             "field": "Field",

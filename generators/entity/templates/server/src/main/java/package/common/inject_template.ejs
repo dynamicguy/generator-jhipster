@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors from the JHipster project.
+ Copyright 2013-2017 the original author or authors.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -23,7 +23,7 @@
 
     private final <%= entityClass %>Mapper <%= entityInstance %>Mapper;
     <%_ } _%>
-    <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
+    <%_ if (searchEngine == 'elasticsearch') { _%>
 
     private final <%= entityClass %>SearchRepository <%= entityInstance %>SearchRepository;
     <%_ } _%>

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors from the JHipster project.
+ * Copyright 2013-2017 the original author or authors.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -74,7 +74,7 @@ module.exports = UpgradeGenerator.extend({
 
     _generate(version, callback) {
         this.log(`Regenerating app with jhipster ${version}...`);
-        shelljs.exec('jhipster --with-entities --force --skip-install', { silent: this.silent }, (code, msg, err) => {
+        shelljs.exec('yo jhipster --with-entities --force --skip-install', { silent: this.silent }, (code, msg, err) => {
             if (code === 0) this.log(chalk.green(`Successfully regenerated app with jhipster ${version}`));
             else this.error(`Something went wrong while generating project! ${err}`);
             callback();

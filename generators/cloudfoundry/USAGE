@@ -2,7 +2,7 @@ Description:
     Generates a `deploy/cloudfoundry` folder with a specific manifest.yml to deploy to Cloud Foundry
 
 Example:
-    jhipster cloudfoundry
+    yo jhipster:cloudfoundry
 
     This will create:
         a deploy/cloudfoundry/manifest.yml file

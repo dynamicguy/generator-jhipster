@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors from the JHipster project.
+ Copyright 2013-2017 the original author or authors.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -88,11 +88,7 @@ public class UserJWTControllerIntTest <% if (databaseType === 'cassandra') { %>e
         user.setActivated(true);
         user.setPassword(passwordEncoder.encode("test"));
 
-        <%_ if (databaseType == 'sql') { _%>
         userRepository.saveAndFlush(user);
-        <%_ } else if (databaseType == 'mongodb' || databaseType == 'cassandra') { _%>
-        userRepository.save(user);
-        <%_ } _%>
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller");
@@ -119,11 +115,7 @@ public class UserJWTControllerIntTest <% if (databaseType === 'cassandra') { %>e
         user.setActivated(true);
         user.setPassword(passwordEncoder.encode("test"));
 
-        <%_ if (databaseType == 'sql') { _%>
         userRepository.saveAndFlush(user);
-        <%_ } else if (databaseType == 'mongodb' || databaseType == 'cassandra') { _%>
-        userRepository.save(user);
-        <%_ } _%>
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller-remember-me");

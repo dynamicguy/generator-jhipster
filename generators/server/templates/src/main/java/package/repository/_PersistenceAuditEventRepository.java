@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors from the JHipster project.
+ Copyright 2013-2017 the original author or authors.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -19,12 +19,13 @@
 package <%=packageName%>.repository;
 
 import <%=packageName%>.domain.PersistentAuditEvent;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;<% if (databaseType == 'sql') { %>
+
+import java.time.LocalDateTime;<% if (databaseType == 'sql') { %>
 import org.springframework.data.jpa.repository.JpaRepository;<% } %><% if (databaseType == 'mongodb') { %>
 import org.springframework.data.mongodb.repository.MongoRepository;<% } %>
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.time.Instant;
 import java.util.List;
 
 <% if (databaseType == 'sql') { %>/**
@@ -36,11 +37,11 @@ public interface PersistenceAuditEventRepository extends <% if (databaseType == 
 
     List<PersistentAuditEvent> findByPrincipal(String principal);
 
-    List<PersistentAuditEvent> findByAuditEventDateAfter(Instant after);
+    List<PersistentAuditEvent> findByAuditEventDateAfter(LocalDateTime after);
 
-    List<PersistentAuditEvent> findByPrincipalAndAuditEventDateAfter(String principal, Instant after);
+    List<PersistentAuditEvent> findByPrincipalAndAuditEventDateAfter(String principal, LocalDateTime after);
 
-    List<PersistentAuditEvent> findByPrincipalAndAuditEventDateAfterAndAuditEventType(String principle, Instant after, String type);
+    List<PersistentAuditEvent> findByPrincipalAndAuditEventDateAfterAndAuditEventType(String principle, LocalDateTime after, String type);
 
-    Page<PersistentAuditEvent> findAllByAuditEventDateBetween(Instant fromDate, Instant toDate, Pageable pageable);
+    Page<PersistentAuditEvent> findAllByAuditEventDateBetween(LocalDateTime fromDate, LocalDateTime toDate, Pageable pageable);
 }
