@@ -27,7 +27,7 @@
         }
     }
 
-    updateSelected<%= entityClass %>s(<%= entityInstance %>, selectionValue) {
+    updateSelected<%= entityClassPlural %>(<%= entityInstance %>, selectionValue) {
         if (selectionValue === true) {
             this.<%= entityInstancePlural %>Selected.push(<%= entityInstance %>);
         } else {

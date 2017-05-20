@@ -69,6 +69,7 @@ _%>
             this.predicate = data['pagingParams'].predicate;
         });
         <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
+        this.<%= entityInstancePlural %>Selected = [];
         this.currentSearch = activatedRoute.snapshot.params['search'] ? activatedRoute.snapshot.params['search'] : '';
         <%_ } _%>
         <%_ } _%>

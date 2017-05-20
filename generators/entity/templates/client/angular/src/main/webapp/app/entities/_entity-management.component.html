@@ -18,15 +18,33 @@
 -%>
 <div>
     <%_ const keyPrefix = angularAppName + '.'+ entityTranslationKey + '.'; _%>
-    <h2>
-        <span jhiTranslate="<%= keyPrefix %>home.title"><%= entityClassPluralHumanized %></span>
-        <button class="btn btn-primary float-right create-<%= entityUrl %>" [routerLink]="['/', { outlets: { popup: ['<%= entityUrl %>-new'] } }]">
-            <span class="fa fa-plus"></span>
-            <span <% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>class="hidden-sm-down" <% } %> jhiTranslate="<%= keyPrefix %>home.createLabel">
-            Create new <%= entityClassHumanized %>
-            </span>
-        </button>
-    </h2>
+    <div class="row">
+        <div class="col-md-5">
+            <h2 jhiTranslate="<%= keyPrefix %>home.title"><%= entityClassPluralHumanized %></h2>
+            <span>{{<%=entityInstancePlural %>Selected.length}} selected</span>
+        </div>
+        <div class="col-md-7 text-right">
+            <button class="btn btn-primary create-<%= entityUrl %>" [routerLink]="['/', { outlets: { popup: ['<%= entityUrl %>-new'] } }]">
+                <span class="fa fa-plus"></span>
+                <span <% if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { %>class="hidden-sm-down" <% } %> jhiTranslate="<%= keyPrefix %>home.createLabel">
+                Create new <%= entityClassHumanized %>
+                </span>
+            </button>
+            <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
+            <button [disabled]="<%=entityInstancePlural %>Selected.length < 1"
+                    class="btn btn-raised btn-default" (click)="syncSelected()">
+                <i class="fa fa-refresh" aria-label="sync"></i>
+                <span jhiTranslate="entity.action.sync">sync</span>
+            </button>
+            <button [disabled]="<%=entityInstancePlural %>Selected.length < 1"
+                    class="btn btn-raised btn-default btn-danger"
+                    (click)="deleteSelected()">
+                <i class="fa fa-trash" aria-label="delete"></i> <span
+                jhiTranslate="entity.action.delete">delete</span>
+            </button>
+            <%_ } _%>
+        </div>
+    </div>    
     <jhi-alert></jhi-alert>
     <div class="row">
         <%_ if (searchEngine == 'elasticsearch' || searchEngine == 'solr') { _%>
@@ -45,7 +63,7 @@
         </div>
         <%_ } _%>
     </div>
-    <br/>
+
     <div class="table-responsive" *ngIf="<%=entityInstancePlural %>">
         <table class="table table-striped table-hover">
             <caption><%_ if (pagination == 'pager') { _%>
