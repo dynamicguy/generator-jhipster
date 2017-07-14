@@ -371,6 +371,9 @@ function writeFiles() {
             if (this.searchEngine === 'elasticsearch') {
                 this.template(`${SERVER_MAIN_SRC_DIR}package/config/_ElasticsearchConfiguration.java`, `${javaDir}config/ElasticsearchConfiguration.java`);
             }
+            if (this.searchEngine === 'solr') {
+                this.template(`${SERVER_MAIN_SRC_DIR}package/config/_SolrConfiguration.java`, `${javaDir}config/SolrConfiguration.java`);
+            }
             if (this.messageBroker === 'kafka') {
                 this.template(`${SERVER_MAIN_SRC_DIR}package/config/_MessagingConfiguration.java`, `${javaDir}config/MessagingConfiguration.java`);
             }
@@ -386,7 +389,7 @@ function writeFiles() {
         },
 
         writeServerJavaPackageInfoFiles() {
-            if (this.searchEngine === 'elasticsearch') {
+            if (this.searchEngine === 'elasticsearch' || this.searchEngine === 'solr') {
                 this.template(`${SERVER_MAIN_SRC_DIR}package/repository/search/_package-info.java`, `${javaDir}repository/search/package-info.java`);
             }
             this.template(`${SERVER_MAIN_SRC_DIR}package/repository/_package-info.java`, `${javaDir}repository/package-info.java`);
@@ -522,7 +525,7 @@ function writeFiles() {
             }
 
             /* User management java repo files */
-            if (this.searchEngine === 'elasticsearch') {
+            if (this.searchEngine === 'elasticsearch' || this.searchEngine === 'solr') {
                 this.template(`${SERVER_MAIN_SRC_DIR}package/repository/search/_UserSearchRepository.java`, `${javaDir}repository/search/UserSearchRepository.java`);
             }
             if (this.databaseType === 'sql' || this.databaseType === 'mongodb') {

@@ -488,6 +488,10 @@ function askForOptionalItems() {
             {
                 name: 'Search engine using Elasticsearch',
                 value: 'searchEngine:elasticsearch'
+            },
+            {
+                name: 'Search engine using SOLR',
+                value: 'searchEngine:solr'
             }
         );
     }

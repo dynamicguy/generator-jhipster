@@ -90,7 +90,7 @@ module.exports = JhipsterClientGenerator.extend({
             type: String
         });
 
-        // This adds support for a `--search-engine` flag
+        // This adds support for a `--hb-cache` flag
         this.option('hb-cache', {
             desc: 'Provide hibernate cache option for the application',
             type: String

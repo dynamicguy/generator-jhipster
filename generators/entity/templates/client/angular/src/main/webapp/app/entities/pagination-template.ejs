@@ -118,7 +118,7 @@ currentAccount: any;
 
     clear() {
         this.page = 0;
-        <%_ if(searchEngine === 'elasticsearch') { _%>
+        <%_ if(searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         this.currentSearch = '';
         <%_ } _%>
         this.router.navigate(['/<%= entityUrl %>', {
@@ -128,7 +128,7 @@ currentAccount: any;
         this.loadAll();
     }
     <%_ } _%>
-    <%_ if(searchEngine === 'elasticsearch') { _%>
+    <%_ if(searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
     search(query) {
         if (!query) {
             return this.clear();

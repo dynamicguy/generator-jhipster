@@ -132,7 +132,7 @@ module.exports = EntityGenerator.extend({
             this.databaseType = this.config.get('databaseType') || this.getDBTypeFromDBValue(this.options.db);
             this.prodDatabaseType = this.config.get('prodDatabaseType') || this.options.db;
             this.devDatabaseType = this.config.get('devDatabaseType') || this.options.db;
-            this.searchEngine = this.config.get('searchEngine') === 'no' ? false : this.config.get('searchEngine');
+            this.searchEngine = this.config.get('searchEngine') || 'solr';
             this.messageBroker = this.config.get('messageBroker') === 'no' ? false : this.config.get('messageBroker');
             this.enableTranslation = this.config.get('enableTranslation');
             this.nativeLanguage = this.config.get('nativeLanguage');

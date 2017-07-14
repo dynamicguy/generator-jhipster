@@ -36,7 +36,7 @@ import { ResponseWrapper, createRequestOption } from '../../shared';
 export class <%= entityAngularName %>Service {
 
     private resourceUrl = '<% if (applicationType === 'gateway' && locals.microserviceName) { %><%= microserviceName.toLowerCase() %>/<% } %>api/<%= entityApiUrl %>';
-    <%_ if(searchEngine === 'elasticsearch') { _%>
+    <%_ if(searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
     private resourceSearchUrl = '<% if (applicationType === 'gateway' && locals.microserviceName) { %><%= microserviceName.toLowerCase() %>/<% } %>api/_search/<%= entityApiUrl %>';
     <%_ } _%>
 
@@ -101,7 +101,7 @@ export class <%= entityAngularName %>Service {
     delete(id: <% if (pkType === 'String') { %>string<% } else { %>number<% } %>): Observable<Response> {
         return this.http.delete(`${this.resourceUrl}/${id}`);
     }
-    <%_ if(searchEngine === 'elasticsearch') { _%>
+    <%_ if(searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
 
     search(req?: any): Observable<ResponseWrapper> {
         const options = createRequestOption(req);

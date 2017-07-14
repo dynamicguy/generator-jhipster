@@ -36,7 +36,7 @@
         loadAll();
 
         function loadAll () {
-        <%_ if (searchEngine !== 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'no') { _%>
             <%= entityClass %>.query({
                 page: pagingParams.page - 1,
                 size: vm.itemsPerPage,

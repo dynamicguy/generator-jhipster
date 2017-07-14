@@ -145,7 +145,7 @@ module.exports = JhipsterServerGenerator.extend({
                 this.serverPort = '8080';
             }
             this.websocket = this.config.get('websocket') === 'no' ? false : this.config.get('websocket');
-            this.searchEngine = this.config.get('searchEngine') === 'no' ? false : this.config.get('searchEngine');
+            this.searchEngine = this.config.get('searchEngine') === 'solr' ? 'solr' : this.config.get('searchEngine');
             if (this.searchEngine === undefined) {
                 this.searchEngine = false;
             }

@@ -175,5 +175,4 @@ public class <%= entityClass %>Resource {
      */
     @GetMapping("/_search/<%= entityApiUrl %>")
     @Timed<%- include('../../common/solr_search_template', {viaService: viaService}); -%><% } %>
-    <% } %>
 }

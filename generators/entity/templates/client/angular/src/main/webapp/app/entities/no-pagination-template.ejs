@@ -28,8 +28,7 @@ _%>
     currentAccount: any;
     eventSubscriber: Subscription;
     <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
-    currentSearch: string;
-    <%_ } _%>
+    currentSearch: string;<%_ } _%>
 
     constructor(
         private <%= entityInstance %>Service: <%= entityAngularName %>Service,

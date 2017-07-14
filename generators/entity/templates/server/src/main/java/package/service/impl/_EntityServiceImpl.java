@@ -30,7 +30,7 @@ package <%=packageName%>.service<% if (service === 'serviceImpl') { %>.impl<% } 
     if (service === 'serviceImpl') { %>
 import <%=packageName%>.service.<%= entityClass %>Service;<% } %>
 import <%=packageName%>.domain.<%= entityClass %>;
-import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (searchEngine === 'elasticsearch') { %>
+import <%=packageName%>.repository.<%= entityClass %>Repository;<% if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { %>
 import <%=packageName%>.repository.search.<%= entityClass %>SearchRepository;<% } if (dto === 'mapstruct') { %>
 import <%=packageName%>.service.dto.<%= entityClass %>DTO;
 import <%=packageName%>.service.mapper.<%= entityClass %>Mapper;<% } %>
@@ -127,7 +127,7 @@ public class <%= serviceClassName %> <% if (service === 'serviceImpl') { %>imple
     public void delete(<%= pkType %> id) {
         log.debug("Request to delete <%= entityClass %> : {}", id);<%- include('../../common/delete_template', {viaService: viaService}); -%>
     }
-    <%_ if (searchEngine === 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
 
     /**
      * Search for the <%= entityInstance %> corresponding to the query.

@@ -41,6 +41,12 @@ public final class HeaderUtil {
     private HeaderUtil() {
     }
 
+    public static HttpHeaders createHeader(String key, String val) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(key, val);
+        return headers;
+    }
+
     public static HttpHeaders createAlert(String message, String param) {
         HttpHeaders headers = new HttpHeaders();
         headers.add("X-<%=angularAppName%>-alert", message);

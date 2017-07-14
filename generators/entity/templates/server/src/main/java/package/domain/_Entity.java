@@ -37,10 +37,11 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-<%_ } if (searchEngine === 'elasticsearch') { _%>
-import org.springframework.data.elasticsearch.annotations.Document;<%_ if (searchEngine === 'solr') { _%>
+<%_ } if (searchEngine === 'solr') { _%>
 import org.springframework.data.solr.core.mapping.SolrDocument;
-import org.apache.solr.client.solrj.beans.Field;<%_ } _%>
+import org.apache.solr.client.solrj.beans.Field;
+<%_ } if (searchEngine === 'elasticsearch') { _%>
+import org.springframework.data.elasticsearch.annotations.Document;
 <%_ } if (databaseType === 'sql') { _%>
 
 import javax.persistence.*;
@@ -95,8 +96,7 @@ import <%=packageName%>.domain.enumeration.<%= element %>;
 @Table(name = "<%= entityInstance %>")
 <%_ } if (searchEngine === 'elasticsearch') { _%>
 @Document(indexName = "<%= entityInstance.toLowerCase() %>")
-<%_ } _%>
-<%_ if (searchEngine === 'solr') { _%>
+<%_ } if (searchEngine === 'solr') { _%>
 @SolrDocument(solrCoreName = "<%= entityInstancePlural %>")
 <%_ } _%>
 public class <%= entityClass %> implements Serializable {
@@ -172,7 +172,7 @@ public class <%= entityClass %> implements Serializable {
     @NotNull
         <%_ } _%>
       <%_ } _%>
-      <%_ if (databaseType === 'mongodb' || searchEngine === 'solr') { _%>
+      <%_ if (databaseType === 'mongodb') { _%>
     @Field("<%=fieldNameUnderscored %>_content_type")
       <%_ } _%>
     private String <%= fieldName %>ContentType;
