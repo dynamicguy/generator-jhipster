@@ -17,9 +17,10 @@
  limitations under the License.
 -%>
 package <%=packageName%>.repository.search;
-<%_ if (searchEngine === 'elasticsearch') { _%>
 
 import <%=packageName%>.domain.<%=entityClass%>;
+<%_ if (searchEngine === 'elasticsearch') { _%>
+
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;<% if (databaseType === 'cassandra') { %>
 
 import java.util.UUID;<% } %>
@@ -29,8 +30,8 @@ import java.util.UUID;<% } %>
  */
 public interface <%=entityClass%>SearchRepository extends ElasticsearchRepository<<%=entityClass%>, <% if (databaseType === 'sql' || databaseType === 'mongodb') { %>Long<% } %><% if (databaseType === 'cassandra') { %>UUID<% } %>> {
 }
-<%_ } _%>
-<%_ if (searchEngine === 'solr') { _%>
+<%_ } if (searchEngine === 'solr') { _%>
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.solr.core.query.result.SolrResultPage;
 import org.springframework.data.solr.repository.Highlight;
