@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -16,7 +16,10 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -%>
-/* after changing this file run '<%= clientPackageManager %> run webpack:build:vendor' or '<%= clientPackageManager %> install' or '<%= clientPackageManager %> run webpack:build' */
+/* after changing this file run '<%= clientPackageManager %> run webpack:build' */
 @import '~bootstrap/dist/css/bootstrap.min.css';
+<%_ if (enableI18nRTL) { _%>
+@import 'rtl.css';
+<%_ } _%>
 @import '~font-awesome/css/font-awesome.css';
 

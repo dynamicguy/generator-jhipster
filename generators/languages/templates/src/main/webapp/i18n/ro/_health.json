@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -23,7 +23,7 @@
         "stacktrace": "Stacktrace",
         "details": {
             "details": "Detalii",
-            "properties": "Proprietați",
+            "properties": "Proprietăți",
             "name": "Nume",
             "value": "Valoare",
             "error": "Eroare"
@@ -39,7 +39,7 @@
             "hystrix": "Hystrix",
             <%_ } _%>
             "diskSpace": "Spațiu disc",
-            "mail": "Email"<% if (searchEngine === 'elasticsearch') { %>,
+            "mail": "Email"<% if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { %>,
             "elasticsearch": "Elasticsearch"<% } %><% if (databaseType === 'sql') { %>,
             "db": "Bază de date"<% } %><% if (databaseType === 'mongodb') { %>,
             "mongo": "MongoDB"<% } %><% if (databaseType === 'cassandra') { %>,

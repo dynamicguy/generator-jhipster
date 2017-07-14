@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -50,7 +50,7 @@ task gulpConstantDev(type: GulpTask) {
 }
     <%_ } else { _%>
 task webpackBuildDev(type: <%= clientPackageManager.charAt(0).toUpperCase() + clientPackageManager.slice(1) %>Task) {
-    args = ["run", "webpack:build:dev"]
+    args = ["run", "webpack:build"]
 }
     <%_ } _%>
 

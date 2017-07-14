@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -17,13 +17,11 @@
  * limitations under the License.
  */
 const _ = require('lodash');
-const dockerComposePrompts = require('../docker-compose/prompts');
+const dockerPrompts = require('../docker-prompts');
 
 module.exports = _.extend({
     askForKubernetesNamespace,
-    askForDockerRepositoryName,
-    askForDockerPushCommand
-}, dockerComposePrompts);
+}, dockerPrompts);
 
 function askForKubernetesNamespace() {
     const done = this.async();
@@ -37,38 +35,6 @@ function askForKubernetesNamespace() {
 
     this.prompt(prompts).then((props) => {
         this.kubernetesNamespace = props.kubernetesNamespace;
-        done();
-    });
-}
-
-function askForDockerRepositoryName() {
-    const done = this.async();
-
-    const prompts = [{
-        type: 'input',
-        name: 'dockerRepositoryName',
-        message: 'What should we use for the base Docker repository name?',
-        default: this.dockerRepositoryName
-    }];
-
-    this.prompt(prompts).then((props) => {
-        this.dockerRepositoryName = props.dockerRepositoryName;
-        done();
-    });
-}
-
-function askForDockerPushCommand() {
-    const done = this.async();
-
-    const prompts = [{
-        type: 'input',
-        name: 'dockerPushCommand',
-        message: 'What command should we use for push Docker image to repository?',
-        default: this.dockerPushCommand ? this.dockerPushCommand : 'docker push'
-    }];
-
-    this.prompt(prompts).then((props) => {
-        this.dockerPushCommand = props.dockerPushCommand;
         done();
     });
 }

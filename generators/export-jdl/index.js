@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -19,7 +19,6 @@
 const util = require('util');
 const chalk = require('chalk');
 const generator = require('yeoman-generator');
-const jhiCore = require('jhipster-core');
 const BaseGenerator = require('../generator-base');
 
 const ExportJDLGenerator = generator.extend({});
@@ -30,7 +29,6 @@ module.exports = ExportJDLGenerator.extend({
     constructor: function (...args) { // eslint-disable-line object-shorthand
         generator.apply(this, args);
         this.baseName = this.config.get('baseName');
-        this.jdl = new jhiCore.JDLObject();
         this.argument('jdlFile', { type: String, required: false, defaults: `${this.baseName}.jh` });
         this.jdlFile = this.options.jdlFile;
     },
@@ -43,20 +41,12 @@ module.exports = ExportJDLGenerator.extend({
 
         parseJson() {
             this.log('Parsing entities from .jhipster dir...');
-            try {
-                const entities = {};
-                this.getExistingEntities().forEach((entity) => { entities[entity.name] = entity.definition; });
-                jhiCore.convertJsonEntitiesToJDL(entities, this.jdl);
-                jhiCore.convertJsonServerOptionsToJDL({ 'generator-jhipster': this.config.getAll() }, this.jdl);
-            } catch (e) {
-                this.log(e.message || e);
-                this.error('\nError while parsing entities to JDL\n');
-            }
+            this.jdl = this.generateJDLFromEntities();
         }
     },
 
     writing() {
-        const content = `// JDL definition for application '${this.baseName}' generated with command 'yo jhipster:export-jdl'\n\n${this.jdl.toString()}`;
+        const content = `// JDL definition for application '${this.baseName}' generated with command 'jhipster export-jdl'\n\n${this.jdl.toString()}`;
         this.fs.write(this.jdlFile, content);
     },
 

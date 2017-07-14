@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -23,9 +23,9 @@
         .module('<%=angularAppName%>')
         .factory('Principal', Principal);
 
-    Principal.$inject = ['$q', 'Account'<% if (websocket == 'spring-websocket') { %>, '<%=jhiPrefixCapitalized%>TrackerService'<% } %>];
+    Principal.$inject = ['$q', 'Account'<% if (websocket === 'spring-websocket') { %>, '<%=jhiPrefixCapitalized%>TrackerService'<% } %>];
 
-    function Principal ($q, Account<% if (websocket == 'spring-websocket') { %>, <%=jhiPrefixCapitalized%>TrackerService<% } %>) {
+    function Principal ($q, Account<% if (websocket === 'spring-websocket') { %>, <%=jhiPrefixCapitalized%>TrackerService<% } %>) {
         var _identity,
             _authenticated = false;
 
@@ -96,7 +96,7 @@
             function getAccountThen (account) {
                 _identity = account.data;
                 _authenticated = true;
-                deferred.resolve(_identity);<% if (websocket == 'spring-websocket') { %>
+                deferred.resolve(_identity);<% if (websocket === 'spring-websocket') { %>
                 <%=jhiPrefixCapitalized%>TrackerService.connect();<% } %>
             }
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -19,14 +19,13 @@
 const generator = require('yeoman-generator');
 const chalk = require('chalk');
 const shelljs = require('shelljs');
-const crypto = require('crypto');
-const _ = require('lodash');
 const jsyaml = require('js-yaml');
 const pathjs = require('path');
 const util = require('util');
 const prompts = require('./prompts');
 const writeFiles = require('./files').writeFiles;
 const BaseGenerator = require('../generator-base');
+const docker = require('../docker-base');
 
 const DockerComposeGenerator = generator.extend({});
 
@@ -45,7 +44,7 @@ module.exports = DockerComposeGenerator.extend({
             this.log(chalk.white(`Files will be generated in folder: ${chalk.yellow(this.destinationRoot())}`));
         },
 
-        setupServerconsts() {
+        setupServerConsts() {
             // Make constants available in templates
             this.DOCKER_KAFKA = constants.DOCKER_KAFKA;
             this.DOCKER_ZOOKEEPER = constants.DOCKER_ZOOKEEPER;
@@ -61,26 +60,7 @@ module.exports = DockerComposeGenerator.extend({
             this.DOCKER_GRAFANA = constants.DOCKER_GRAFANA;
         },
 
-        checkDocker() {
-            const done = this.async();
-
-            shelljs.exec('docker -v', { silent: true }, (code, stdout, stderr) => {
-                if (stderr) {
-                    this.log(chalk.red('Docker version 1.10.0 or later is not installed on your computer.\n' +
-                        '         Read http://docs.docker.com/engine/installation/#installation\n'));
-                } else {
-                    const dockerVersion = stdout.split(' ')[2].replace(/,/g, '');
-                    const dockerVersionMajor = dockerVersion.split('.')[0];
-                    const dockerVersionMinor = dockerVersion.split('.')[1];
-                    if (dockerVersionMajor < 1 || (dockerVersionMajor === 1 && dockerVersionMinor < 10)) {
-                        this.log(chalk.red(`${'Docker version 1.10.0 or later is not installed on your computer.\n' +
-                            '         Docker version found: '}${dockerVersion}\n` +
-                            '         Read http://docs.docker.com/engine/installation/#installation\n'));
-                    }
-                }
-                done();
-            });
-        },
+        checkDocker: docker.checkDocker,
 
         checkDockerCompose() {
             const done = this.async();
@@ -138,42 +118,9 @@ module.exports = DockerComposeGenerator.extend({
             insight.trackWithEvent('generator', 'docker-compose');
         },
 
-        checkImages() {
-            this.log('\nChecking Docker images in applications\' directories...');
-
-            let imagePath = '';
-            let runCommand = '';
-            this.warning = false;
-            this.warningMessage = 'To generate the missing Docker image(s), please run:\n';
-            this.appsFolders.forEach((appsFolder, index) => {
-                const appConfig = this.appConfigs[index];
-                if (appConfig.buildTool === 'maven') {
-                    imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/target/docker/${_.kebabCase(appConfig.baseName)}-*.war`);
-                    runCommand = './mvnw package -Pprod docker:build';
-                } else {
-                    imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/build/docker/${_.kebabCase(appConfig.baseName)}-*.war`);
-                    runCommand = './gradlew -Pprod bootRepackage buildDocker';
-                }
-                if (shelljs.ls(imagePath).length === 0) {
-                    this.warning = true;
-                    this.warningMessage += `  ${chalk.cyan(runCommand)} in ${this.destinationPath(this.directoryPath + appsFolder)}\n`;
-                }
-            });
-        },
-
-        generateJwtSecret() {
-            if (this.jwtSecretKey === undefined) {
-                this.jwtSecretKey = crypto.randomBytes(20).toString('hex');
-            }
-        },
-
-        setAppsFolderPaths() {
-            this.appsFolderPaths = [];
-            this.appsFolders.forEach((appsFolder) => {
-                const path = this.destinationPath(this.directoryPath + appsFolder);
-                this.appsFolderPaths.push(path);
-            });
-        },
+        checkImages: docker.checkImages,
+        generateJwtSecret: docker.generateJwtSecret,
+        setAppsFolderPaths: docker.setAppsFolderPaths,
 
         setAppsYaml() {
             this.appsYaml = [];
@@ -198,8 +145,6 @@ module.exports = DockerComposeGenerator.extend({
 
                 // Add monitoring configuration for monolith directly in the docker-compose file as they can't get them from the config server
                 if (appConfig.applicationType === 'monolith' && this.monitoring === 'elk') {
-                    yamlConfig.environment.push('SPRING_ZIPKIN_ENABLED=true');
-                    yamlConfig.environment.push('SPRING_ZIPKIN_BASE_URL=http://jhipster-zipkin:9411');
                     yamlConfig.environment.push('JHIPSTER_LOGGING_LOGSTASH_ENABLED=true');
                     yamlConfig.environment.push('JHIPSTER_LOGGING_LOGSTASH_HOST=jhipster-logstash');
                     yamlConfig.environment.push('JHIPSTER_METRICS_LOGS_ENABLED=true');
@@ -263,7 +208,7 @@ module.exports = DockerComposeGenerator.extend({
                 }
                 // Add search engine configuration
                 const searchEngine = appConfig.searchEngine;
-                if (searchEngine === 'elasticsearch') {
+                if (searchEngine === 'elasticsearch' || searchEngine === 'solr') {
                     const searchEngineYaml = jsyaml.load(this.fs.read(`${path}/src/main/docker/${searchEngine}.yml`));
                     const searchEngineConfig = searchEngineYaml.services[`${lowercaseBaseName}-${searchEngine}`];
                     delete searchEngineConfig.ports;

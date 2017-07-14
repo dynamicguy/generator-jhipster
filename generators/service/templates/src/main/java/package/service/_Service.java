@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -18,12 +18,12 @@
 -%>
 package <%=packageName%>.service;
 
-<% if (useInterface == false) { %>import org.slf4j.Logger;
+<% if (useInterface === false) { %>import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;<% if (databaseType == 'sql') { %>
+import org.springframework.stereotype.Service;<% if (databaseType === 'sql') { %>
 import org.springframework.transaction.annotation.Transactional;<% } %>
 
-@Service<% if (databaseType == 'sql') { %>
+@Service<% if (databaseType === 'sql') { %>
 @Transactional<% } %>
 public class <%= serviceClass %>Service {
 

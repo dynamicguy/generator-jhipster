@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -22,7 +22,7 @@ import <%=packageName%>.domain.Authority;
 import <%=packageName%>.domain.User;
 import <%=packageName%>.repository.AuthorityRepository;
 import <%=packageName%>.repository.UserRepository;
-<%_ if (searchEngine == 'elasticsearch') { _%>
+<%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
 import <%=packageName%>.repository.search.UserSearchRepository;
 <%_ } _%>
 
@@ -56,21 +56,21 @@ public class SocialService {
     private final UserRepository userRepository;
 
     private final MailService mailService;
-    <%_ if (searchEngine == 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
 
     private final UserSearchRepository userSearchRepository;
     <%_ } _%>
 
     public SocialService(UsersConnectionRepository usersConnectionRepository, AuthorityRepository authorityRepository,
             PasswordEncoder passwordEncoder, UserRepository userRepository,
-            MailService mailService<% if (searchEngine == 'elasticsearch') { %>, UserSearchRepository userSearchRepository<% } %>) {
+            MailService mailService<% if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { %>, UserSearchRepository userSearchRepository<% } %>) {
 
         this.usersConnectionRepository = usersConnectionRepository;
         this.authorityRepository = authorityRepository;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.mailService = mailService;
-        <%_ if (searchEngine == 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         this.userSearchRepository = userSearchRepository;
         <%_ } _%>
     }
@@ -135,7 +135,7 @@ public class SocialService {
         newUser.setLangKey(langKey);
         newUser.setImageUrl(imageUrl);
 
-        <%_ if (searchEngine == 'elasticsearch') { _%>
+        <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
         userSearchRepository.save(newUser);
         <%_ } _%>
         return userRepository.save(newUser);

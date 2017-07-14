@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -29,7 +29,7 @@ import {
     <%_ } _%>
     <%_ if (enableSocialSignIn) { _%>
     socialRegisterRoute,
-        <%_ if (authenticationType == 'jwt') { _%>
+        <%_ if (authenticationType === 'jwt') { _%>
     socialAuthRoute,
         <%_ } _%>
     <%_ } _%>
@@ -37,21 +37,21 @@ import {
 } from './';
 
 const ACCOUNT_ROUTES = [
-   activateRoute,
-   passwordRoute,
-   passwordResetFinishRoute,
-   passwordResetInitRoute,
-   registerRoute,
+    activateRoute,
+    passwordRoute,
+    passwordResetFinishRoute,
+    passwordResetInitRoute,
+    registerRoute,
     <%_ if (authenticationType === 'session') { _%>
-   sessionsRoute,
+    sessionsRoute,
     <%_ } _%>
     <%_ if (enableSocialSignIn) { _%>
-    <%_ if (authenticationType == 'jwt') { _%>
+    <%_ if (authenticationType === 'jwt') { _%>
     socialAuthRoute,
     <%_ } _%>
-   socialRegisterRoute,
+    socialRegisterRoute,
     <%_ } _%>
-   settingsRoute
+    settingsRoute
 ];
 
 export const accountState: Routes = [{

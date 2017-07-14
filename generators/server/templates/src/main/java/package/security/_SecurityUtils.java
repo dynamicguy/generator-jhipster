@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -84,8 +84,8 @@ public final class SecurityUtils {
 
     /**
      * If the current user has a specific authority (security role).
-     *
-     * <p>The name of this method comes from the isUserInRole() method in the Servlet API</p>
+     * <p>
+     * The name of this method comes from the isUserInRole() method in the Servlet API
      *
      * @param authority the authority to check
      * @return true if the current user has the authority, false otherwise

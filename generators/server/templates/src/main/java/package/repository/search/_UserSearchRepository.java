@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -19,12 +19,12 @@
 package <%=packageName%>.repository.search;
 
 import <%=packageName%>.domain.User;
-import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;<% if (databaseType == 'cassandra') { %>
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;<% if (databaseType === 'cassandra') { %>
 
 import java.util.UUID;<% } %>
 
 /**
  * Spring Data Elasticsearch repository for the User entity.
  */
-public interface UserSearchRepository extends ElasticsearchRepository<User, <% if (databaseType=='sql') { %>Long<% } %><% if (databaseType == 'cassandra' || databaseType=='mongodb') { %>String<% } %>> {
+public interface UserSearchRepository extends ElasticsearchRepository<User, <% if (databaseType === 'sql') { %>Long<% } %><% if (databaseType === 'cassandra' || databaseType === 'mongodb') { %>String<% } %>> {
 }

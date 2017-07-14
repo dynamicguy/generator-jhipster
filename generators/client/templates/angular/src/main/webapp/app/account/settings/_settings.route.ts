@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -18,14 +18,14 @@
 -%>
 import { Route } from '@angular/router';
 
-import { UserRouteAccessService } from '../../shared';
+import { UserRouteAccessService, AuthoritiesConstants } from '../../shared';
 import { SettingsComponent } from './settings.component';
 
 export const settingsRoute: Route = {
     path: 'settings',
     component: SettingsComponent,
     data: {
-        authorities: ['ROLE_USER'],
+        authorities: [AuthoritiesConstants.USER],
         pageTitle: 'global.menu.account.settings'
     },
     canActivate: [UserRouteAccessService]

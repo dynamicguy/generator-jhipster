@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -142,17 +142,27 @@ module.exports = HerokuGenerator.extend({
         installHerokuDeployPlugin() {
             if (this.abort) return;
             const done = this.async();
-            this.log(chalk.bold('\nInstalling Heroku CLI deployment plugin'));
-            const child = exec('heroku plugins:install heroku-cli-deploy', (err, stdout) => {
-                if (err) {
-                    this.abort = true;
-                    this.log.error(err);
-                }
-                done();
-            });
+            const cliPlugin = 'heroku-cli-deploy';
 
-            child.stdout.on('data', (data) => {
-                this.log(data.toString());
+            exec('heroku plugins', (err, stdout) => {
+                if (_.includes(stdout, cliPlugin)) {
+                    this.log('\nHeroku CLI deployment plugin already installed');
+                    done();
+                } else {
+                    this.log(chalk.bold('\nInstalling Heroku CLI deployment plugin'));
+                    const child = exec(`heroku plugins:install ${cliPlugin}`, (err, stdout) => {
+                        if (err) {
+                            this.abort = true;
+                            this.log.error(err);
+                        }
+
+                        done();
+                    });
+
+                    child.stdout.on('data', (data) => {
+                        this.log(data.toString());
+                    });
+                }
             });
         },
 
@@ -249,7 +259,14 @@ module.exports = HerokuGenerator.extend({
             this.log(chalk.bold('\nProvisioning addons'));
             exec(`heroku addons:create ${dbAddOn} --app ${this.herokuAppName}`, {}, (err, stdout, stderr) => {
                 if (err) {
-                    this.log('No new addons created');
+                    const verifyAccountUrl = 'https://heroku.com/verify';
+                    if (_.includes(err, verifyAccountUrl)) {
+                        this.abort = true;
+                        this.log.error(`Account must be verified to use addons. Please go to: ${verifyAccountUrl}`);
+                        this.log.error(err);
+                    } else {
+                        this.log('No new addons created');
+                    }
                 } else {
                     this.log(`Created ${dbAddOn}`);
                 }
@@ -360,7 +377,7 @@ module.exports = HerokuGenerator.extend({
                 }
                 this.log(chalk.green(`\nYour app should now be live. To view it run\n\t${chalk.bold('heroku open')}`));
                 this.log(chalk.yellow(`And you can view the logs with this command\n\t${chalk.bold('heroku logs --tail')}`));
-                this.log(chalk.yellow(`After application modification, redeploy it with\n\t${chalk.bold('yo jhipster:heroku')}`));
+                this.log(chalk.yellow(`After application modification, redeploy it with\n\t${chalk.bold('jhipster heroku')}`));
                 done();
             });
 

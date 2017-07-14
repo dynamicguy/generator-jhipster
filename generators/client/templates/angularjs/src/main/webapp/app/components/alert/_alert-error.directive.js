@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -86,7 +86,7 @@
                 }).sort();
                 var errorHeader = httpResponse.headers(headers[0]);
                 var entityKey = httpResponse.headers(headers[1]);
-                if (errorHeader) {
+                if (angular.isString(errorHeader)) {
                     var entityName = <% if (enableTranslation) { %>$translate.instant('global.menu.entities.' + entityKey)<% }else{ %>entityKey<% } %>;
                     addErrorAlert(errorHeader, errorHeader, {entityName: entityName});
                 } else if (httpResponse.data && httpResponse.data.fieldErrors) {

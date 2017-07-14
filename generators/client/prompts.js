@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -43,15 +43,15 @@ function askForClient() {
             applicationType !== 'microservice' && applicationType !== 'uaa'),
         choices: [
             {
-                value: 'angular1',
-                name: 'AngularJS 1.x'
+                value: 'angularX',
+                name: 'Angular 4'
             },
             {
-                value: 'angular2',
-                name: '[BETA] Angular 4'
+                value: 'angular1',
+                name: 'AngularJS 1.x'
             }
         ],
-        default: 'angular1'
+        default: 'angularX'
     }).then((prompt) => {
         this.clientFramework = prompt.clientFramework;
         done();

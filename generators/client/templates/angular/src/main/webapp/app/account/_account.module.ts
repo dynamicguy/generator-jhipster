@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -19,14 +19,14 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { <%=angular2AppName%>SharedModule } from '../shared';
+import { <%=angularXAppName%>SharedModule } from '../shared';
 
 import {
     Register,
-    Activate,
-    Password,
-    PasswordResetInit,
-    PasswordResetFinish,
+    ActivateService,
+    PasswordService,
+    PasswordResetInitService,
+    PasswordResetFinishService,
     <%_ if (authenticationType === 'session') { _%>
     SessionsService,
     SessionsComponent,
@@ -40,7 +40,7 @@ import {
     SettingsComponent,
     <%_ if (enableSocialSignIn) { _%>
     SocialRegisterComponent,
-        <%_ if (authenticationType == 'jwt') { _%>
+        <%_ if (authenticationType === 'jwt') { _%>
     SocialAuthComponent,
         <%_ } _%>
     <%_ } _%>
@@ -49,13 +49,13 @@ import {
 
 @NgModule({
     imports: [
-        <%=angular2AppName%>SharedModule,
+        <%=angularXAppName%>SharedModule,
         RouterModule.forRoot(accountState, { useHash: true })
     ],
     declarations: [
         <%_ if (enableSocialSignIn) { _%>
         SocialRegisterComponent,
-            <%_ if (authenticationType == 'jwt') { _%>
+            <%_ if (authenticationType === 'jwt') { _%>
         SocialAuthComponent,
             <%_ } _%>
         <%_ } _%>
@@ -75,11 +75,11 @@ import {
         SessionsService,
         <%_ } _%>
         Register,
-        Activate,
-        Password,
-        PasswordResetInit,
-        PasswordResetFinish
+        ActivateService,
+        PasswordService,
+        PasswordResetInitService,
+        PasswordResetFinishService
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class <%=angular2AppName%>AccountModule {}
+export class <%=angularXAppName%>AccountModule {}

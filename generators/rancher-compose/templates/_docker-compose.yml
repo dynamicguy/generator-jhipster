@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -44,7 +44,7 @@ services:
         #ports:
         #    - 9092:9092  # Uncomment to make Kafka available externally
 <%_ } _%>
-<%_ if (serviceDiscoveryType == 'eureka') { _%>
+<%_ if (serviceDiscoveryType === 'eureka') { _%>
     jhipster-registry:
         image: <%= DOCKER_JHIPSTER_REGISTRY %>
         #volumes:
@@ -80,7 +80,7 @@ services:
         labels:
           io.rancher.sidekicks: registry-config-sidekick
 <%_ } _%>
-<%_ if (serviceDiscoveryType == 'consul') { _%>
+<%_ if (serviceDiscoveryType === 'consul') { _%>
     consul:
         image: <%= DOCKER_CONSUL %>
         ports:
@@ -97,9 +97,9 @@ services:
         volumes:
           - /config
         volumes_from:
-          - consul-config-sidekick
+          - registry-config-sidekick
         labels:
-          io.rancher.sidekicks: consul-config-sidekick
+          io.rancher.sidekicks: registry-config-sidekick
 <%_ } _%>
 <%_ if (serviceDiscoveryType === 'eureka' || serviceDiscoveryType === 'consul') { _%>
     registry-config-sidekick:

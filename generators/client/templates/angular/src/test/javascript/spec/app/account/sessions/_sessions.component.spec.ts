@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -18,13 +18,12 @@
 -%>
 import { ComponentFixture, TestBed, inject, tick, fakeAsync } from '@angular/core/testing';
 import { Observable } from 'rxjs/Rx';
-import { <%=angular2AppName%>TestModule } from '../../../test.module';
+import { <%=angularXAppName%>TestModule } from '../../../test.module';
 import { Session } from '../../../../../../main/webapp/app/account/sessions/session.model';
 import { SessionsComponent } from '../../../../../../main/webapp/app/account/sessions/sessions.component';
 import { SessionsService } from '../../../../../../main/webapp/app/account/sessions/sessions.service';
 import { MockPrincipal } from '../../../helpers/mock-principal.service';
 import { Principal } from '../../../../../../main/webapp/app/shared/auth/principal.service';
-
 
 describe('Component Tests', () => {
 
@@ -32,13 +31,13 @@ describe('Component Tests', () => {
     let fixture: ComponentFixture<SessionsComponent>;
     let comp: SessionsComponent;
 
-    describe('SessionsComponent', function () {
+    describe('SessionsComponent', function() {
 
         beforeEach(() => {
             sessions = [new Session('xxxxxx==', new Date(2015, 10, 15), '0:0:0:0:0:0:0:1', 'Mozilla/5.0')];
 
             fixture = TestBed.configureTestingModule({
-                imports: [<%=angular2AppName%>TestModule],
+                imports: [<%=angularXAppName%>TestModule],
                 declarations: [SessionsComponent],
                 providers: [
                     SessionsService,
@@ -47,11 +46,8 @@ describe('Component Tests', () => {
                         useClass: MockPrincipal
                     }
                 ]
-            }).overrideComponent(SessionsComponent, {
-                set: {
-                    template: ''
-                }
-            }).createComponent(SessionsComponent);
+            }).overrideTemplate(SessionsComponent, '')
+            .createComponent(SessionsComponent);
             comp = fixture.componentInstance;
         });
 

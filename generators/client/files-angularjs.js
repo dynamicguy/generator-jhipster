@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -94,7 +94,9 @@ const files = {
                 { file: '_favicon.ico', method: 'copy' },
                 '_robots.txt',
                 '_404.html',
-                '_index.html'
+                '_index.html',
+                '_manifest.webapp',
+                '_sw.js'
             ]
         }
     ],

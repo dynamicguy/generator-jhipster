@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -43,4 +43,4 @@ import { MockLanguageService } from './helpers/mock-language.service';
         }
     ]
 })
-export class <%=angular2AppName%>TestModule {}
+export class <%=angularXAppName%>TestModule {}

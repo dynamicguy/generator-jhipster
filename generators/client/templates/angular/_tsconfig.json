@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -34,7 +34,10 @@
         ]
     },
     "include": [
-        "src/main/webapp/app",
-        "src/test/javascript"
+        "<%= MAIN_SRC_DIR %>app",
+        "<%= TEST_SRC_DIR %>"
+    ],
+    "exclude": [
+        "<%= MAIN_SRC_DIR %>app/app.main-aot.ts"
     ]
 }

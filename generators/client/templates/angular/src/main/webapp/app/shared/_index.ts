@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -19,6 +19,7 @@
 export * from './constants/pagination.constants';
 export * from './alert/alert.component';
 export * from './alert/alert-error.component';
+export * from './auth/authorities-constants';
 export * from './auth/csrf.service';
 export * from './auth/state-storage.service';
 export * from './auth/account.service';
@@ -35,7 +36,7 @@ export * from './auth/user-route-access-service';
 <%_ if (enableTranslation) { _%>
 export * from './language/language.constants';
 export * from './language/language.helper';
-export * from './language/language.pipe';
+export * from './language/find-language-from-key.pipe';
 <%_ } _%>
 <%_ if (websocket === 'spring-websocket') { _%>
 export * from './tracker/tracker.service';
@@ -48,6 +49,9 @@ export * from './user/account.model';
 export * from './user/user.model';
 export * from './user/user.service';
 <%_ } _%>
+export * from './model/response-wrapper.model';
+export * from './model/request-util';
+export * from './model/base-entity';
 <%_ if (enableSocialSignIn) { _%>
 export * from './social/social.service';
 export * from './social/social.component';

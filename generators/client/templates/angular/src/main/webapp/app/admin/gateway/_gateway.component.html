@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -38,7 +38,7 @@
                     <td>{{route.path}}</td>
                     <td>{{route.serviceId}}</td>
                     <td>
-                        <div *ngIf="route.serviceInstances.length == 0" class="label label-danger" jhiTranslate="gateway.routes.error">
+                        <div *ngIf="route.serviceInstances.length === 0" class="label label-danger" jhiTranslate="gateway.routes.error">
                             Warning: no server available!
                         </div>
                         <div class="table-responsive">

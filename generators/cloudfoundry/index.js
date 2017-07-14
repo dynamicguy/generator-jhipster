@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -147,7 +147,7 @@ module.exports = CloudFoundryGenerator.extend({
         cloudfoundryPush() {
             if (this.abort) return;
             const done = this.async();
-            let cloudfoundryDeployCommand = 'cf push -f ./deploy/cloudfoundry/manifest.yml -p';
+            let cloudfoundryDeployCommand = 'cf push -f ./deploy/cloudfoundry/manifest.yml -t 120 -p';
             let warFolder = '';
             if (this.buildTool === 'maven') {
                 warFolder = ' target/';

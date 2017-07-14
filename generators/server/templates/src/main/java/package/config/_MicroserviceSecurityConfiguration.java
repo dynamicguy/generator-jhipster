@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -18,7 +18,7 @@
 -%>
 package <%=packageName%>.config;
 
-<%_ if(authenticationType == 'jwt') { _%>
+<%_ if(authenticationType === 'jwt') { _%>
 import <%=packageName%>.security.AuthoritiesConstants;
 import <%=packageName%>.security.jwt.JWTConfigurer;
 import <%=packageName%>.security.jwt.TokenProvider;
@@ -89,7 +89,7 @@ public class MicroserviceSecurityConfiguration extends WebSecurityConfigurerAdap
     }
 }
 <%_ } _%>
-<%_ if(authenticationType == 'uaa') { _%>
+<%_ if(authenticationType === 'uaa') { _%>
 import <%=packageName%>.security.AuthoritiesConstants;
 
 import io.github.jhipster.config.JHipsterProperties;

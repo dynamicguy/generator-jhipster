@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -23,7 +23,7 @@ import <%=packageName%>.domain.Authority;
 import <%=packageName%>.domain.User;
 import <%=packageName%>.repository.AuthorityRepository;
 import <%=packageName%>.repository.UserRepository;
-<%_ if (searchEngine === 'elasticsearch') { _%>
+<%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
 import <%=packageName%>.repository.search.UserSearchRepository;
 <%_ } _%>
 import <%=packageName%>.service.MailService;
@@ -60,7 +60,7 @@ public class SocialServiceIntTest {
 
     @Autowired
     private UserRepository userRepository;
-    <%_ if (searchEngine === 'elasticsearch') { _%>
+    <%_ if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { _%>
     @Autowired
     private UserSearchRepository userSearchRepository;
 
@@ -85,7 +85,7 @@ public class SocialServiceIntTest {
         when(mockUsersConnectionRepository.createConnectionRepository(anyString())).thenReturn(mockConnectionRepository);
 
         socialService = new SocialService(mockUsersConnectionRepository, authorityRepository,
-                passwordEncoder, userRepository, mockMailService<% if (searchEngine === 'elasticsearch') { %>, userSearchRepository<% } %>);
+                passwordEncoder, userRepository, mockMailService<% if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { %>, userSearchRepository<% } %>);
     }
 
     @Test

@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -23,12 +23,12 @@
         .module('<%=angularAppName%>')
         .config(translationConfig);
 
-    translationConfig.$inject = ['$translateProvider', 'tmhDynamicLocaleProvider'];
+    translationConfig.$inject = ['$translateProvider', 'tmhDynamicLocaleProvider', 'BUILD_TIMESTAMP'];
 
-    function translationConfig($translateProvider, tmhDynamicLocaleProvider) {
+    function translationConfig($translateProvider, tmhDynamicLocaleProvider, BUILD_TIMESTAMP) {
         // Initialize angular-translate
         $translateProvider.useLoader('$translatePartialLoader', {
-            urlTemplate: 'i18n/{lang}/{part}.json'
+            urlTemplate: 'i18n/{lang}/{part}.json' + (BUILD_TIMESTAMP ? '?build=' + BUILD_TIMESTAMP : '')
         });
 
         $translateProvider.preferredLanguage('<%= nativeLanguage %>');

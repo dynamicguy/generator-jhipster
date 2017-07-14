@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -68,7 +68,7 @@ module.exports = LanguagesGenerator.extend({
                     this.error(chalk.red(
                         `Unsupported language "${language}" passed as argument to language generator.` +
                         `\nSupported languages: ${_.map(this.getAllSupportedLanguageOptions(),
-                        o => `\n  ${_.padEnd(o.value, 5)} (${o.name})`).join('')}`
+                            o => `\n  ${_.padEnd(o.value, 5)} (${o.name})`).join('')}`
                     ));
                 }
             });
@@ -195,6 +195,7 @@ module.exports = LanguagesGenerator.extend({
             insight.track('languages/language', language);
         });
         if (!this.skipClient) {
+            this.updateLanguagesInLanguagePipe(this.config.get('languages'));
             if (this.clientFramework === 'angular1') {
                 this.updateLanguagesInLanguageConstant(this.config.get('languages'));
             } else {

@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -22,5 +22,6 @@
     angular
         .module('<%=angularAppName%>')
         .constant('VERSION', '0.0.1-SNAPSHOT')
-        .constant('DEBUG_INFO_ENABLED', true);
+        .constant('DEBUG_INFO_ENABLED', true)
+        .constant('BUILD_TIMESTAMP', "");
 })();

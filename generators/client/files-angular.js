@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -38,10 +38,11 @@ const files = {
                 '_tsconfig-aot.json',
                 '_tslint.json',
                 '_.angular-cli.json',
+                'webpack/_utils.js',
                 'webpack/_webpack.common.js',
                 'webpack/_webpack.dev.js',
                 'webpack/_webpack.prod.js',
-                'webpack/_webpack.vendor.js',
+                'webpack/_webpack.test.js',
                 { file: 'webpack/logo-jhipster.png', method: 'copy' }
             ]
         }
@@ -57,6 +58,13 @@ const files = {
                 'content/css/_vendor.css',
                 'content/css/_documentation.css'
             ]
+        },
+        {
+            condition: generator => !generator.useSass && generator.enableI18nRTL,
+            path: MAIN_SRC_DIR,
+            templates: [
+                'content/css/_rtl.css',
+            ]
         }
     ],
     sass: [
@@ -66,6 +74,13 @@ const files = {
             templates: [
                 'content/scss/_global.scss',
                 'content/scss/_vendor.scss'
+            ]
+        },
+        {
+            condition: generator => generator.useSass && generator.enableI18nRTL,
+            path: MAIN_SRC_DIR,
+            templates: [
+                'content/scss/_rtl.scss',
             ]
         },
         {
@@ -101,7 +116,9 @@ const files = {
                 { file: '_favicon.ico', method: 'copy' },
                 '_robots.txt',
                 '_404.html',
-                '_index.html'
+                '_index.html',
+                '_manifest.webapp',
+                '_sw.js'
             ]
         }
     ],
@@ -110,6 +127,7 @@ const files = {
             path: ANGULAR_DIR,
             templates: [
                 '_app.main.ts',
+                '_app.main-aot.ts',
                 '_app.route.ts',
                 '_app.module.ts',
                 '_app.constants.ts',
@@ -366,6 +384,9 @@ const files = {
                 'shared/_shared-common.module.ts',
                 'shared/constants/_pagination.constants.ts',
                 // models
+                'shared/model/_response-wrapper.model.ts',
+                'shared/model/_request-util.ts',
+                'shared/model/_base-entity.ts',
                 'shared/user/_account.model.ts',
                 // login
                 'shared/login/_login.component.ts',
@@ -381,7 +402,7 @@ const files = {
             condition: generator => generator.enableTranslation,
             path: ANGULAR_DIR,
             templates: [
-                'shared/language/_language.pipe.ts',
+                'shared/language/_find-language-from-key.pipe.ts',
                 'shared/language/_language.constants.ts',
                 'shared/language/_language.helper.ts'
             ]
@@ -399,6 +420,7 @@ const files = {
         {
             path: ANGULAR_DIR,
             templates: [
+                'shared/auth/_authorities-constants.ts',
                 'shared/auth/_csrf.service.ts',
                 'shared/auth/_state-storage.service.ts',
                 'shared/auth/_principal.service.ts',

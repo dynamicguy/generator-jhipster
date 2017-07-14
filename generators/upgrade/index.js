@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2017 the original author or authors.
+ * Copyright 2013-2017 the original author or authors from the JHipster project.
  *
  * This file is part of the JHipster project, see https://jhipster.github.io/
  * for more information.
@@ -23,6 +23,7 @@ const chalk = require('chalk');
 const BaseGenerator = require('../generator-base');
 const shelljs = require('shelljs');
 const semver = require('semver');
+const constants = require('../generator-constants');
 
 const UpgradeGenerator = generator.extend({});
 
@@ -32,6 +33,8 @@ util.inherits(UpgradeGenerator, BaseGenerator);
 const GENERATOR_JHIPSTER = 'generator-jhipster';
 const UPGRADE_BRANCH = 'jhipster_upgrade';
 const GIT_VERSION_NOT_ALLOW_MERGE_UNRELATED_HISTORIES = '2.9.0';
+const FIRST_CLI_SUPPORTED_VERSION = '4.5.1'; // The first version in which CLI support was added
+const SERVER_MAIN_RES_DIR = constants.SERVER_MAIN_RES_DIR;
 
 module.exports = UpgradeGenerator.extend({
     constructor: function (...args) { // eslint-disable-line object-shorthand
@@ -73,9 +76,13 @@ module.exports = UpgradeGenerator.extend({
     },
 
     _generate(version, callback) {
-        this.log(`Regenerating app with jhipster ${version}...`);
-        shelljs.exec('yo jhipster --with-entities --force --skip-install', { silent: this.silent }, (code, msg, err) => {
-            if (code === 0) this.log(chalk.green(`Successfully regenerated app with jhipster ${version}`));
+        this.log(`Regenerating application with JHipster ${version}...`);
+        let generatorCommand = 'yo jhipster';
+        if (semver.gte(version, FIRST_CLI_SUPPORTED_VERSION)) {
+            generatorCommand = this.clientPackageManager === 'yarn' ? '$(yarn bin)/jhipster' : '$(npm bin)/jhipster';
+        }
+        shelljs.exec(`${generatorCommand} --with-entities --force --skip-install`, { silent: this.silent }, (code, msg, err) => {
+            if (code === 0) this.log(chalk.green(`Successfully regenerated application with JHipster ${version}`));
             else this.error(`Something went wrong while generating project! ${err}`);
             callback();
         });
@@ -103,6 +110,7 @@ module.exports = UpgradeGenerator.extend({
                     this.error('bower install failed.');
                 }
             }
+            shelljs.rm('-Rf', `${SERVER_MAIN_RES_DIR}keystore.jks`);
             this._gitCommitAll(`Generated with JHipster ${version}`, () => {
                 callback();
             });
@@ -168,7 +176,7 @@ module.exports = UpgradeGenerator.extend({
             const done = this.async();
             this.gitExec(['status', '--porcelain'], (code, msg, err) => {
                 if (code !== 0) this.error(`Unable to check for local changes:\n${msg} ${err}`);
-                if (msg != null && msg !== '') {
+                if (msg) {
                     this.warning(' local changes found.\n' +
                         '\tPlease commit/stash them before upgrading');
                     this.error('Exiting process');
@@ -205,9 +213,9 @@ module.exports = UpgradeGenerator.extend({
                     this.gitExec(args, (code, msg, err) => {
                         if (code !== 0) {
                             this.error(`Unable to record current code has been generated with version ${
-                            this.currentVersion}:\n${msg} ${err}`);
+                                this.currentVersion}:\n${msg} ${err}`);
                         }
-                        this.log(`Current code recorded as generated with version ${this.currentVersion}`);
+                        this.log(`Current code has been generated with version ${this.currentVersion}`);
                         done();
                     });
                 });
@@ -256,20 +264,20 @@ module.exports = UpgradeGenerator.extend({
             insight.trackWithEvent('generator', 'upgrade');
         },
 
+        checkoutUpgradeBranch() {
+            const done = this.async();
+            this._gitCheckout(UPGRADE_BRANCH, done);
+        },
+
         updateJhipster() {
             this.log(chalk.yellow(`Updating ${GENERATOR_JHIPSTER} to ${this.latestVersion} . This might take some time...`));
             const done = this.async();
             const commandPrefix = this.clientPackageManager === 'yarn' ? 'yarn add' : 'npm install';
             shelljs.exec(`${commandPrefix} ${GENERATOR_JHIPSTER}@${this.latestVersion} --dev --no-lockfile`, { silent: this.silent }, (code, msg, err) => {
                 if (code === 0) this.log(chalk.green(`Updated ${GENERATOR_JHIPSTER} to version ${this.latestVersion}`));
-                else this.error(`Something went wrong while updating generator! ${msg} ${err}`);
+                else this.error(`Something went wrong while updating JHipster! ${msg} ${err}`);
                 done();
             });
-        },
-
-        checkoutUpgradeBranch() {
-            const done = this.async();
-            this._gitCheckout(UPGRADE_BRANCH, done);
         },
 
         generateWithLatestVersion() {

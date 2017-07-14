@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -20,7 +20,7 @@
 path: .
 instances: 1
 buildpack: https://github.com/cloudfoundry/java-buildpack
-<%_ if (databaseType != 'no') { _%>
+<%_ if (databaseType !== 'no') { _%>
 services:
 - <%= cloudfoundryDeployedName %>
 <%_ } _%>

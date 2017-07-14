@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -34,7 +34,7 @@ module.exports = function () {
     // to correctly handle them.
     var proxyRoutes = [
     <%_ if (applicationType === 'monolith') { _%>
-      <%_ if (authenticationType == 'oauth2') { _%>
+      <%_ if (authenticationType === 'oauth2') { _%>
         '/oauth',
       <%_ } _%>
         '/api',

@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -21,6 +21,7 @@ import { Router } from '@angular/router';
 import { NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { JhiLanguageService } from 'ng-jhipster';
 
+import { AuthoritiesConstants } from '../../shared';
 import { ProfileService } from '../profiles/profile.service';
 import { <% if (enableTranslation) { %>JhiLanguageHelper, <% } %>Principal, LoginModalService, LoginService } from '../../shared';
 
@@ -39,6 +40,7 @@ import { VERSION, DEBUG_INFO_ENABLED } from '../../app.constants';
 })
 export class NavbarComponent implements OnInit {
 
+    authoritiesConstants = AuthoritiesConstants;
     inProduction: boolean;
     isNavbarCollapsed: boolean;
     languages: any[];
@@ -49,8 +51,8 @@ export class NavbarComponent implements OnInit {
     constructor(
         private loginService: LoginService,
         <%_ if (enableTranslation) { _%>
-        private languageHelper: JhiLanguageHelper,
         private languageService: JhiLanguageService,
+        private languageHelper: JhiLanguageHelper,
         <%_ } _%>
         private principal: Principal,
         private loginModalService: LoginModalService,
@@ -59,9 +61,6 @@ export class NavbarComponent implements OnInit {
     ) {
         this.version = VERSION ? 'v' + VERSION : '';
         this.isNavbarCollapsed = true;
-        <%_ if (enableTranslation) { _%>
-        this.languageService.addLocation('home');
-        <%_ } _%>
     }
 
     ngOnInit() {

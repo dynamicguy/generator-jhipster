@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -39,7 +39,7 @@
             "hystrix": "Hystrix",
             <%_ } _%>
             "diskSpace": "ディスクスペース",
-            "mail": "メール"<% if (searchEngine === 'elasticsearch') { %>,
+            "mail": "メール"<% if (searchEngine === 'elasticsearch' || searchEngine === 'solr') { %>,
             "elasticsearch": "Elasticsearch"<% } %><% if (databaseType === 'sql') { %>,
             "db": "データベース"<% } %><% if (databaseType === 'mongodb') { %>,
             "mongo": "MongoDB"<% } %><% if (databaseType === 'cassandra') { %>,

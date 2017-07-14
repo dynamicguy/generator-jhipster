@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -20,7 +20,7 @@ package <%=packageName%>.config.social;
 
 import <%=packageName%>.repository.SocialUserConnectionRepository;
 import <%=packageName%>.repository.CustomSocialUsersConnectionRepository;
-<%_ if (authenticationType == 'jwt') { _%>
+<%_ if (authenticationType === 'jwt') { _%>
 import <%=packageName%>.security.jwt.TokenProvider;
 <%_ } _%>
 import <%=packageName%>.security.social.CustomSignInAdapter;
@@ -53,8 +53,9 @@ import org.springframework.social.twitter.connect.TwitterConnectionFactory;
 /**
  * Basic Spring Social configuration.
  *
- * <p>Creates the beans necessary to manage Connections to social services and
- * link accounts from those services to internal Users.</p>
+ * <p>
+ * Creates the beans necessary to manage Connections to social services and
+ * link accounts from those services to internal Users.
  */
 @Configuration
 @EnableSocial
@@ -143,9 +144,9 @@ public class SocialConfiguration implements SocialConfigurer {
     }
 
     @Bean
-    public SignInAdapter signInAdapter(UserDetailsService userDetailsService, JHipsterProperties jHipsterProperties<% if (authenticationType == 'jwt') { %>,
+    public SignInAdapter signInAdapter(UserDetailsService userDetailsService, JHipsterProperties jHipsterProperties<% if (authenticationType === 'jwt') { %>,
             TokenProvider tokenProvider<% } %>) {
-        return new CustomSignInAdapter(userDetailsService, jHipsterProperties<% if (authenticationType == 'jwt') { %>,
+        return new CustomSignInAdapter(userDetailsService, jHipsterProperties<% if (authenticationType === 'jwt') { %>,
             tokenProvider<% } %>);
     }
 

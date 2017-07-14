@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -40,6 +40,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 <%_ } _%>
 
+<%_ if (databaseType === 'cassandra') { _%>
+import java.util.UUID;
+
+<%_ } _%>
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -88,7 +92,11 @@ public class UserJWTControllerIntTest <% if (databaseType === 'cassandra') { %>e
         user.setActivated(true);
         user.setPassword(passwordEncoder.encode("test"));
 
+        <%_ if (databaseType === 'sql') { _%>
         userRepository.saveAndFlush(user);
+        <%_ } else if (databaseType === 'mongodb' || databaseType === 'cassandra') { _%>
+        userRepository.save(user);
+        <%_ } _%>
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller");
@@ -115,7 +123,11 @@ public class UserJWTControllerIntTest <% if (databaseType === 'cassandra') { %>e
         user.setActivated(true);
         user.setPassword(passwordEncoder.encode("test"));
 
+        <%_ if (databaseType === 'sql') { _%>
         userRepository.saveAndFlush(user);
+        <%_ } else if (databaseType === 'mongodb' || databaseType === 'cassandra') { _%>
+        userRepository.save(user);
+        <%_ } _%>
 
         LoginVM login = new LoginVM();
         login.setUsername("user-jwt-controller-remember-me");

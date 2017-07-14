@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -38,7 +38,7 @@
             },
             "admin": {
                 "main": "ผู้ดูแลระบบ",
-                <%_ if (applicationType == 'gateway') { _%>
+                <%_ if (applicationType === 'gateway') { _%>
                 "gateway": "เกตเวย์",
                 <%_ } _%>
                 "userManagement": "จัดการผู้ใช้",
@@ -97,7 +97,8 @@
         },
         "ribbon": {
             "dev":"Development"
-        }
+        },
+        "item-count": "Showing {{first}} - {{second}} of {{total}} items."
     },
     "entity": {
         "action": {
@@ -127,7 +128,7 @@
             "minbytes": "ขนาดของฟิลด์นี้จะต้องมากกว่า  {{ min }} ไบต์.",
             "maxbytes": "ขนาดของฟิลด์นี้จะต้องไม่มากกว่า{{ max }} ไบต์.",
             "pattern": "ฟิลด์นี้จะต้องทำตามรูปแบบ {{ pattern }}.",
-            "number": "ฟิลด์นี้จะต้องเป็นตัวเลขเท่านั้น	.",
+            "number": "ฟิลด์นี้จะต้องเป็นตัวเลขเท่านั้น.",
             "datetimelocal": "ฟิลด์นี้จะต้องเป็นวันที่และเวลาเท่านั้น."
         }
     },

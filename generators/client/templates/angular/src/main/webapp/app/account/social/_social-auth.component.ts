@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -20,11 +20,11 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { LoginService } from '../../shared';
-import { CookieService } from 'angular2-cookie/core';
+import { CookieService } from 'ngx-cookie';
 
 @Component({
     selector: '<%=jhiPrefix%>-auth',
-    templateUrl: '../../shared/login/login.component.html'
+    template: ''
 })
 export class SocialAuthComponent implements OnInit {
 
@@ -36,10 +36,11 @@ export class SocialAuthComponent implements OnInit {
     }
 
     ngOnInit() {
-        let token = this.cookieService.get('social-authentication');
+        const token = this.cookieService.get('social-authentication');
         if (token.length) {
             this.loginService.loginWithToken(token, false).then(() => {
                     this.cookieService.remove('social-authentication');
+                    this.router.navigate(['']);
                  }, () => {
                     this.router.navigate(['social-register'], {queryParams: {'success': 'false'}});
             });

@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -29,7 +29,7 @@ module.exports = {
 function endsWith(str, suffix) {
     return str.indexOf('/', str.length - suffix.length) !== -1;
 }
-<% if (buildTool == 'maven') { %>
+<% if (buildTool === 'maven') { %>
 var parseString = require('xml2js').parseString;
 // return the version number from `pom.xml` file
 function parseVersion() {
@@ -47,7 +47,7 @@ function parseVersion() {
     }
     return version;
 }
-<% } else if (buildTool == 'gradle') { %>
+<% } else if (buildTool === 'gradle') { %>
 // Returns the second occurrence of the version number from `build.gradle` file
 function parseVersion() {
     var versionRegex = /^version\s*=\s*[',"]([^',"]*)[',"]/gm; // Match and group the version number

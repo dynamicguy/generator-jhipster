@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -24,14 +24,16 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { Ng2Webstorage } from 'ng2-webstorage';
 
-import { <%=angular2AppName%>SharedModule, UserRouteAccessService } from './shared';
-import { <%=angular2AppName%>HomeModule } from './home/home.module';
-import { <%=angular2AppName%>AdminModule } from './admin/admin.module';
-import { <%=angular2AppName%>AccountModule } from './account/account.module';
-import { <%=angular2AppName%>EntityModule } from './entities/entity.module';
+import { <%=angularXAppName%>SharedModule, UserRouteAccessService } from './shared';
+import { <%=angularXAppName%>HomeModule } from './home/home.module';
+import { <%=angularXAppName%>AdminModule } from './admin/admin.module';
+import { <%=angularXAppName%>AccountModule } from './account/account.module';
+import { <%=angularXAppName%>EntityModule } from './entities/entity.module';
 
 import { customHttpProvider } from './blocks/interceptor/http.provider';
 import { PaginationConfig } from './blocks/config/uib-pagination.config';
+
+// jhipster-needle-angular-add-module-import JHipster will add new module here
 
 import {
     <%=jhiPrefixCapitalized%>MainComponent,
@@ -51,11 +53,12 @@ import {
         BrowserModule,
         LayoutRoutingModule,
         Ng2Webstorage.forRoot({ prefix: 'jhi', separator: '-'}),
-        <%=angular2AppName%>SharedModule,
-        <%=angular2AppName%>HomeModule,
-        <%=angular2AppName%>AdminModule,
-        <%=angular2AppName%>AccountModule,
-        <%=angular2AppName%>EntityModule
+        <%=angularXAppName%>SharedModule,
+        <%=angularXAppName%>HomeModule,
+        <%=angularXAppName%>AdminModule,
+        <%=angularXAppName%>AccountModule,
+        <%=angularXAppName%>EntityModule,
+        // jhipster-needle-angular-add-module JHipster will add new module here
     ],
     declarations: [
         <%=jhiPrefixCapitalized%>MainComponent,
@@ -75,4 +78,4 @@ import {
     ],
     bootstrap: [ <%=jhiPrefixCapitalized%>MainComponent ]
 })
-export class <%=angular2AppName%>AppModule {}
+export class <%=angularXAppName%>AppModule {}

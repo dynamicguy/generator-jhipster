@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -20,12 +20,6 @@
     Languages codes are ISO_639-1 codes, see http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     They are written in English to avoid character encoding issues (not a perfect solution)
 */
-<%_
-    let languageString = '\n';
-    languages.forEach((lang, index) => {
-        languageString += `    \'${lang}\'${index !== languages.length-1 ? ',\n' : ''}`;
-    });
-_%>
-export const LANGUAGES: string[] = [<%- languageString %>
+export const LANGUAGES: string[] = [
     // jhipster-needle-i18n-language-constant - JHipster will add/remove languages in this array
 ];

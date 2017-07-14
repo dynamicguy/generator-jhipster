@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -188,7 +188,7 @@
             </tbody>
         </table>
     </div>
-<%_ if (hibernateCache == 'ehcache') { _%>
+<%_ if (hibernateCache === 'ehcache' || hibernateCache === 'infinispan') { _%>
     <h3 data-translate="metrics.cache.title">Cache statistics</h3>
     <div class="table-responsive">
         <table class="table table-striped">

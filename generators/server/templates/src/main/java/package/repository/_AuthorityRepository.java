@@ -1,5 +1,5 @@
 <%#
- Copyright 2013-2017 the original author or authors.
+ Copyright 2013-2017 the original author or authors from the JHipster project.
 
  This file is part of the JHipster project, see https://jhipster.github.io/
  for more information.
@@ -18,16 +18,16 @@
 -%>
 package <%=packageName%>.repository;
 
-import <%=packageName%>.domain.Authority;<% if (databaseType == 'sql') { %>
+import <%=packageName%>.domain.Authority;<% if (databaseType === 'sql') { %>
 
-import org.springframework.data.jpa.repository.JpaRepository;<% } %><% if (databaseType == 'mongodb') { %>
+import org.springframework.data.jpa.repository.JpaRepository;<% } %><% if (databaseType === 'mongodb') { %>
 
 import org.springframework.data.mongodb.repository.MongoRepository;<% } %>
 
-<% if (databaseType == 'sql') { %>/**
+<% if (databaseType === 'sql') { %>/**
  * Spring Data JPA repository for the Authority entity.
- */<% } %><% if (databaseType == 'mongodb') { %>/**
+ */<% } %><% if (databaseType === 'mongodb') { %>/**
  * Spring Data MongoDB repository for the Authority entity.
  */<% } %>
-public interface AuthorityRepository extends <% if (databaseType == 'sql') { %>JpaRepository<% } %><% if (databaseType == 'mongodb') { %>MongoRepository<% } %><Authority, String> {
+public interface AuthorityRepository extends <% if (databaseType === 'sql') { %>JpaRepository<% } %><% if (databaseType === 'mongodb') { %>MongoRepository<% } %><Authority, String> {
 }
