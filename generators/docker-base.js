@@ -1,8 +1,7 @@
-
 /**
- * Copyright 2013-2017 the original author or authors from the JHipster project.
+ * Copyright 2013-2019 the original author or authors from the JHipster project.
  *
- * This file is part of the JHipster project, see https://jhipster.github.io/
+ * This file is part of the JHipster project, see https://www.jhipster.tech/
  * for more information.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,47 +18,25 @@
  */
 const shelljs = require('shelljs');
 const chalk = require('chalk');
-const _ = require('lodash');
-const crypto = require('crypto');
+const dockerUtils = require('./docker-utils');
+const { getBase64Secret } = require('./utils');
 
-/**
- * This is the Generator base class.
- * This provides all the public API methods exposed via the module system.
- * The public API methods can be directly utilized as well using commonJS require.
- *
- * The method signatures in public API should not be changed without a major version change
- */
 module.exports = {
-    checkDocker,
+    checkDocker: dockerUtils.checkDocker,
     checkImages,
     generateJwtSecret,
     configureImageNames,
     setAppsFolderPaths,
+    loadConfigs,
+    loadFromYoRc,
+    setClusteredApps
 };
 
-function checkDocker() {
-    const done = this.async();
-
-    shelljs.exec('docker -v', { silent: true }, (code, stdout, stderr) => {
-        if (stderr) {
-            this.log(chalk.red('Docker version 1.10.0 or later is not installed on your computer.\n' +
-                '         Read http://docs.docker.com/engine/installation/#installation\n'));
-        } else {
-            const dockerVersion = stdout.split(' ')[2].replace(/,/g, '');
-            const dockerVersionMajor = dockerVersion.split('.')[0];
-            const dockerVersionMinor = dockerVersion.split('.')[1];
-            if (dockerVersionMajor < 1 || (dockerVersionMajor === 1 && dockerVersionMinor < 10)) {
-                this.log(chalk.red(`${'Docker version 1.10.0 or later is not installed on your computer.\n' +
-                    '         Docker version found: '}${dockerVersion}\n` +
-                    '         Read http://docs.docker.com/engine/installation/#installation\n'));
-            }
-        }
-        done();
-    });
-}
-
+/**
+ * Check Images
+ */
 function checkImages() {
-    this.log('\nChecking Docker images in applications\' directories...');
+    this.log('\nChecking Docker images in applications directories...');
 
     let imagePath = '';
     let runCommand = '';
@@ -68,11 +45,11 @@ function checkImages() {
     this.appsFolders.forEach((appsFolder, index) => {
         const appConfig = this.appConfigs[index];
         if (appConfig.buildTool === 'maven') {
-            imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/target/docker/${_.kebabCase(appConfig.baseName)}-*.war`);
-            runCommand = './mvnw package -Pprod docker:build';
+            imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/target/jib-cache`);
+            runCommand = './mvnw -Pprod verify jib:dockerBuild';
         } else {
-            imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/build/docker/${_.kebabCase(appConfig.baseName)}-*.war`);
-            runCommand = './gradlew -Pprod bootRepackage buildDocker';
+            imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/build/jib-cache`);
+            runCommand = './gradlew bootJar -Pprod jibDockerBuild';
         }
         if (shelljs.ls(imagePath).length === 0) {
             this.warning = true;
@@ -81,12 +58,18 @@ function checkImages() {
     });
 }
 
+/**
+ * Generate Jwt Secret
+ */
 function generateJwtSecret() {
     if (this.jwtSecretKey === undefined) {
-        this.jwtSecretKey = crypto.randomBytes(20).toString('hex');
+        this.jwtSecretKey = getBase64Secret();
     }
 }
 
+/**
+ * Configure Image Names
+ */
 function configureImageNames() {
     for (let i = 0; i < this.appsFolders.length; i++) {
         const originalImageName = this.appConfigs[i].baseName.toLowerCase();
@@ -95,11 +78,99 @@ function configureImageNames() {
     }
 }
 
+/**
+ * Set Apps Folder Paths
+ */
 function setAppsFolderPaths() {
     if (this.applicationType) return;
     this.appsFolderPaths = [];
     for (let i = 0; i < this.appsFolders.length; i++) {
         const path = this.destinationPath(this.directoryPath + this.appsFolders[i]);
         this.appsFolderPaths.push(path);
+    }
+}
+
+/**
+ * Load config from this.appFolders
+ */
+function loadConfigs() {
+    this.appConfigs = [];
+    this.gatewayNb = 0;
+    this.monolithicNb = 0;
+    this.microserviceNb = 0;
+    this.uaaNb = 0;
+
+    // Loading configs
+    this.debug(`Apps folders: ${this.appsFolders}`);
+    this.appsFolders.forEach(appFolder => {
+        const path = this.destinationPath(`${this.directoryPath + appFolder}/.yo-rc.json`);
+        const fileData = this.fs.readJSON(path);
+        if (fileData) {
+            const config = fileData['generator-jhipster'];
+
+            if (config.applicationType === 'monolith') {
+                this.monolithicNb++;
+            } else if (config.applicationType === 'gateway') {
+                this.gatewayNb++;
+            } else if (config.applicationType === 'microservice') {
+                this.microserviceNb++;
+            } else if (config.applicationType === 'uaa') {
+                this.uaaNb++;
+            }
+
+            this.portsToBind = this.monolithicNb + this.gatewayNb;
+            config.appFolder = appFolder;
+            this.appConfigs.push(config);
+        } else {
+            this.error(`Application '${appFolder}' is not found in the path '${this.directoryPath}'`);
+        }
+    });
+}
+
+function setClusteredApps() {
+    for (let i = 0; i < this.appsFolders.length; i++) {
+        for (let j = 0; j < this.clusteredDbApps.length; j++) {
+            this.appConfigs[i].clusteredDb = this.appsFolders[i] === this.clusteredDbApps[j];
+        }
+    }
+}
+
+function loadFromYoRc() {
+    this.authenticationType = this.config.get('authenticationType');
+    this.defaultAppsFolders = this.config.get('appsFolders');
+    this.directoryPath = this.config.get('directoryPath');
+    this.gatewayType = this.config.get('gatewayType');
+    this.clusteredDbApps = this.config.get('clusteredDbApps');
+    this.monitoring = this.config.get('monitoring');
+    this.consoleOptions = this.config.get('consoleOptions');
+    this.useKafka = false;
+    this.useMemcached = false;
+    this.dockerRepositoryName = this.config.get('dockerRepositoryName');
+    this.dockerPushCommand = this.config.get('dockerPushCommand');
+    this.serviceDiscoveryType = this.config.get('serviceDiscoveryType');
+    this.reactive = this.config.get('reactive');
+    if (this.serviceDiscoveryType === undefined) {
+        this.serviceDiscoveryType = 'eureka';
+    }
+    this.adminPassword = this.config.get('adminPassword');
+    this.jwtSecretKey = this.config.get('jwtSecretKey');
+
+    if (this.defaultAppsFolders !== undefined) {
+        this.log('\nFound .yo-rc.json config file...');
+    }
+
+    if (this.regenerate) {
+        this.appsFolders = this.defaultAppsFolders;
+        loadConfigs.call(this);
+        if (this.microserviceNb > 0 || this.gatewayNb > 0 || this.uaaNb > 0) {
+            this.deploymentApplicationType = 'microservice';
+        } else {
+            this.deploymentApplicationType = 'monolith';
+        }
+        setClusteredApps.call(this);
+        if (!this.adminPassword) {
+            this.adminPassword = 'admin'; // TODO find a better way to do this
+            this.adminPasswordBase64 = getBase64Secret(this.adminPassword);
+        }
     }
 }

@@ -1,15 +1,15 @@
 {
     "gateway": {
-        "title": "Gateway",
+        "title": "গেটওয়ে",
         "routes": {
-            "title": "Current routes",
+            "title": "বর্তমান রুটসমূহ",
             "url": "URL",
-            "service": "service",
-            "servers": "Available servers",
-            "error": "Warning: no server available!"
+            "service": "সার্ভিস",
+            "servers": "ব্যবহারযোগ্য সার্ভার",
+            "error": "সাবধান: ব্যবহারযোগ্য একটিও সার্ভার নেই!"
         },
         "refresh": {
-            "button": "Refresh"
+            "button": "রিফ্রেশ"
         }
     }
 }

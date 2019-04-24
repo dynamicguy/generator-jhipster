@@ -1,26 +1,26 @@
 {
     "audits": {
-        "title": "Audits",
+        "title": "নিরীক্ষা",
         "filter": {
-            "title": "Filter per date",
-            "from": "from",
-            "to": "to",
+            "title": "তারিখ অনুসারে ফিল্টার",
+            "from": "হইতে",
+            "to": "পর্যন্ত",
             "button": {
-                "weeks": "Weeks",
-                "today": "today",
-                "clear": "clear",
-                "close": "close"
+                "weeks": "সপ্তাহ",
+                "today": "আজ",
+                "clear": "মুছুন",
+                "close": "বন্ধ করুন"
             }
         },
         "table": {
             "header": {
-                "principal": "User",
-                "date": "Date",
-                "status": "State",
-                "data": "Extra data"
+                "principal": "ইউজার",
+                "date": "তারিখ",
+                "status": "অবস্থা",
+                "data": "আরও তথ্য"
             },
             "data": {
-                "remoteAddress": "Remote Address:"
+                "remoteAddress": "রিমোট অ্যাড্রেস:"
             }
         }
     }

@@ -1,7 +1,7 @@
 /**
- * Copyright 2013-2017 the original author or authors from the JHipster project.
+ * Copyright 2013-2019 the original author or authors from the JHipster project.
  *
- * This file is part of the JHipster project, see https://jhipster.github.io/
+ * This file is part of the JHipster project, see https://www.jhipster.tech/
  * for more information.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,14 +21,13 @@ const tabtab = require('tabtab')({
     name: 'jhipster'
 });
 
-
 module.exports.init = (program, binName) => {
     // This method should not log anything to console as it will be shown in completion
     // Needed to avoid unknown command trigger, should be hidden
     program
         .command('completion')
         .description('Print command completion script')
-        .action((opts) => {});
+        .action(opts => {});
     // General handler. Gets called on `jhipster <tab>` and `jhipster stuff ... <tab>`
     const commands = program.commands.map(d => d._name);
     const opts = program.options.map(d => d.long);

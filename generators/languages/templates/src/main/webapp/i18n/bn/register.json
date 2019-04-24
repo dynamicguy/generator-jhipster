@@ -1,23 +1,23 @@
 {
     "register": {
-        "title": "Registration",
+        "title": "রেজিস্ট্রেশন",
         "form": {
-            "button": "Register"
+            "button": "রেজিস্টার"
         },
         "messages": {
             "validate": {
                 "login": {
-                    "required": "Your username is required.",
-                    "minlength": "Your username is required to be at least 1 character.",
-                    "maxlength": "Your username cannot be longer than 50 characters.",
-                    "pattern": "Your username can only contain lower-case letters and digits."
+                    "required": "ইউজারনেম দিতে হবে",
+                    "minlength": "ইউজারনেম কমপক্ষে ১ অক্ষর হতে হবে",
+                    "maxlength": "ইউজারনেম ৫০ অক্ষরের বেশি হতে পারবে না",
+                    "pattern": "ইউজারনেমে শুধুমাত্র ইংরেজি অক্ষর ও সংখ্যা থাকতে পারবে"
                 }
             },
-            "success": "<strong>Registration saved!</strong> Please check your email for confirmation.",
+            "success": "<strong>রেজিস্ট্রেশন হয়েছে!</strong> নিশ্চিত করতে ইমেইল চেক করুন।",
             "error": {
-                "fail": "<strong>Registration failed!</strong> Please try again later.",
-                "userexists": "<strong>Login name already registered!</strong> Please choose another one.",
-                "emailexists": "<strong>Email is already in use!</strong> Please choose another one."
+                "fail": "<strong>রেজিস্ট্রেশন করে সম্ভব হয়নি!</strong> আবার চেষ্টা করুন।",
+                "userexists": "<strong>এই ইউজারনেম অন্য কেউ ব্যাবহার করছে।</strong> অন্য একটি দিয়ে চেষ্টা করুন।",
+                "emailexists": "<strong>এই ইমেইল অন্য কেউ ব্যাবহার করছে।</strong> অন্য একটি দিয়ে চেষ্টা করুন।"
             }
         }
     }

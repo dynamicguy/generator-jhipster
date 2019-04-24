@@ -1,15 +1,15 @@
 {
     "sessions": {
-        "title": "Active sessions for [<b>{{username}}</b>]",
+        "title": "চলতি সেশন [<strong>{{username}}</strong>] এর জন্য",
         "table": {
-            "ipaddress": "IP address",
-            "useragent": "User Agent",
-            "date": "Date",
-            "button": "Invalidate"
+            "ipaddress": "আই পি অ্যাড্রেস",
+            "useragent": "ইউজার এজেন্ট",
+            "date": "দিনক্ষণ",
+            "button": "বাতিল করে দিন"
         },
         "messages": {
-            "success": "<strong>Session invalidated!</strong>",
-            "error": "<strong>An error has occurred!</strong> The session could not be invalidated."
+            "success": "<strong>সেশন বাতিল করা হয়েছে!</strong>",
+            "error": "<strong>ত্রুটি হয়েছে!</strong> সেশন বাতিল করা যায়নি!"
         }
     }
 }

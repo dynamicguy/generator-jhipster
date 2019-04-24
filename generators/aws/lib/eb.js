@@ -1,20 +1,38 @@
+/**
+ * Copyright 2013-2019 the original author or authors from the JHipster project.
+ *
+ * This file is part of the JHipster project, see https://www.jhipster.tech/
+ * for more information.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 let aws;
 let uuidV4;
 
-const Eb = module.exports = function Eb(Aws, generator) {
+const Eb = (module.exports = function Eb(Aws, generator) {
     aws = Aws;
     try {
         uuidV4 = require('uuid/v4'); // eslint-disable-line
     } catch (e) {
         generator.error(`Something went wrong while running jhipster:aws:\n${e}`);
     }
-};
+});
 
 Eb.prototype.createApplication = function createApplication(params, callback) {
     const applicationName = params.applicationName;
     const bucketName = params.bucketName;
-    const warKey = params.warKey;
-    const versionLabel = `${this.warKey}-${uuidV4()}`;
+    const jarKey = params.jarKey;
+    const versionLabel = `${this.jarKey}-${uuidV4()}`;
     const environmentName = params.environmentName;
     const dbUrl = params.dbUrl;
     const dbUsername = params.dbUsername;
@@ -25,10 +43,10 @@ Eb.prototype.createApplication = function createApplication(params, callback) {
         applicationName,
         versionLabel,
         bucketName,
-        warKey
+        jarKey
     };
 
-    createApplicationVersion(applicationParams, (err) => {
+    createApplicationVersion(applicationParams, err => {
         if (err) {
             callback({ message: err.message }, null);
         } else {
@@ -71,7 +89,7 @@ function createApplicationVersion(params, callback) {
     const applicationName = params.applicationName;
     const versionLabel = params.versionLabel;
     const bucketName = params.bucketName;
-    const warKey = params.warKey;
+    const jarKey = params.jarKey;
 
     const elasticbeanstalk = new aws.ElasticBeanstalk();
 
@@ -81,15 +99,15 @@ function createApplicationVersion(params, callback) {
         AutoCreateApplication: true,
         SourceBundle: {
             S3Bucket: bucketName,
-            S3Key: warKey
+            S3Key: jarKey
         }
     };
 
-    elasticbeanstalk.createApplicationVersion(applicationParams, (err) => {
+    elasticbeanstalk.createApplicationVersion(applicationParams, err => {
         if (err) {
             callback(err, null);
         } else {
-            callback(null, { message: `Application version ${applicationName} created successful` });
+            callback(null, { message: `Application version ${applicationName} created successfully` });
         }
     });
 }
@@ -174,9 +192,9 @@ function createEnvironment(params, callback) {
             }
         };
 
-        elasticbeanstalk.createEnvironment(environmentParams, (err) => {
+        elasticbeanstalk.createEnvironment(environmentParams, err => {
             if (err) callback(err, null);
-            else callback(null, { message: `Environment ${environmentName} created successful` });
+            else callback(null, { message: `Environment ${environmentName} created successfully` });
         });
     });
 }
@@ -195,7 +213,7 @@ function getLatestSolutionStackName(callback) {
     }
 
     function filterCriteria(element) {
-        return element.indexOf('Tomcat 8') > -1;
+        return element.includes('Tomcat 8');
     }
 }
 
@@ -218,7 +236,7 @@ function updateEnvironment(params, callback) {
         VersionLabel: versionLabel
     };
 
-    elasticbeanstalk.updateEnvironment(environmentParams, (err) => {
+    elasticbeanstalk.updateEnvironment(environmentParams, err => {
         if (err) {
             callback(err, null);
         } else {

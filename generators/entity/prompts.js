@@ -1,7 +1,7 @@
 /**
- * Copyright 2013-2017 the original author or authors from the JHipster project.
+ * Copyright 2013-2019 the original author or authors from the JHipster project.
  *
- * This file is part of the JHipster project, see https://jhipster.github.io/
+ * This file is part of the JHipster project, see https://www.jhipster.tech/
  * for more information.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,16 +32,18 @@ module.exports = {
     askForTableName,
     askForDTO,
     askForService,
+    askForFiltering,
     askForPagination
 };
 
 function askForMicroserviceJson() {
-    if (this.applicationType !== 'gateway' || this.useConfigurationFile) {
+    const context = this.context;
+    if (context.applicationType !== 'gateway' || context.useConfigurationFile) {
         return;
     }
 
     const done = this.async();
-    const databaseType = this.databaseType;
+    const databaseType = context.databaseType;
 
     const prompts = [
         {
@@ -57,44 +59,45 @@ function askForMicroserviceJson() {
             name: 'microservicePath',
             message: 'Enter the path to the microservice root directory:',
             store: true,
-            validate: (input) => {
-                let fromPath = '';
+            validate: input => {
+                let fromPath;
                 if (path.isAbsolute(input)) {
-                    fromPath = `${input}/${this.filename}`;
+                    fromPath = `${input}/${context.filename}`;
                 } else {
-                    fromPath = this.destinationPath(`${input}/${this.filename}`);
+                    fromPath = this.destinationPath(`${input}/${context.filename}`);
                 }
 
                 if (shelljs.test('-f', fromPath)) {
                     return true;
                 }
-                return `${this.filename} not found in ${input}/`;
+                return `${context.filename} not found in ${input}/`;
             }
         }
     ];
 
-    this.prompt(prompts).then((props) => {
+    this.prompt(prompts).then(props => {
         if (props.microservicePath) {
-            this.log(chalk.green(`\nFound the ${this.filename} configuration file, entity can be automatically generated!\n`));
+            this.log(chalk.green(`\nFound the ${context.filename} configuration file, entity can be automatically generated!\n`));
             if (path.isAbsolute(props.microservicePath)) {
-                this.microservicePath = props.microservicePath;
+                context.microservicePath = props.microservicePath;
             } else {
-                this.microservicePath = path.resolve(props.microservicePath);
+                context.microservicePath = path.resolve(props.microservicePath);
             }
-            this.fromPath = `${this.microservicePath}/${this.jhipsterConfigDirectory}/${this.entityNameCapitalized}.json`;
-            this.useConfigurationFile = true;
-            this.useMicroserviceJson = true;
-            this._loadJson();
+            context.useConfigurationFile = true;
+            context.useMicroserviceJson = true;
+            const fromPath = `${context.microservicePath}/${context.jhipsterConfigDirectory}/${context.entityNameCapitalized}.json`;
+            this.loadEntityJson(fromPath);
         }
         done();
     });
 }
 
 function askForUpdate() {
+    const context = this.context;
     // ask only if running an existing entity without arg option --force or --regenerate
-    const isForce = this.options.force || this.regenerate;
-    this.updateEntity = 'regenerate'; // default if skipping questions by --force
-    if (isForce || !this.useConfigurationFile) {
+    const isForce = context.options.force || context.regenerate;
+    context.updateEntity = 'regenerate'; // default if skipping questions by --force
+    if (isForce || !context.useConfigurationFile) {
         return;
     }
     const done = this.async();
@@ -102,7 +105,8 @@ function askForUpdate() {
         {
             type: 'list',
             name: 'updateEntity',
-            message: 'Do you want to update the entity? This will replace the existing files for this entity, all your custom code will be overwritten',
+            message:
+                'Do you want to update the entity? This will replace the existing files for this entity, all your custom code will be overwritten',
             choices: [
                 {
                     value: 'regenerate',
@@ -124,9 +128,9 @@ function askForUpdate() {
             default: 0
         }
     ];
-    this.prompt(prompts).then((props) => {
-        this.updateEntity = props.updateEntity;
-        if (this.updateEntity === 'none') {
+    this.prompt(prompts).then(props => {
+        context.updateEntity = props.updateEntity;
+        if (context.updateEntity === 'none') {
             this.env.error(chalk.green('Aborting entity update, no changes were made.'));
         }
         done();
@@ -134,12 +138,13 @@ function askForUpdate() {
 }
 
 function askForFields() {
+    const context = this.context;
     // don't prompt if data is imported from a file
-    if (this.useConfigurationFile && this.updateEntity !== 'add') {
+    if (context.useConfigurationFile && context.updateEntity !== 'add') {
         return;
     }
 
-    if (this.updateEntity === 'add') {
+    if (context.updateEntity === 'add') {
         logFieldsAndRelationships.call(this);
     }
 
@@ -149,8 +154,9 @@ function askForFields() {
 }
 
 function askForFieldsToRemove() {
+    const context = this.context;
     // prompt only if data is imported from a file
-    if (!this.useConfigurationFile || this.updateEntity !== 'remove' || this.fieldNameChoices.length === 0) {
+    if (!context.useConfigurationFile || context.updateEntity !== 'remove' || context.fieldNameChoices.length === 0) {
         return;
     }
     const done = this.async();
@@ -160,7 +166,7 @@ function askForFieldsToRemove() {
             type: 'checkbox',
             name: 'fieldsToRemove',
             message: 'Please choose the fields you want to remove',
-            choices: this.fieldNameChoices
+            choices: context.fieldNameChoices
         },
         {
             when: response => response.fieldsToRemove.length !== 0,
@@ -170,13 +176,13 @@ function askForFieldsToRemove() {
             default: true
         }
     ];
-    this.prompt(prompts).then((props) => {
+    this.prompt(prompts).then(props => {
         if (props.confirmRemove) {
             this.log(chalk.red(`\nRemoving fields: ${props.fieldsToRemove}\n`));
-            for (let i = this.fields.length - 1; i >= 0; i -= 1) {
-                const field = this.fields[i];
+            for (let i = context.fields.length - 1; i >= 0; i -= 1) {
+                const field = context.fields[i];
                 if (props.fieldsToRemove.filter(val => val === field.fieldName).length > 0) {
-                    this.fields.splice(i, 1);
+                    context.fields.splice(i, 1);
                 }
             }
         }
@@ -185,11 +191,12 @@ function askForFieldsToRemove() {
 }
 
 function askForRelationships() {
+    const context = this.context;
     // don't prompt if data is imported from a file
-    if (this.useConfigurationFile && this.updateEntity !== 'add') {
+    if (context.useConfigurationFile && context.updateEntity !== 'add') {
         return;
     }
-    if (this.databaseType === 'mongodb' || this.databaseType === 'cassandra') {
+    if (['cassandra', 'couchbase'].includes(context.databaseType)) {
         return;
     }
 
@@ -199,11 +206,12 @@ function askForRelationships() {
 }
 
 function askForRelationsToRemove() {
+    const context = this.context;
     // prompt only if data is imported from a file
-    if (!this.useConfigurationFile || this.updateEntity !== 'remove' || this.relNameChoices.length === 0) {
+    if (!context.useConfigurationFile || context.updateEntity !== 'remove' || context.relNameChoices.length === 0) {
         return;
     }
-    if (this.databaseType === 'mongodb' || this.databaseType === 'cassandra') {
+    if (['cassandra', 'couchbase'].includes(context.databaseType)) {
         return;
     }
 
@@ -214,7 +222,7 @@ function askForRelationsToRemove() {
             type: 'checkbox',
             name: 'relsToRemove',
             message: 'Please choose the relationships you want to remove',
-            choices: this.relNameChoices
+            choices: context.relNameChoices
         },
         {
             when: response => response.relsToRemove.length !== 0,
@@ -224,13 +232,13 @@ function askForRelationsToRemove() {
             default: true
         }
     ];
-    this.prompt(prompts).then((props) => {
+    this.prompt(prompts).then(props => {
         if (props.confirmRemove) {
             this.log(chalk.red(`\nRemoving relationships: ${props.relsToRemove}\n`));
-            for (let i = this.relationships.length - 1; i >= 0; i -= 1) {
-                const rel = this.relationships[i];
+            for (let i = context.relationships.length - 1; i >= 0; i -= 1) {
+                const rel = context.relationships[i];
                 if (props.relsToRemove.filter(val => val === `${rel.relationshipName}:${rel.relationshipType}`).length > 0) {
-                    this.relationships.splice(i, 1);
+                    context.relationships.splice(i, 1);
                 }
             }
         }
@@ -239,11 +247,17 @@ function askForRelationsToRemove() {
 }
 
 function askForTableName() {
+    const context = this.context;
     // don't prompt if there are no relationships
-    const entityTableName = this.entityTableName;
-    const prodDatabaseType = this.prodDatabaseType;
-    if (!this.relationships || this.relationships.length === 0 ||
-        !((prodDatabaseType === 'oracle' && entityTableName.length > 14) || entityTableName.length > 30)) {
+    const entityTableName = context.entityTableName;
+    const prodDatabaseType = context.prodDatabaseType;
+    const skipCheckLengthOfIdentifier = context.skipCheckLengthOfIdentifier;
+    if (
+        skipCheckLengthOfIdentifier ||
+        !context.relationships ||
+        context.relationships.length === 0 ||
+        !((prodDatabaseType === 'oracle' && entityTableName.length > 14) || entityTableName.length > 30)
+    ) {
         return;
     }
     const done = this.async();
@@ -252,14 +266,17 @@ function askForTableName() {
             type: 'input',
             name: 'entityTableName',
             message: 'The table name for this entity is too long to form constraint names. Please use a shorter table name',
-            validate: (input) => {
-                if (!(/^([a-zA-Z0-9_]*)$/.test(input))) {
+            validate: input => {
+                if (!/^([a-zA-Z0-9_]*)$/.test(input)) {
                     return 'The table name cannot contain special characters';
-                } else if (input === '') {
+                }
+                if (input === '') {
                     return 'The table name cannot be empty';
-                } else if (prodDatabaseType === 'oracle' && input.length > 14) {
+                }
+                if (prodDatabaseType === 'oracle' && input.length > 14 && !skipCheckLengthOfIdentifier) {
                     return 'The table name is too long for Oracle, try a shorter name';
-                } else if (input.length > 30) {
+                }
+                if (input.length > 30 && !skipCheckLengthOfIdentifier) {
                     return 'The table name is too long, try a shorter name';
                 }
                 return true;
@@ -267,18 +284,51 @@ function askForTableName() {
             default: entityTableName
         }
     ];
-    this.prompt(prompts).then((props) => {
-        /* overwrite the table name for the entity using name obtained from the user*/
-        if (props.entityTableName !== this.entityTableName) {
-            this.entityTableName = _.snakeCase(props.entityTableName).toLowerCase();
+    this.prompt(prompts).then(props => {
+        /* overwrite the table name for the entity using name obtained from the user */
+        if (props.entityTableName !== context.entityTableName) {
+            context.entityTableName = _.snakeCase(props.entityTableName).toLowerCase();
         }
         done();
     });
 }
 
+function askForFiltering() {
+    const context = this.context;
+    // don't prompt if server is skipped, or the backend is not sql, or no service requested
+    if (context.useConfigurationFile || context.skipServer || context.databaseType !== 'sql' || context.service === 'no') {
+        return;
+    }
+    const done = this.async();
+    const prompts = [
+        {
+            type: 'list',
+            name: 'filtering',
+            message: 'Do you want to add filtering?',
+            choices: [
+                {
+                    value: 'no',
+                    name: 'Not needed'
+                },
+                {
+                    name: 'Dynamic filtering for the entities with JPA Static metamodel',
+                    value: 'jpaMetamodel'
+                }
+            ],
+            default: 0
+        }
+    ];
+    this.prompt(prompts).then(props => {
+        context.jpaMetamodelFiltering = props.filtering === 'jpaMetamodel';
+        done();
+    });
+}
+
 function askForDTO() {
-    // don't prompt if data is imported from a file or server is skipped
-    if (this.useConfigurationFile || this.skipServer) {
+    const context = this.context;
+    // don't prompt if data is imported from a file or server is skipped or if no service layer
+    if (context.useConfigurationFile || context.skipServer || context.service === 'no') {
+        context.dto = context.dto || 'no';
         return;
     }
     const done = this.async();
@@ -294,21 +344,22 @@ function askForDTO() {
                 },
                 {
                     value: 'mapstruct',
-                    name: '[BETA] Yes, generate a DTO with MapStruct'
+                    name: 'Yes, generate a DTO with MapStruct'
                 }
             ],
             default: 0
         }
     ];
-    this.prompt(prompts).then((props) => {
-        this.dto = props.dto;
+    this.prompt(prompts).then(props => {
+        context.dto = props.dto;
         done();
     });
 }
 
 function askForService() {
+    const context = this.context;
     // don't prompt if data is imported from a file or server is skipped
-    if (this.useConfigurationFile || this.skipServer) {
+    if (context.useConfigurationFile || context.skipServer) {
         return;
     }
     const done = this.async();
@@ -334,22 +385,23 @@ function askForService() {
             default: 0
         }
     ];
-    this.prompt(prompts).then((props) => {
-        this.service = props.service;
+    this.prompt(prompts).then(props => {
+        context.service = props.service;
         done();
     });
 }
 
 function askForPagination() {
+    const context = this.context;
     // don't prompt if data are imported from a file
-    if (this.useConfigurationFile) {
+    if (context.useConfigurationFile) {
         return;
     }
-    if (this.databaseType === 'cassandra') {
+    if (context.databaseType === 'cassandra') {
         return;
     }
     const done = this.async();
-    let prompts = [
+    const prompts = [
         {
             type: 'list',
             name: 'pagination',
@@ -358,10 +410,6 @@ function askForPagination() {
                 {
                     value: 'no',
                     name: 'No'
-                },
-                {
-                    value: 'pager',
-                    name: 'Yes, with a simple pager'
                 },
                 {
                     value: 'pagination',
@@ -375,33 +423,8 @@ function askForPagination() {
             default: 0
         }
     ];
-    // Check the issue https://github.com/jhipster/generator-jhipster/issues/5007 for more details
-    if (this.clientFramework !== 'angular1') {
-        prompts = [
-            {
-                type: 'list',
-                name: 'pagination',
-                message: 'Do you want pagination on your entity?',
-                choices: [
-                    {
-                        value: 'no',
-                        name: 'No'
-                    },
-                    {
-                        value: 'pagination',
-                        name: 'Yes, with pagination links'
-                    },
-                    {
-                        value: 'infinite-scroll',
-                        name: 'Yes, with infinite scroll'
-                    }
-                ],
-                default: 0
-            }
-        ];
-    }
-    this.prompt(prompts).then((props) => {
-        this.pagination = props.pagination;
+    this.prompt(prompts).then(props => {
+        context.pagination = props.pagination;
         this.log(chalk.green('\nEverything is configured, generating the entity...\n'));
         done();
     });
@@ -411,11 +434,14 @@ function askForPagination() {
  * ask question for a field creation
  */
 function askForField(done) {
-    this.log(chalk.green(`\nGenerating field #${this.fields.length + 1}\n`));
-    const skipServer = this.skipServer;
-    const prodDatabaseType = this.prodDatabaseType;
-    const databaseType = this.databaseType;
-    const fieldNamesUnderscored = this.fieldNamesUnderscored;
+    const context = this.context;
+    this.log(chalk.green(`\nGenerating field #${context.fields.length + 1}\n`));
+    const skipServer = context.skipServer;
+    const prodDatabaseType = context.prodDatabaseType;
+    const databaseType = context.databaseType;
+    const clientFramework = context.clientFramework;
+    const fieldNamesUnderscored = context.fieldNamesUnderscored;
+    const skipCheckLengthOfIdentifier = context.skipCheckLengthOfIdentifier;
     const prompts = [
         {
             type: 'confirm',
@@ -427,18 +453,26 @@ function askForField(done) {
             when: response => response.fieldAdd === true,
             type: 'input',
             name: 'fieldName',
-            validate: (input) => {
-                if (!(/^([a-zA-Z0-9_]*)$/.test(input))) {
+            validate: input => {
+                if (!/^([a-zA-Z0-9_]*)$/.test(input)) {
                     return 'Your field name cannot contain special characters';
-                } else if (input === '') {
+                }
+                if (input === '') {
                     return 'Your field name cannot be empty';
-                } else if (input.charAt(0) === input.charAt(0).toUpperCase()) {
+                }
+                if (input.charAt(0) === input.charAt(0).toUpperCase()) {
                     return 'Your field name cannot start with an upper case letter';
-                } else if (input === 'id' || fieldNamesUnderscored.indexOf(_.snakeCase(input)) !== -1) {
+                }
+                if (input === 'id' || fieldNamesUnderscored.includes(_.snakeCase(input))) {
                     return 'Your field name cannot use an already existing field name';
-                } else if (!skipServer && jhiCore.isReservedFieldName(input)) {
+                }
+                if ((clientFramework === undefined || clientFramework === 'angularX') && jhiCore.isReservedFieldName(input, 'angularX')) {
                     return 'Your field name cannot contain a Java or Angular reserved keyword';
-                } else if (prodDatabaseType === 'oracle' && input.length > 30) {
+                }
+                if ((clientFramework !== undefined || clientFramework === 'react') && jhiCore.isReservedFieldName(input, 'react')) {
+                    return 'Your field name cannot contain a Java or React reserved keyword';
+                }
+                if (prodDatabaseType === 'oracle' && input.length > 30 && !skipCheckLengthOfIdentifier) {
                     return 'The field name cannot be of more than 30 characters';
                 }
                 return true;
@@ -446,7 +480,7 @@ function askForField(done) {
             message: 'What is the name of your field?'
         },
         {
-            when: response => response.fieldAdd === true && (skipServer || databaseType === 'sql' || databaseType === 'mongodb'),
+            when: response => response.fieldAdd === true && (skipServer || ['sql', 'mongodb', 'couchbase'].includes(databaseType)),
             type: 'list',
             name: 'fieldType',
             message: 'What is the type of your field?',
@@ -488,6 +522,10 @@ function askForField(done) {
                     name: 'ZonedDateTime'
                 },
                 {
+                    value: 'Duration',
+                    name: 'Duration'
+                },
+                {
                     value: 'Boolean',
                     name: 'Boolean'
                 },
@@ -503,7 +541,7 @@ function askForField(done) {
             default: 0
         },
         {
-            when: (response) => {
+            when: response => {
                 if (response.fieldType === 'enum') {
                     response.fieldIsEnum = true;
                     return true;
@@ -513,16 +551,20 @@ function askForField(done) {
             },
             type: 'input',
             name: 'fieldType',
-            validate: (input) => {
+            validate: input => {
                 if (input === '') {
                     return 'Your class name cannot be empty.';
-                } else if (jhiCore.isReservedKeyword(input, 'JAVA')) {
+                }
+                if (jhiCore.isReservedKeyword(input, 'JAVA')) {
                     return 'Your enum name cannot contain a Java reserved keyword';
                 }
-                if (this.enums.indexOf(input) !== -1) {
-                    this.existingEnum = true;
+                if (!/^[A-Za-z0-9_]*$/.test(input)) {
+                    return 'Your enum name cannot contain special characters (allowed characters: A-Z, a-z, 0-9 and _)';
+                }
+                if (context.enums.includes(input)) {
+                    context.existingEnum = true;
                 } else {
-                    this.enums.push(input);
+                    context.enums.push(input);
                 }
                 return true;
             },
@@ -532,15 +574,16 @@ function askForField(done) {
             when: response => response.fieldIsEnum,
             type: 'input',
             name: 'fieldValues',
-            validate: (input) => {
-                if (input === '' && this.existingEnum) {
-                    this.existingEnum = false;
+            validate: input => {
+                if (input === '' && context.existingEnum) {
+                    context.existingEnum = false;
                     return true;
                 }
                 if (input === '') {
                     return 'You must specify values for your enumeration';
                 }
-                if (!/^[A-Za-z0-9_,\s]*$/.test(input)) {
+                // Commas allowed so that user can input a list of values split by commas.
+                if (!/^[A-Za-z0-9_,]+$/.test(input)) {
                     return 'Enum values cannot contain special characters (allowed characters: A-Z, a-z, 0-9 and _)';
                 }
                 const enums = input.replace(/\s/g, '').split(',');
@@ -558,11 +601,11 @@ function askForField(done) {
 
                 return true;
             },
-            message: (answers) => {
-                if (!this.existingEnum) {
-                    return 'What are the values of your enumeration (separated by comma)?';
+            message: answers => {
+                if (!context.existingEnum) {
+                    return 'What are the values of your enumeration (separated by comma, no spaces)?';
                 }
-                return 'What are the new values of your enumeration (separated by comma)?\nThe new values will replace the old ones.\nNothing will be done if there are no new values.';
+                return 'What are the new values of your enumeration (separated by comma, no spaces)?\nThe new values will replace the old ones.\nNothing will be done if there are no new values.';
             }
         },
         {
@@ -661,116 +704,64 @@ function askForField(done) {
             default: 0
         },
         {
-            when: response => response.fieldAdd === true,
+            when: response => response.fieldAdd === true && response.fieldType !== 'ByteBuffer',
             type: 'confirm',
             name: 'fieldValidate',
             message: 'Do you want to add validation rules to your field?',
             default: false
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    (response.fieldType === 'String' ||
-                    response.fieldTypeBlobContent === 'text'),
+            when: response => response.fieldAdd === true && response.fieldValidate === true,
             type: 'checkbox',
             name: 'fieldValidateRules',
             message: 'Which validation rules do you want to add?',
-            choices: [
-                {
-                    name: 'Required',
-                    value: 'required'
-                },
-                {
-                    name: 'Minimum length',
-                    value: 'minlength'
-                },
-                {
-                    name: 'Maximum length',
-                    value: 'maxlength'
-                },
-                {
-                    name: 'Regular expression pattern',
-                    value: 'pattern'
+            choices: response => {
+                // Default rules applicable for fieldType 'LocalDate', 'Instant',
+                // 'ZonedDateTime', 'Duration', 'UUID', 'Boolean', 'ByteBuffer' and 'Enum'
+                const opts = [
+                    {
+                        name: 'Required',
+                        value: 'required'
+                    },
+                    {
+                        name: 'Unique',
+                        value: 'unique'
+                    }
+                ];
+                if (response.fieldType === 'String' || response.fieldTypeBlobContent === 'text') {
+                    opts.push(
+                        {
+                            name: 'Minimum length',
+                            value: 'minlength'
+                        },
+                        {
+                            name: 'Maximum length',
+                            value: 'maxlength'
+                        },
+                        {
+                            name: 'Regular expression pattern',
+                            value: 'pattern'
+                        }
+                    );
+                } else if (['Integer', 'Long', 'Float', 'Double', 'BigDecimal'].includes(response.fieldType)) {
+                    opts.push(
+                        {
+                            name: 'Minimum',
+                            value: 'min'
+                        },
+                        {
+                            name: 'Maximum',
+                            value: 'max'
+                        }
+                    );
                 }
-            ],
+                return opts;
+            },
             default: 0
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    (response.fieldType === 'Integer' ||
-                    response.fieldType === 'Long' ||
-                    response.fieldType === 'Float' ||
-                    response.fieldType === 'Double' ||
-                    response.fieldType === 'BigDecimal'),
-            type: 'checkbox',
-            name: 'fieldValidateRules',
-            message: 'Which validation rules do you want to add?',
-            choices: [
-                {
-                    name: 'Required',
-                    value: 'required'
-                },
-                {
-                    name: 'Minimum',
-                    value: 'min'
-                },
-                {
-                    name: 'Maximum',
-                    value: 'max'
-                }
-            ],
-            default: 0
-        },
-        {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldType === 'byte[]' &&
-                    response.fieldTypeBlobContent !== 'text',
-            type: 'checkbox',
-            name: 'fieldValidateRules',
-            message: 'Which validation rules do you want to add?',
-            choices: [
-                {
-                    name: 'Required',
-                    value: 'required'
-                },
-                {
-                    name: 'Minimum byte size',
-                    value: 'minbytes'
-                },
-                {
-                    name: 'Maximum byte size',
-                    value: 'maxbytes'
-                }
-            ],
-            default: 0
-        },
-        {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    (response.fieldType === 'LocalDate' ||
-                    response.fieldType === 'Instant' ||
-                    response.fieldType === 'ZonedDateTime' ||
-                    response.fieldType === 'UUID' ||
-                    response.fieldType === 'Boolean' ||
-                    response.fieldType === 'ByteBuffer' ||
-                    response.fieldIsEnum === true),
-            type: 'checkbox',
-            name: 'fieldValidateRules',
-            message: 'Which validation rules do you want to add?',
-            choices: [
-                {
-                    name: 'Required',
-                    value: 'required'
-                }
-            ],
-            default: 0
-        },
-        {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('minlength') !== -1,
+            when: response =>
+                response.fieldAdd === true && response.fieldValidate === true && response.fieldValidateRules.includes('minlength'),
             type: 'input',
             name: 'fieldValidateRulesMinlength',
             validate: input => (this.isNumber(input) ? true : 'Minimum length must be a positive number'),
@@ -778,9 +769,8 @@ function askForField(done) {
             default: 0
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('maxlength') !== -1,
+            when: response =>
+                response.fieldAdd === true && response.fieldValidate === true && response.fieldValidateRules.includes('maxlength'),
             type: 'input',
             name: 'fieldValidateRulesMaxlength',
             validate: input => (this.isNumber(input) ? true : 'Maximum length must be a positive number'),
@@ -788,61 +778,38 @@ function askForField(done) {
             default: 20
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('min') !== -1 &&
-                    (response.fieldType === 'Integer' ||
-                    response.fieldType === 'Long'),
+            when: response => response.fieldAdd === true && response.fieldValidate === true && response.fieldValidateRules.includes('min'),
             type: 'input',
             name: 'fieldValidateRulesMin',
             message: 'What is the minimum of your field?',
-            validate: input => (this.isSignedNumber(input) ? true : 'Minimum must be a number'),
+            validate: (input, response) => {
+                if (['Float', 'Double', 'BigDecimal'].includes(response.fieldType)) {
+                    return this.isSignedDecimalNumber(input) ? true : 'Minimum must be a decimal number';
+                }
+                return this.isSignedNumber(input) ? true : 'Minimum must be a number';
+            },
             default: 0
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('max') !== -1 &&
-                    (response.fieldType === 'Integer' ||
-                    response.fieldType === 'Long'),
+            when: response => response.fieldAdd === true && response.fieldValidate === true && response.fieldValidateRules.includes('max'),
             type: 'input',
             name: 'fieldValidateRulesMax',
             message: 'What is the maximum of your field?',
-            validate: input => (this.isSignedNumber(input) ? true : 'Maximum must be a number'),
+            validate: (input, response) => {
+                if (['Float', 'Double', 'BigDecimal'].includes(response.fieldType)) {
+                    return this.isSignedDecimalNumber(input) ? true : 'Maximum must be a decimal number';
+                }
+                return this.isSignedNumber(input) ? true : 'Maximum must be a number';
+            },
             default: 100
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('min') !== -1 &&
-                    (response.fieldType === 'Float' ||
-                    response.fieldType === 'Double' ||
-                    response.fieldType === 'BigDecimal'),
-            type: 'input',
-            name: 'fieldValidateRulesMin',
-            message: 'What is the minimum of your field?',
-            validate: input => (this.isSignedDecimalNumber(input, true) ? true : 'Minimum must be a decimal number'),
-            default: 0
-        },
-        {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('max') !== -1 &&
-                    (response.fieldType === 'Float' ||
-                    response.fieldType === 'Double' ||
-                    response.fieldType === 'BigDecimal'),
-            type: 'input',
-            name: 'fieldValidateRulesMax',
-            message: 'What is the maximum of your field?',
-            validate: input => (this.isSignedDecimalNumber(input, true) ? true : 'Maximum must be a decimal number'),
-            default: 100
-        },
-        {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('minbytes') !== -1 &&
-                    response.fieldType === 'byte[]' &&
-                    response.fieldTypeBlobContent !== 'text',
+            when: response =>
+                response.fieldAdd === true &&
+                response.fieldValidate === true &&
+                response.fieldValidateRules.includes('minbytes') &&
+                response.fieldType === 'byte[]' &&
+                response.fieldTypeBlobContent !== 'text',
             type: 'input',
             name: 'fieldValidateRulesMinbytes',
             message: 'What is the minimum byte size of your field?',
@@ -850,11 +817,12 @@ function askForField(done) {
             default: 0
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('maxbytes') !== -1 &&
-                    response.fieldType === 'byte[]' &&
-                    response.fieldTypeBlobContent !== 'text',
+            when: response =>
+                response.fieldAdd === true &&
+                response.fieldValidate === true &&
+                response.fieldValidateRules.includes('maxbytes') &&
+                response.fieldType === 'byte[]' &&
+                response.fieldTypeBlobContent !== 'text',
             type: 'input',
             name: 'fieldValidateRulesMaxbytes',
             message: 'What is the maximum byte size of your field?',
@@ -862,19 +830,19 @@ function askForField(done) {
             default: 5000000
         },
         {
-            when: response => response.fieldAdd === true &&
-                    response.fieldValidate === true &&
-                    response.fieldValidateRules.indexOf('pattern') !== -1,
+            when: response =>
+                response.fieldAdd === true && response.fieldValidate === true && response.fieldValidateRules.includes('pattern'),
             type: 'input',
             name: 'fieldValidateRulesPattern',
             message: 'What is the regular expression pattern you want to apply on your field?',
             default: '^[a-zA-Z0-9]*$'
         }
     ];
-    this.prompt(prompts).then((props) => {
+    this.prompt(prompts).then(props => {
         if (props.fieldAdd) {
             if (props.fieldIsEnum) {
                 props.fieldType = _.upperFirst(props.fieldType);
+                props.fieldValues = props.fieldValues.toUpperCase();
             }
 
             const field = {
@@ -893,7 +861,7 @@ function askForField(done) {
             };
 
             fieldNamesUnderscored.push(_.snakeCase(props.fieldName));
-            this.fields.push(field);
+            context.fields.push(field);
         }
         logFieldsAndRelationships.call(this);
         if (props.fieldAdd) {
@@ -908,9 +876,10 @@ function askForField(done) {
  * ask question for a relationship creation
  */
 function askForRelationship(done) {
-    const name = this.name;
+    const context = this.context;
+    const name = context.name;
     this.log(chalk.green('\nGenerating relationships to other entities\n'));
-    const fieldNamesUnderscored = this.fieldNamesUnderscored;
+    const fieldNamesUnderscored = context.fieldNamesUnderscored;
     const prompts = [
         {
             type: 'confirm',
@@ -922,15 +891,18 @@ function askForRelationship(done) {
             when: response => response.relationshipAdd === true,
             type: 'input',
             name: 'otherEntityName',
-            validate: (input) => {
-                if (!(/^([a-zA-Z0-9_]*)$/.test(input))) {
+            validate: input => {
+                if (!/^([a-zA-Z0-9_]*)$/.test(input)) {
                     return 'Your other entity name cannot contain special characters';
-                } else if (input === '') {
+                }
+                if (input === '') {
                     return 'Your other entity name cannot be empty';
-                } else if (jhiCore.isReservedKeyword(input, 'JAVA')) {
+                }
+                if (jhiCore.isReservedKeyword(input, 'JAVA')) {
                     return 'Your other entity name cannot contain a Java reserved keyword';
-                } else if ((input.toLowerCase() === 'user') && (this.applicationType === 'microservice')) {
-                    return 'Your entity cannot have a relationship with User because it\'s a gateway entity';
+                }
+                if (input.toLowerCase() === 'user' && context.applicationType === 'microservice') {
+                    return "Your entity cannot have a relationship with User because it's a gateway entity";
                 }
                 return true;
             },
@@ -940,16 +912,20 @@ function askForRelationship(done) {
             when: response => response.relationshipAdd === true,
             type: 'input',
             name: 'relationshipName',
-            validate: (input) => {
-                if (!(/^([a-zA-Z0-9_]*)$/.test(input))) {
+            validate: input => {
+                if (!/^([a-zA-Z0-9_]*)$/.test(input)) {
                     return 'Your relationship cannot contain special characters';
-                } else if (input === '') {
+                }
+                if (input === '') {
                     return 'Your relationship cannot be empty';
-                } else if (input.charAt(0) === input.charAt(0).toUpperCase()) {
+                }
+                if (input.charAt(0) === input.charAt(0).toUpperCase()) {
                     return 'Your relationship cannot start with an upper case letter';
-                } else if (input === 'id' || fieldNamesUnderscored.indexOf(_.snakeCase(input)) !== -1) {
+                }
+                if (input === 'id' || fieldNamesUnderscored.includes(_.snakeCase(input))) {
                     return 'Your relationship cannot use an already existing field name';
-                } else if (jhiCore.isReservedKeyword(input, 'JAVA')) {
+                }
+                if (jhiCore.isReservedKeyword(input, 'JAVA')) {
                     return 'Your relationship cannot contain a Java reserved keyword';
                 }
                 return true;
@@ -958,81 +934,90 @@ function askForRelationship(done) {
             default: response => _.lowerFirst(response.otherEntityName)
         },
         {
-            when: response => response.relationshipAdd === true && response.otherEntityName.toLowerCase() !== 'user',
+            when: response => response.relationshipAdd === true,
             type: 'list',
             name: 'relationshipType',
             message: 'What is the type of the relationship?',
-            choices: [
-                {
-                    value: 'one-to-many',
-                    name: 'one-to-many'
-                },
-                {
-                    value: 'many-to-one',
-                    name: 'many-to-one'
-                },
-                {
-                    value: 'many-to-many',
-                    name: 'many-to-many'
-                },
-                {
-                    value: 'one-to-one',
-                    name: 'one-to-one'
+            choices: response => {
+                const opts = [
+                    {
+                        value: 'many-to-one',
+                        name: 'many-to-one'
+                    },
+                    {
+                        value: 'many-to-many',
+                        name: 'many-to-many'
+                    },
+                    {
+                        value: 'one-to-one',
+                        name: 'one-to-one'
+                    }
+                ];
+                if (response.otherEntityName.toLowerCase() !== 'user') {
+                    opts.unshift({
+                        value: 'one-to-many',
+                        name: 'one-to-many'
+                    });
                 }
-            ],
+                return opts;
+            },
             default: 0
         },
         {
-            when: response => response.relationshipAdd === true && response.otherEntityName.toLowerCase() === 'user',
-            type: 'list',
-            name: 'relationshipType',
-            message: 'What is the type of the relationship?',
-            choices: [
-                {
-                    value: 'many-to-one',
-                    name: 'many-to-one'
-                },
-                {
-                    value: 'many-to-many',
-                    name: 'many-to-many'
-                },
-                {
-                    value: 'one-to-one',
-                    name: 'one-to-one'
-                }
-            ],
-            default: 0
-        },
-        {
-            when: response => (response.relationshipAdd === true && response.otherEntityName.toLowerCase() !== 'user' &&
-                (response.relationshipType === 'many-to-many' || response.relationshipType === 'one-to-one')),
+            when: response =>
+                response.relationshipAdd === true &&
+                response.otherEntityName.toLowerCase() !== 'user' &&
+                (response.relationshipType === 'many-to-many' || response.relationshipType === 'one-to-one'),
             type: 'confirm',
             name: 'ownerSide',
             message: 'Is this entity the owner of the relationship?',
             default: false
         },
         {
-            when: response => (response.relationshipAdd === true && (response.relationshipType === 'one-to-many' ||
-                ((response.relationshipType === 'many-to-many' ||
-                response.relationshipType === 'one-to-one') && response.otherEntityName.toLowerCase() !== 'user'))),
+            when: response =>
+                context.databaseType === 'sql' &&
+                response.relationshipAdd === true &&
+                response.relationshipType === 'one-to-one' &&
+                (response.ownerSide === true || response.otherEntityName.toLowerCase() === 'user'),
+            type: 'confirm',
+            name: 'useJPADerivedIdentifier',
+            message: 'Do you want to use JPA Derived Identifier - @MapsId?',
+            default: false
+        },
+        {
+            when: response =>
+                response.relationshipAdd === true &&
+                (response.relationshipType === 'one-to-many' ||
+                    ((response.relationshipType === 'many-to-many' || response.relationshipType === 'one-to-one') &&
+                        response.otherEntityName.toLowerCase() !== 'user')),
             type: 'input',
             name: 'otherEntityRelationshipName',
             message: 'What is the name of this relationship in the other entity?',
             default: response => _.lowerFirst(name)
         },
         {
-            when: response => (response.relationshipAdd === true && (response.relationshipType === 'many-to-one' ||
-                (response.relationshipType === 'many-to-many' && response.ownerSide === true) ||
-                (response.relationshipType === 'one-to-one' && response.ownerSide === true))),
+            when: response =>
+                response.relationshipAdd === true &&
+                (response.relationshipType === 'many-to-one' ||
+                    (response.relationshipType === 'many-to-many' && response.ownerSide === true) ||
+                    (response.relationshipType === 'one-to-one' && response.ownerSide === true)),
             type: 'input',
             name: 'otherEntityField',
-            message: response => `When you display this relationship with Angular, which field from '${response.otherEntityName}' do you want to use? This field will be displayed as a String, so it cannot be a Blob`,
+            message: response =>
+                `When you display this relationship on client-side, which field from '${
+                    response.otherEntityName
+                }' do you want to use? This field will be displayed as a String, so it cannot be a Blob`,
             default: 'id'
         },
         {
-            when: response => (response.relationshipAdd === true && (response.relationshipType === 'many-to-one' ||
-                (response.relationshipType === 'many-to-many' && (response.ownerSide === true || response.otherEntityName.toLowerCase() === 'user')) ||
-                (response.relationshipType === 'one-to-one' && (response.ownerSide === true || response.otherEntityName.toLowerCase() === 'user')))),
+            when: response =>
+                response.relationshipAdd === true &&
+                response.otherEntityName.toLowerCase() !== context.name.toLowerCase() &&
+                (response.relationshipType === 'many-to-one' ||
+                    (response.relationshipType === 'many-to-many' &&
+                        (response.ownerSide === true || response.otherEntityName.toLowerCase() === 'user')) ||
+                    (response.relationshipType === 'one-to-one' &&
+                        (response.ownerSide === true || response.otherEntityName.toLowerCase() === 'user'))),
             type: 'confirm',
             name: 'relationshipValidate',
             message: 'Do you want to add any validation rules to this relationship?',
@@ -1052,7 +1037,7 @@ function askForRelationship(done) {
             default: 0
         }
     ];
-    this.prompt(prompts).then((props) => {
+    this.prompt(prompts).then(props => {
         if (props.relationshipAdd) {
             const relationship = {
                 relationshipName: props.relationshipName,
@@ -1061,6 +1046,7 @@ function askForRelationship(done) {
                 relationshipValidateRules: props.relationshipValidateRules,
                 otherEntityField: props.otherEntityField,
                 ownerSide: props.ownerSide,
+                useJPADerivedIdentifier: props.useJPADerivedIdentifier,
                 otherEntityRelationshipName: props.otherEntityRelationshipName
             };
 
@@ -1071,7 +1057,7 @@ function askForRelationship(done) {
             }
 
             fieldNamesUnderscored.push(_.snakeCase(props.relationshipName));
-            this.relationships.push(relationship);
+            context.relationships.push(relationship);
         }
         logFieldsAndRelationships.call(this);
         if (props.relationshipAdd) {
@@ -1087,52 +1073,64 @@ function askForRelationship(done) {
  * Show the entity and it's fields and relationships in console
  */
 function logFieldsAndRelationships() {
-    if (this.fields.length > 0 || this.relationships.length > 0) {
-        this.log(chalk.red(chalk.white('\n================= ') + this.entityNameCapitalized + chalk.white(' =================')));
+    const context = this.context;
+    if (context.fields.length > 0 || context.relationships.length > 0) {
+        this.log(chalk.red(chalk.white('\n================= ') + context.entityNameCapitalized + chalk.white(' =================')));
     }
-    if (this.fields.length > 0) {
+    if (context.fields.length > 0) {
         this.log(chalk.white('Fields'));
-        this.fields.forEach((field) => {
-            let validationDetails = '';
+        context.fields.forEach(field => {
+            const validationDetails = [];
             const fieldValidate = _.isArray(field.fieldValidateRules) && field.fieldValidateRules.length >= 1;
             if (fieldValidate === true) {
-                if (field.fieldValidateRules.indexOf('required') !== -1) {
-                    validationDetails = 'required ';
+                if (field.fieldValidateRules.includes('required')) {
+                    validationDetails.push('required');
                 }
-                if (field.fieldValidateRules.indexOf('minlength') !== -1) {
-                    validationDetails += `minlength='${field.fieldValidateRulesMinlength}' `;
+                if (field.fieldValidateRules.includes('unique')) {
+                    validationDetails.push('unique');
                 }
-                if (field.fieldValidateRules.indexOf('maxlength') !== -1) {
-                    validationDetails += `maxlength='${field.fieldValidateRulesMaxlength}' `;
+                if (field.fieldValidateRules.includes('minlength')) {
+                    validationDetails.push(`minlength='${field.fieldValidateRulesMinlength}'`);
                 }
-                if (field.fieldValidateRules.indexOf('pattern') !== -1) {
-                    validationDetails += `pattern='${field.fieldValidateRulesPattern}' `;
+                if (field.fieldValidateRules.includes('maxlength')) {
+                    validationDetails.push(`maxlength='${field.fieldValidateRulesMaxlength}'`);
                 }
-                if (field.fieldValidateRules.indexOf('min') !== -1) {
-                    validationDetails += `min='${field.fieldValidateRulesMin}' `;
+                if (field.fieldValidateRules.includes('pattern')) {
+                    validationDetails.push(`pattern='${field.fieldValidateRulesPattern}'`);
                 }
-                if (field.fieldValidateRules.indexOf('max') !== -1) {
-                    validationDetails += `max='${field.fieldValidateRulesMax}' `;
+                if (field.fieldValidateRules.includes('min')) {
+                    validationDetails.push(`min='${field.fieldValidateRulesMin}'`);
                 }
-                if (field.fieldValidateRules.indexOf('minbytes') !== -1) {
-                    validationDetails += `minbytes='${field.fieldValidateRulesMinbytes}' `;
+                if (field.fieldValidateRules.includes('max')) {
+                    validationDetails.push(`max='${field.fieldValidateRulesMax}'`);
                 }
-                if (field.fieldValidateRules.indexOf('maxbytes') !== -1) {
-                    validationDetails += `maxbytes='${field.fieldValidateRulesMaxbytes}' `;
+                if (field.fieldValidateRules.includes('minbytes')) {
+                    validationDetails.push(`minbytes='${field.fieldValidateRulesMinbytes}'`);
+                }
+                if (field.fieldValidateRules.includes('maxbytes')) {
+                    validationDetails.push(`maxbytes='${field.fieldValidateRulesMaxbytes}'`);
                 }
             }
-            this.log(chalk.red(field.fieldName) + chalk.white(` (${field.fieldType}${field.fieldTypeBlobContent ? ` ${field.fieldTypeBlobContent}` : ''}) `) + chalk.cyan(validationDetails));
+            this.log(
+                chalk.red(field.fieldName) +
+                    chalk.white(` (${field.fieldType}${field.fieldTypeBlobContent ? ` ${field.fieldTypeBlobContent}` : ''}) `) +
+                    chalk.cyan(validationDetails.join(' '))
+            );
         });
         this.log();
     }
-    if (this.relationships.length > 0) {
+    if (context.relationships.length > 0) {
         this.log(chalk.white('Relationships'));
-        this.relationships.forEach((relationship) => {
-            let validationDetails = '';
-            if (relationship.relationshipValidateRules && relationship.relationshipValidateRules.indexOf('required') !== -1) {
-                validationDetails = 'required ';
+        context.relationships.forEach(relationship => {
+            const validationDetails = [];
+            if (relationship.relationshipValidateRules && relationship.relationshipValidateRules.includes('required')) {
+                validationDetails.push('required');
             }
-            this.log(`${chalk.red(relationship.relationshipName)} ${chalk.white(`(${_.upperFirst(relationship.otherEntityName)})`)} ${chalk.cyan(relationship.relationshipType)} ${chalk.cyan(validationDetails)}`);
+            this.log(
+                `${chalk.red(relationship.relationshipName)} ${chalk.white(`(${_.upperFirst(relationship.otherEntityName)})`)} ${chalk.cyan(
+                    relationship.relationshipType
+                )} ${chalk.cyan(validationDetails.join(' '))}`
+            );
         });
         this.log();
     }

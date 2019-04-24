@@ -1,30 +1,30 @@
 {
     "settings": {
-        "title": "User settings for [<b>{{username}}</b>]",
+        "title": "ইউজার সেটিংস [<strong>{{username}}</strong>] এর জন্য",
         "form": {
-            "firstname": "First Name",
-            "firstname.placeholder": "Your first name",
-            "lastname": "Last Name",
-            "lastname.placeholder": "Your last name",
-            "language": "Language",
-            "button": "Save"
+            "firstname": "নামের প্রথম অংশ",
+            "firstname.placeholder": "নামের প্রথম অংশ",
+            "lastname": "নামের শেষ অংশ",
+            "lastname.placeholder": "নামের শেষ অংশ",
+            "language": "ভাষা",
+            "button": "সেইভ"
         },
         "messages": {
             "error": {
-                "fail": "<strong>An error has occurred!</strong> Settings could not be saved.",
-                "emailexists": "<strong>Email is already in use!</strong> Please choose another one."
+                "fail": "<strong>ত্রুটি হয়েছে!</strong> সেটিংস সেইভ করা যায়নি।",
+                "emailexists": "<strong>এই ইমেইল দিয়ে এরই মধ্যে একাউন্ট খোলা হয়েছে!</strong> অন্য একটি দিয়ে চেষ্টা করুন।"
             },
-            "success": "<strong>Settings saved!</strong>",
+            "success": "<strong>সেটিংস সেইভ হয়েছে!</strong>",
             "validate": {
                 "firstname": {
-                    "required": "Your first name is required.",
-                    "minlength": "Your first name is required to be at least 1 character",
-                    "maxlength": "Your first name cannot be longer than 50 characters"
+                    "required": "নামের প্রথম অংশ দিতে হবে",
+                    "minlength": "নামের প্রথম অংশ কমপক্ষে ১ অক্ষর হতে হবে",
+                    "maxlength": "নামের প্রথম অংশ ৫০ অক্ষরের বেশি হতে পারবে না"
                 },
                 "lastname": {
-                    "required": "Your last name is required.",
-                    "minlength": "Your last name is required to be at least 1 character",
-                    "maxlength": "Your last name cannot be longer than 50 characters"
+                    "required": "নামের শেষ অংশ দিতে হবে",
+                    "minlength": "নামের শেষ অংশ কমপক্ষে ১ অক্ষর হতে হবে",
+                    "maxlength": "নামের শেষ অংশ ৫০ অক্ষরের বেশি হতে পারবে না"
                 }
             }
         }

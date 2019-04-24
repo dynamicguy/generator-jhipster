@@ -14,13 +14,13 @@
         },
         "table": {
             "header": {
-                "principal": "User",
+                "principal": "Pengguna",
                 "date": "Tanggal",
                 "status": "Status",
                 "data": "Data tambahan"
             },
             "data": {
-                "remoteAddress": "Remote Address:"
+                "remoteAddress": "Alamat Remote:"
             }
         }
     }
