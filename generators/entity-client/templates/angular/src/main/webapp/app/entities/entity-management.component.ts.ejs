@@ -39,6 +39,7 @@ import { <%= entityAngularName %>Service } from './<%= entityFileName %>.service
     templateUrl: './<%= entityFileName %>.component.html'
 })
 export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
+    <%=entityInstancePlural %>Selected: any;
     <%_ if (pagination === 'pagination' || pagination === 'pager') { _%>
 <%- include('pagination-template', {toArrayString: toArrayString}); -%>
     <%_ } else if (pagination === 'infinite-scroll') { _%>
@@ -48,6 +49,7 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
     <%_ } _%>
 
     ngOnInit() {
+        this.<%=entityInstancePlural %>Selected = [];
         this.loadAll();
         this.accountService.identity().then((account) => {
             this.currentAccount = account;
@@ -92,6 +94,51 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
         return result;
     }
         <%_ } _%>
+    
+    openImportDialog() {
+        // const modalRef = this.modalService.open(<%= entityClass %>ImportDialogComponent);
+    }
+
+    isSelected(<%=entityInstance %>Id: number): boolean {
+      return this.<%=entityInstancePlural %>Selected.indexOf(<%=entityInstance %>Id) !== -1;
+    }
+
+    deleteSelected() {
+      if (this.<%=entityInstancePlural %>Selected) {
+        for (const <%=entityInstance %>Id of this.<%=entityInstancePlural %>Selected) {
+          this.<%=entityInstance %>Service.delete(<%=entityInstance %>Id).subscribe(response => {
+            this.<%=entityInstancePlural %>Selected.pop(<%=entityInstance %>Id);
+            this.eventManager.broadcast({
+              name: '<%=entityInstance %>ListModification',
+              content: 'Deleted an <%=entityInstance %>'
+            });
+          });
+        }
+      }
+    }
+
+    updateSelected<%= entityClassPlural %>(<%=entityInstance %>) {
+      if (this.<%=entityInstancePlural %>Selected) {
+        if (this.<%=entityInstancePlural %>Selected.indexOf(<%=entityInstance %>.id) !== -1) {
+          this.<%=entityInstancePlural %>Selected.pop(<%=entityInstance %>.id);
+        } else {
+          this.<%=entityInstancePlural %>Selected.push(<%=entityInstance %>.id);
+        }
+      }
+    }
+
+    toggleAll() {
+      if (this.<%=entityInstancePlural %>Selected) {
+        if (this.<%=entityInstancePlural %>Selected.length > 0) {
+          this.<%=entityInstancePlural %>Selected = [];
+        } else {
+          for (const <%=entityInstance %> of this.<%=entityInstancePlural %>) {
+            this.<%=entityInstancePlural %>Selected.push(<%=entityInstance %>.id);
+          }
+        }
+      }
+    }
+          
         <%_ if (pagination === 'pagination' || pagination === 'pager') { _%>
 
     protected paginate<%= entityClassPlural %>(data: I<%= entityAngularName %>[], headers: HttpHeaders) {

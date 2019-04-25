@@ -17,8 +17,8 @@
  limitations under the License.
 -%>
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpResponse, HttpHeaders, HttpRequest, HttpEventType } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
 <%_ if (fieldsContainDate) { _%>
 import * as moment from 'moment';
 import { DATE_FORMAT } from 'app/shared/constants/input.constants';
@@ -85,6 +85,39 @@ export class <%= entityAngularName %>Service {
     }
     <%_ } _%>
 
+    importCsv(req?: any): Observable<EntityArrayResponseType> {
+      return this.http.post<I<%= entityAngularName %>[]>(this.resourceUrl + '/upload', req, {
+        observe: 'response',
+        headers: new HttpHeaders({ 'Content-Type': 'multipart/form-data' })
+      });
+    }
+
+    upload(files: Set<File>): { [key: string]: Observable<number> } {
+      const status = {};
+      const url = this.resourceUrl + '/upload';
+      files.forEach(file => {
+        const formData: FormData = new FormData();
+        formData.append('file', file, file.name);
+        const req = new HttpRequest('POST', url, formData, {
+          reportProgress: true
+        });
+        const progress = new Subject<number>();
+        const startTime = new Date().getTime();
+        this.http.request(req).subscribe(event => {
+          if (event.type === HttpEventType.UploadProgress) {
+            const percentDone = Math.round((100 * event.loaded) / event.total);
+            progress.next(percentDone);
+          } else if (event instanceof HttpResponse) {
+            progress.complete();
+          }
+        });
+        status[file.name] = {
+          progress: progress.asObservable()
+        };
+      });
+      return status;
+    }
+      
 <%_ if (fieldsContainDate) { _%>
     protected convertDateFromClient(<%= entityInstance %>: I<%= entityAngularName %>): I<%= entityAngularName %> {
         const copy: I<%= entityAngularName %> = Object.assign({}, <%= entityInstance %>, {
