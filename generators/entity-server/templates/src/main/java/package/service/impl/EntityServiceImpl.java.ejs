@@ -76,6 +76,10 @@ import java.util.LinkedList;
 import java.util.List;
 <%_ } _%>
 import java.util.Optional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import <%= packageName %>.service.util.CsvUtils;
 <%_ if (databaseType === 'cassandra') { _%>
 import java.util.UUID;
 <%_ } _%>
@@ -214,4 +218,19 @@ public class <%= serviceClassName %><% if (service === 'serviceImpl') { %> imple
         <%_ } } _%>
     }
     <%_ } _%>
+
+    /**
+     * Import <%= entityInstance %> from csv file in db
+     *
+     * @param inputStream the input stream
+     * @return the list of entities
+     */
+    public List<<%= instanceType %>> importCsv(InputStream inputStream) throws IOException {
+        List<<%= instanceType %>> items = CsvUtils.read(<%= instanceType %>.class, inputStream);
+        for (<%= instanceType %> <%= entityInstance %>DTO : items) {
+            <%= entityInstance %>Repository.save(<%= entityInstance %>Mapper.toEntity(<%= entityInstance %>DTO));
+        }
+        return items;
+    }
+    
 }

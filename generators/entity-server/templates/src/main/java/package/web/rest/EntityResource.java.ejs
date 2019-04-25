@@ -91,6 +91,8 @@ import javax.validation.Valid;
 <%_ } _%>
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.io.IOException;
+import org.springframework.web.multipart.MultipartFile;
 <%_ if (pagination === 'no' && dto === 'mapstruct' && !viaService && fieldsContainNoOwnerOneToOne === true) { _%>
 import java.util.LinkedList;<% } %>
 import java.util.List;<% if (isUsingMapsId === true) { %>
@@ -248,4 +250,18 @@ public class <%= entityClass %>Resource {
      * @return the result of the search.
      */
     @GetMapping("/_search/<%= entityApiUrl %>")<%- include('../../common/search_template', {asEntity, asDto, viaService}); -%><% } %>
+      
+
+    /**
+     * POST /<%= entityApiUrl %>/upload : upload csv file to import
+     *
+     * @param file csv file to import
+     * @return the ResponseEntity containing a list of imported items as json
+     * @throws IOException if the file is in wrong format
+     */
+    @PostMapping(value = "/<%= entityApiUrl %>/upload", consumes = "multipart/form-data")
+    public ResponseEntity<List<<%= instanceType %>>> upload(@RequestParam("file") MultipartFile file) throws IOException {
+        List<<%= instanceType %>> items = <%= entityInstance %>Service.importCsv(file.getInputStream());
+        return new ResponseEntity<>(items, null, HttpStatus.OK);
+    }      
 }
