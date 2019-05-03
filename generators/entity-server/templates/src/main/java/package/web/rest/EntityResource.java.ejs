@@ -250,10 +250,9 @@ public class <%= entityClass %>Resource {
      * @return the result of the search.
      */
     @GetMapping("/_search/<%= entityApiUrl %>")<%- include('../../common/search_template', {asEntity, asDto, viaService}); -%><% } %>
-      
 
     /**
-     * POST /<%= entityApiUrl %>/upload : upload csv file to import
+     * {@code POST /<%= entityApiUrl %>/upload} : upload csv file to import
      *
      * @param file csv file to import
      * @return the ResponseEntity containing a list of imported items as json

@@ -52,13 +52,11 @@
                     <div class="col-md-6"><jhi-item-count [page]="page" [total]="totalItems" [itemsPerPage]="itemsPerPage"></jhi-item-count></div>
                     <div class="col-md-6 text-right">
                         You've selected {{this.<%=entityInstancePlural %>Selected.length}} items
-                        <button class="btn btn-danger" (click)="deleteSelected()">
+                        <button [disabled]="<%=entityInstancePlural %>Selected < 1" class="btn btn-warning" (click)="deleteSelected()">
                             <fa-icon [icon]="'trash-alt'"></fa-icon>
-                            Delete selected
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete_selected">Import</span>
                         </button>
-                        <button type="submit"
-                                (click)="openImportDialog()"
-                                class="btn btn-primary">
+                        <button (click)="openImportDialog()" class="btn btn-info">
                             <fa-icon [icon]="'plus'"></fa-icon>
                             <span class="d-none d-md-inline" jhiTranslate="entity.action.import">Import</span>
                         </button>
