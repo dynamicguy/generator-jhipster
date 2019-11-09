@@ -46,7 +46,7 @@ function checkImages() {
         const appConfig = this.appConfigs[index];
         if (appConfig.buildTool === 'maven') {
             imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/target/jib-cache`);
-            runCommand = './mvnw -Pprod verify jib:dockerBuild';
+            runCommand = './mvnw -ntp -Pprod verify jib:dockerBuild';
         } else {
             imagePath = this.destinationPath(`${this.directoryPath + appsFolder}/build/jib-cache`);
             runCommand = './gradlew bootJar -Pprod jibDockerBuild';
@@ -145,6 +145,7 @@ function loadFromYoRc() {
     this.consoleOptions = this.config.get('consoleOptions');
     this.useKafka = false;
     this.useMemcached = false;
+    this.useRedis = false;
     this.dockerRepositoryName = this.config.get('dockerRepositoryName');
     this.dockerPushCommand = this.config.get('dockerPushCommand');
     this.serviceDiscoveryType = this.config.get('serviceDiscoveryType');

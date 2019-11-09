@@ -21,10 +21,12 @@ package <%=packageName%>.web.rest;
 <%_ const viaService = service !== 'no';
     let isUsingMapsId = false;
     let mapsIdAssoc;
+    let primaryKeyType = pkType;
     for (idx in relationships) {
         isUsingMapsId = relationships[idx].useJPADerivedIdentifier;
         if ( isUsingMapsId === true) {
             mapsIdAssoc = relationships[idx];
+            primaryKeyType = (relationships[idx].otherEntityName === 'user'  && authenticationType === 'oauth2') ? 'String' : pkType;
             break;
         }
         isUsingMapsId = false;
@@ -73,8 +75,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.util.MultiValueMap;
+    <%_ if (reactive) { _%>
+import org.springframework.http.server.reactive.ServerHttpRequest;
+    <%_ } _%>
+    <%_ if (!reactive) { _%>
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+    <%_ } else { _%>
 import org.springframework.web.util.UriComponentsBuilder;
+    <%_ } _%>
 <%_ } _%>
 <%_ if (reactiveRepositories) { _%>
 import org.springframework.http.MediaType;
@@ -113,6 +121,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;<% } %>
 public class <%= entityClass %>Resource {
 
     private final Logger log = LoggerFactory.getLogger(<%= entityClass %>Resource.class);
+<%_ if (!readOnly) { _%>
 
     <%_ let entityName = entityInstance;
     if (clientRootFolder && !skipUiGrouping) {
@@ -122,10 +131,12 @@ public class <%= entityClass %>Resource {
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
+<%_ } _%>
     <%_
     const instanceType = (dto === 'mapstruct') ? asDto(entityClass) : asEntity(entityClass);
     const instanceName = (dto === 'mapstruct') ? asDto(entityInstance) : asEntity(entityInstance);
     _%><%- include('../../common/inject_template', {viaService: viaService, constructorName: entityClass + 'Resource', queryService: jpaMetamodelFiltering, isUsingMapsId: isUsingMapsId, mapsIdAssoc: mapsIdAssoc, isController: true}); -%>
+<%_ if (!readOnly) { _%>
 
     /**
      * {@code POST  /<%= entityApiUrl %>} : Create a new <%= entityInstance %>.
@@ -181,11 +192,18 @@ public class <%= entityClass %>Resource {
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, <%= enableTranslation %>, ENTITY_NAME, <%= instanceName %>.getId().toString()))
             .body(result);
     }
+<%_ } _%>
 
     /**
      * {@code GET  /<%= entityApiUrl %>} : get all the <%= entityInstancePlural %>.
-     *<% if (pagination !== 'no') { %>
-     * @param pageable the pagination information.<% } if (!jpaMetamodelFiltering && fieldsContainOwnerManyToMany) { %>
+     *
+    <%_ if (pagination !== 'no') { %>
+     * @param pageable the pagination information.
+        <%_ if (reactive) { _%>
+     * @param request a {@link ServerHttpRequest} request.
+        <%_ } _%>
+    <%_ } _%>
+    <%_ if (!jpaMetamodelFiltering && fieldsContainOwnerManyToMany) { _%>
      * @param eagerload flag to eager load entities from relationships (This is applicable for many-to-many).<% } if (jpaMetamodelFiltering) { %>
      * @param criteria the criteria which the requested entities should match.<% } else if (fieldsContainNoOwnerOneToOne) { %>
      * @param filter the filter of the request.<% } %>
@@ -223,10 +241,11 @@ public class <%= entityClass %>Resource {
     @GetMapping("/<%= entityApiUrl %>/{id}")<%_ if (databaseType === 'sql' && isUsingMapsId === true && !viaService) { _%>
 
     @Transactional(readOnly = true) <%_ } %>
-    public ResponseEntity<<%= instanceType %>> get<%= entityClass %>(@PathVariable <%= pkType %> id) {
+    public ResponseEntity<<%= instanceType %>> get<%= entityClass %>(@PathVariable <%= primaryKeyType %> id) {
         log.debug("REST request to get <%= entityClass %> : {}", id);<%- include('../../common/get_template', {asEntity, asDto, viaService, returnDirectly:false}); -%>
         return ResponseUtil.wrapOrNotFound(<%= instanceName %>);
     }
+<%_ if (!readOnly) { _%>
 
     /**
      * {@code DELETE  /<%= entityApiUrl %>/:id} : delete the "id" <%= entityInstance %>.
@@ -235,32 +254,40 @@ public class <%= entityClass %>Resource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/<%= entityApiUrl %>/{id}")
-    public ResponseEntity<Void> delete<%= entityClass %>(@PathVariable <%= pkType %> id) {
+    public ResponseEntity<Void> delete<%= entityClass %>(@PathVariable <%= primaryKeyType %> id) {
         log.debug("REST request to delete <%= entityClass %> : {}", id);
 <%- include('../../common/delete_template', {viaService: viaService}); -%>
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, <%= enableTranslation %>, ENTITY_NAME, id<% if (pkType !== 'String') { %>.toString()<% } %>)).build();
-    }<% if (searchEngine === 'elasticsearch') { %>
+    }
+<%_ } _%>
+<%_ if (searchEngine === 'elasticsearch') { _%>
 
     /**
      * {@code SEARCH  /_search/<%= entityApiUrl %>?query=:query} : search for the <%= entityInstance %> corresponding
      * to the query.
      *
-     * @param query the query of the <%= entityInstance %> search.<% if (pagination !== 'no') { %>
-     * @param pageable the pagination information.<% } %>
+     * @param query the query of the <%= entityInstance %> search.
+    <%_ if (pagination !== 'no') { _%>
+     * @param pageable the pagination information.
+       <%_ if (reactive) { _%>
+     * @param request a {@link ServerHttpRequest} request.
+        <%_ } _%>
+    <%_ } _%>
      * @return the result of the search.
      */
-    @GetMapping("/_search/<%= entityApiUrl %>")<%- include('../../common/search_template', {asEntity, asDto, viaService}); -%><% } %>
+    @GetMapping("/_search/<%= entityApiUrl %>")<%- include('../../common/search_template', {asEntity, asDto, viaService}); -%>
+<%_ } _%>
 
-    /**
-     * {@code POST /<%= entityApiUrl %>/upload} : upload csv file to import
-     *
-     * @param file csv file to import
-     * @return the ResponseEntity containing a list of imported items as json
-     * @throws IOException if the file is in wrong format
-     */
+   /**
+    * {@code POST /<%= entityApiUrl %>/upload} : upload csv file to import
+    *
+    * @param file csv file to import
+    * @return the ResponseEntity containing a list of imported items as json
+    * @throws IOException if the file is in wrong format
+    */
     @PostMapping(value = "/<%= entityApiUrl %>/upload", consumes = "multipart/form-data")
     public ResponseEntity<List<<%= instanceType %>>> upload(@RequestParam("file") MultipartFile file) throws IOException {
         List<<%= instanceType %>> items = <%= entityInstance %>Service.importCsv(file.getInputStream());
         return new ResponseEntity<>(items, null, HttpStatus.OK);
-    }      
+    }
 }

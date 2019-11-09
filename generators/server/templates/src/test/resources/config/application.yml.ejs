@@ -43,21 +43,10 @@ eureka:
 spring:
     application:
         name: <%= baseName %>
-    <%_ if (messageBroker === 'kafka') { _%>
-    cloud:
-        stream:
-            kafka:
-                binder:
-                    brokers: localhost
-                    zk-nodes: localhost
-            bindings:
-                output:
-                    destination: topic-jhipster
-    <%_ } _%>
     <%_ if (databaseType === 'sql') { _%>
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        url: jdbc:h2:mem:<%= baseName %>;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+        url: jdbc:h2:mem:<%= baseName %>;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MULTI_THREADED=FALSE
         name:
         username:
         password:
@@ -104,6 +93,11 @@ spring:
             properties:
                 path:
                     home: <%= BUILD_DIR %>elasticsearch
+                <%_ if (cucumberTests) { _%>
+                # See https://github.com/jhipster/generator-jhipster/issues/10302
+                node:
+                    max_local_storage_nodes: 2
+                <%_ } _%>
     <%_ } _%>
     <%_ if (databaseType === 'couchbase') { _%>
     couchbase:
@@ -169,9 +163,8 @@ jhipster:
     logging:
         # To test json console appender
         use-json-format: true # By default, logs are in Json format
-        # To test logstash appender
         logstash:
-            enabled: true
+            enabled: false
             host: localhost
             port: 5000
             queue-size: 512
@@ -210,6 +203,24 @@ jhipster:
         logs: # Reports metrics in the logs
             enabled: true
             report-frequency: 60 # in seconds
+<%_ if (cacheProvider === 'redis') { _%>
+    cache:
+        redis:
+            server: ${redis.test.server}
+<%_ } _%>
+<%_ if (messageBroker === 'kafka') { _%>
+kafka:
+    consumer:
+        key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        bootstrap.servers: ${kafkaBootstrapServers}
+        group.id: <%= dasherizedBaseName %>
+        auto.offset.reset: earliest
+    producer:
+        key.serializer: org.apache.kafka.common.serialization.StringSerializer
+        value.serializer: org.apache.kafka.common.serialization.StringSerializer
+        bootstrap.servers: ${kafkaBootstrapServers}
+<%_ } _%>
 
 # ===================================================================
 # Application specific properties

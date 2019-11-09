@@ -171,26 +171,21 @@ function askForServerSideOpts(meta) {
                     value: 'mongodb',
                     name: 'MongoDB'
                 });
+                if (response.authenticationType !== 'oauth2') {
+                    opts.push({
+                        value: 'cassandra',
+                        name: 'Cassandra'
+                    });
+                }
                 opts.push({
                     value: 'couchbase',
                     name: 'Couchbase'
                 });
                 if (!reactive) {
-                    if (response.authenticationType !== 'oauth2') {
-                        opts.push({
-                            value: 'cassandra',
-                            name: 'Cassandra'
-                        });
-                    }
-                    if (
-                        response.authenticationType !== 'oauth2' ||
-                        (response.authenticationType === 'uaa' && applicationType === 'gateway')
-                    ) {
-                        opts.push({
-                            value: 'no',
-                            name: 'No database'
-                        });
-                    }
+                    opts.push({
+                        value: 'no',
+                        name: 'No database'
+                    });
                 }
                 return opts;
             },
@@ -223,6 +218,7 @@ function askForServerSideOpts(meta) {
             default: 0
         },
         {
+            when: () => !reactive,
             type: 'list',
             name: 'cacheProvider',
             message: 'Do you want to use the Spring cache abstraction?',
@@ -230,6 +226,10 @@ function askForServerSideOpts(meta) {
                 {
                     value: 'ehcache',
                     name: 'Yes, with the Ehcache implementation (local cache, for a single node)'
+                },
+                {
+                    value: 'caffeine',
+                    name: 'Yes, with the Caffeine implementation (local cache, for a single node)'
                 },
                 {
                     value: 'hazelcast',
@@ -246,11 +246,15 @@ function askForServerSideOpts(meta) {
                         'Yes, with Memcached (distributed cache) - Warning, when using an SQL database, this will disable the Hibernate 2nd level cache!'
                 },
                 {
+                    value: 'redis',
+                    name: 'Yes, with the Redis implementation (single server)'
+                },
+                {
                     value: 'no',
                     name: 'No - Warning, when using an SQL database, this will disable the Hibernate 2nd level cache!'
                 }
             ],
-            default: applicationType === 'microservice' || applicationType === 'uaa' ? 1 : 0
+            default: applicationType === 'microservice' || applicationType === 'uaa' ? 2 : 0
         },
         {
             when: response =>
@@ -315,7 +319,7 @@ function askForServerSideOpts(meta) {
         if (this.serverPort === undefined) {
             this.serverPort = '8080';
         }
-        this.cacheProvider = props.cacheProvider;
+        this.cacheProvider = !reactive ? props.cacheProvider : 'no';
         this.enableHibernateCache = props.enableHibernateCache;
         this.databaseType = props.databaseType;
         this.devDatabaseType = props.devDatabaseType;
@@ -328,7 +332,9 @@ function askForServerSideOpts(meta) {
             this.devDatabaseType = 'no';
             this.prodDatabaseType = 'no';
             this.enableHibernateCache = false;
-            this.skipUserManagement = true;
+            if (this.authenticationType !== 'uaa') {
+                this.skipUserManagement = true;
+            }
         } else if (this.databaseType === 'mongodb') {
             this.devDatabaseType = 'mongodb';
             this.prodDatabaseType = 'mongodb';

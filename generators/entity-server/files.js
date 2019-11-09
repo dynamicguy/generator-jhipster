@@ -39,31 +39,22 @@ faker.seed(42);
  * For any other config an object { file:.., method:.., template:.. } can be used
  */
 const serverFiles = {
-    db: [
+    dbChangelog: [
         {
-            condition: generator => generator.databaseType === 'sql',
+            condition: generator => generator.databaseType === 'sql' && !generator.skipDbChangelog,
             path: SERVER_MAIN_RES_DIR,
             templates: [
                 {
                     file: 'config/liquibase/changelog/added_entity.xml',
                     options: { interpolate: INTERPOLATE_REGEX },
                     renameTo: generator => `config/liquibase/changelog/${generator.changelogDate}_added_entity_${generator.entityClass}.xml`
-                },
-                {
-                    file: 'config/liquibase/data/table.csv',
-                    options: {
-                        interpolate: INTERPOLATE_REGEX,
-                        context: {
-                            faker
-                        }
-                    },
-                    renameTo: generator => `config/liquibase/data/${generator.entityTableName}.csv`
                 }
             ]
         },
         {
             condition: generator =>
                 generator.databaseType === 'sql' &&
+                !generator.skipDbChangelog &&
                 (generator.fieldsContainOwnerManyToMany || generator.fieldsContainOwnerOneToOne || generator.fieldsContainManyToOne),
             path: SERVER_MAIN_RES_DIR,
             templates: [
@@ -76,7 +67,7 @@ const serverFiles = {
             ]
         },
         {
-            condition: generator => generator.databaseType === 'cassandra',
+            condition: generator => generator.databaseType === 'cassandra' && !generator.skipDbChangelog,
             path: SERVER_MAIN_RES_DIR,
             templates: [
                 {
@@ -84,6 +75,43 @@ const serverFiles = {
                     renameTo: generator => `config/cql/changelog/${generator.changelogDate}_added_entity_${generator.entityClass}.cql`
                 }
             ]
+        }
+    ],
+    fakeData: [
+        {
+            condition: generator => generator.databaseType === 'sql' && !generator.skipFakeData && !generator.skipDbChangelog,
+            path: SERVER_MAIN_RES_DIR,
+            templates: [
+                {
+                    file: 'config/liquibase/fake-data/table.csv',
+                    options: {
+                        interpolate: INTERPOLATE_REGEX,
+                        context: {
+                            faker,
+                            randexp
+                        }
+                    },
+                    renameTo: generator => `config/liquibase/fake-data/${generator.entityTableName}.csv`
+                }
+            ]
+        },
+        {
+            condition: generator =>
+                generator.databaseType === 'sql' &&
+                !generator.skipFakeData &&
+                !generator.skipDbChangelog &&
+                (generator.fieldsContainImageBlob === true || generator.fieldsContainBlob === true),
+            path: SERVER_MAIN_RES_DIR,
+            templates: [{ file: 'config/liquibase/fake-data/blob/hipster.png', method: 'copy', noEjs: true }]
+        },
+        {
+            condition: generator =>
+                generator.databaseType === 'sql' &&
+                !generator.skipFakeData &&
+                !generator.skipDbChangelog &&
+                generator.fieldsContainTextBlob === true,
+            path: SERVER_MAIN_RES_DIR,
+            templates: [{ file: 'config/liquibase/fake-data/blob/hipster.txt', method: 'copy' }]
         }
     ],
     server: [
@@ -223,6 +251,37 @@ const serverFiles = {
                     renameTo: generator => `gatling/user-files/simulations/${generator.entityClass}GatlingTest.scala`
                 }
             ]
+        },
+        {
+            path: SERVER_TEST_SRC_DIR,
+            templates: [
+                {
+                    file: 'package/domain/EntityTest.java',
+                    renameTo: generator => `${generator.packageFolder}/domain/${generator.entityClass}Test.java`
+                }
+            ]
+        },
+        {
+            condition: generator => generator.dto === 'mapstruct',
+            path: SERVER_TEST_SRC_DIR,
+            templates: [
+                {
+                    file: 'package/service/dto/EntityDTOTest.java',
+                    renameTo: generator => `${generator.packageFolder}/service/dto/${generator.asDto(generator.entityClass)}Test.java`
+                }
+            ]
+        },
+        {
+            condition: generator =>
+                generator.dto === 'mapstruct' &&
+                (generator.databaseType === 'sql' || generator.databaseType === 'mongodb' || generator.databaseType === 'couchbase'),
+            path: SERVER_TEST_SRC_DIR,
+            templates: [
+                {
+                    file: 'package/service/mapper/EntityMapperTest.java',
+                    renameTo: generator => `${generator.packageFolder}/service/mapper/${generator.entityClass}MapperTest.java`
+                }
+            ]
         }
     ]
 };
@@ -251,12 +310,14 @@ function writeFiles() {
             this.writeFilesToDisk(serverFiles, this, false, this.fetchFromInstalledJHipster('entity-server/templates'));
 
             if (this.databaseType === 'sql') {
-                if (this.fieldsContainOwnerManyToMany || this.fieldsContainOwnerOneToOne || this.fieldsContainManyToOne) {
-                    this.addConstraintsChangelogToLiquibase(`${this.changelogDate}_added_entity_constraints_${this.entityClass}`);
+                if (!this.skipDbChangelog) {
+                    if (this.fieldsContainOwnerManyToMany || this.fieldsContainOwnerOneToOne || this.fieldsContainManyToOne) {
+                        this.addConstraintsChangelogToLiquibase(`${this.changelogDate}_added_entity_constraints_${this.entityClass}`);
+                    }
+                    this.addChangelogToLiquibase(`${this.changelogDate}_added_entity_${this.entityClass}`);
                 }
-                this.addChangelogToLiquibase(`${this.changelogDate}_added_entity_${this.entityClass}`);
 
-                if (['ehcache', 'infinispan'].includes(this.cacheProvider) && this.enableHibernateCache) {
+                if (['ehcache', 'caffeine', 'infinispan', 'redis'].includes(this.cacheProvider) && this.enableHibernateCache) {
                     this.addEntityToCache(
                         this.asEntity(this.entityClass),
                         this.relationships,

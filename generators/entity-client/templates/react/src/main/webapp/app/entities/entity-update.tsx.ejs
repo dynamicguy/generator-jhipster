@@ -38,7 +38,6 @@ import {
   Label
   <% if (haveFieldWithJavadoc) { %>, UncontrolledTooltip<% } %> } from 'reactstrap';
 import { AvFeedback, AvForm, AvGroup, AvInput<% if (fieldsIsReactAvField) { %>, AvField <% } %> } from 'availity-reactstrap-validation';
-// tslint:disable-next-line:no-unused-variable
 import {
   Translate,
   translate,
@@ -115,7 +114,6 @@ import {
   reset
 } from './<%= entityFileName %>.reducer';
 import { I<%= entityReactName %> } from 'app/shared/model/<%= entityModelFileName %>.model';
-// tslint:disable-next-line:no-unused-variable
 import { convertDateTimeFromServer, convertDateTimeToServer } from 'app/shared/util/date-utils';
 <%_ if (relationships.filter(e => e.relationshipType === 'many-to-many') !== undefined) { _%>
 import { mapIdList } from 'app/shared/util/entity-utils';
@@ -211,7 +209,7 @@ export class <%= entityReactName %>Update extends React.Component<I<%= entityRea
   }
 
   handleClose = () => {
-    this.props.history.push('/entity/<%= entityFileName %>');
+    this.props.history.push('/<%= entityFileName %>');
   }
 
   render() {
@@ -322,7 +320,7 @@ export class <%= entityReactName %>Update extends React.Component<I<%= entityRea
               _%>
                 <option value="<%= value %>">
                 <%_ if (enableTranslation) { _%>
-                  <Translate contentKey="<%= enumPrefix %>.<%= value %>" />
+                  {translate("<%= enumPrefix %>.<%= value %>")}
                 <%_ } else { _%>
                   <%= value %>
                 <%_ } _%>
@@ -572,7 +570,7 @@ export class <%= entityReactName %>Update extends React.Component<I<%= entityRea
             </AvGroup>
             <%_ } _%>
           <%_ }) _%>
-            <Button tag={Link} id="cancel-save" to="/entity/<%= entityFileName %>" replace color="info">
+            <Button tag={Link} id="cancel-save" to="/<%= entityFileName %>" replace color="info">
               <FontAwesomeIcon icon="arrow-left" />&nbsp;
               <span className="d-none d-md-inline" ><Translate contentKey="entity.action.back">Back</Translate></span>
             </Button>

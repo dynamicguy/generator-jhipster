@@ -27,7 +27,7 @@ const packagejs = require('../../package.json');
 const constants = require('../generator-constants');
 const statistics = require('../statistics');
 
-let useBlueprint;
+let useBlueprints;
 
 module.exports = class extends BaseBlueprintGenerator {
     constructor(args, opts) {
@@ -62,16 +62,8 @@ module.exports = class extends BaseBlueprintGenerator {
         });
 
         this.setupClientOptions(this);
-        const blueprint = this.options.blueprint || this.configOptions.blueprint || this.config.get('blueprint');
-        // use global variable since getters dont have access to instance property
-        if (!opts.fromBlueprint) {
-            useBlueprint = this.composeBlueprint(blueprint, 'client', {
-                ...this.options,
-                configOptions: this.configOptions
-            });
-        } else {
-            useBlueprint = false;
-        }
+
+        useBlueprints = !opts.fromBlueprint && this.instantiateBlueprints('client');
     }
 
     // Public API method used by the getter and also by Blueprints
@@ -178,7 +170,7 @@ module.exports = class extends BaseBlueprintGenerator {
     }
 
     get initializing() {
-        if (useBlueprint) return;
+        if (useBlueprints) return;
         return this._initializing();
     }
 
@@ -192,6 +184,7 @@ module.exports = class extends BaseBlueprintGenerator {
             askForClientThemeVariant: prompts.askForClientThemeVariant,
 
             setSharedConfigOptions() {
+                this.configOptions.skipClient = this.skipClient;
                 this.configOptions.clientFramework = this.clientFramework;
                 this.configOptions.clientTheme = this.clientTheme;
                 this.configOptions.clientThemeVariant = this.clientThemeVariant;
@@ -200,7 +193,7 @@ module.exports = class extends BaseBlueprintGenerator {
     }
 
     get prompting() {
-        if (useBlueprint) return;
+        if (useBlueprints) return;
         return this._prompting();
     }
 
@@ -238,14 +231,18 @@ module.exports = class extends BaseBlueprintGenerator {
                     jhipsterVersion: packagejs.version,
                     applicationType: this.applicationType,
                     baseName: this.baseName,
-                    clientFramework: this.clientFramework,
-                    clientTheme: this.clientTheme,
-                    clientThemeVariant: this.clientThemeVariant,
                     useSass: true,
                     enableTranslation: this.enableTranslation,
                     skipCommitHook: this.skipCommitHook,
                     clientPackageManager: this.clientPackageManager
                 };
+                if (this.skipClient) {
+                    config.skipClient = true;
+                } else {
+                    config.clientFramework = this.clientFramework;
+                    config.clientTheme = this.clientTheme;
+                    config.clientThemeVariant = this.clientThemeVariant;
+                }
                 if (this.enableTranslation && !this.configOptions.skipI18nQuestion) {
                     config.nativeLanguage = this.nativeLanguage;
                     config.languages = this.languages;
@@ -268,7 +265,7 @@ module.exports = class extends BaseBlueprintGenerator {
     }
 
     get configuring() {
-        if (useBlueprint) return;
+        if (useBlueprints) return;
         return this._configuring();
     }
 
@@ -352,7 +349,7 @@ module.exports = class extends BaseBlueprintGenerator {
     }
 
     get default() {
-        if (useBlueprint) return;
+        if (useBlueprints) return;
         return this._default();
     }
 
@@ -360,18 +357,19 @@ module.exports = class extends BaseBlueprintGenerator {
     _writing() {
         return {
             write() {
+                if (this.skipClient) return;
                 switch (this.clientFramework) {
                     case 'react':
-                        return writeReactFiles.call(this, useBlueprint);
+                        return writeReactFiles.call(this, useBlueprints);
                     default:
-                        return writeAngularFiles.call(this, useBlueprint);
+                        return writeAngularFiles.call(this, useBlueprints);
                 }
             }
         };
     }
 
     get writing() {
-        if (useBlueprint) return;
+        if (useBlueprints) return;
         return this._writing();
     }
 
@@ -379,6 +377,7 @@ module.exports = class extends BaseBlueprintGenerator {
     _install() {
         return {
             installing() {
+                if (this.skipClient) return;
                 const logMsg = `To install your dependencies manually, run: ${chalk.yellow.bold(`${this.clientPackageManager} install`)}`;
 
                 const installConfig = {
@@ -402,7 +401,7 @@ module.exports = class extends BaseBlueprintGenerator {
     }
 
     get install() {
-        if (useBlueprint) return;
+        if (useBlueprints) return;
         return this._install();
     }
 
@@ -410,6 +409,7 @@ module.exports = class extends BaseBlueprintGenerator {
     _end() {
         return {
             end() {
+                if (this.skipClient) return;
                 this.log(chalk.green.bold('\nClient application generated successfully.\n'));
 
                 const logMsg = `Start your Webpack development server with:\n ${chalk.yellow.bold(`${this.clientPackageManager} start`)}\n`;
@@ -423,7 +423,7 @@ module.exports = class extends BaseBlueprintGenerator {
     }
 
     get end() {
-        if (useBlueprint) return;
+        if (useBlueprints) return;
         return this._end();
     }
 };

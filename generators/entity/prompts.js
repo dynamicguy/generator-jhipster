@@ -33,6 +33,7 @@ module.exports = {
     askForDTO,
     askForService,
     askForFiltering,
+    askForReadOnly,
     askForPagination
 };
 
@@ -196,7 +197,7 @@ function askForRelationships() {
     if (context.useConfigurationFile && context.updateEntity !== 'add') {
         return;
     }
-    if (['cassandra', 'couchbase'].includes(context.databaseType)) {
+    if (context.databaseType === 'cassandra') {
         return;
     }
 
@@ -211,7 +212,7 @@ function askForRelationsToRemove() {
     if (!context.useConfigurationFile || context.updateEntity !== 'remove' || context.relNameChoices.length === 0) {
         return;
     }
-    if (['cassandra', 'couchbase'].includes(context.databaseType)) {
+    if (context.databaseType === 'cassandra') {
         return;
     }
 
@@ -320,6 +321,27 @@ function askForFiltering() {
     ];
     this.prompt(prompts).then(props => {
         context.jpaMetamodelFiltering = props.filtering === 'jpaMetamodel';
+        done();
+    });
+}
+
+function askForReadOnly() {
+    const context = this.context;
+    // don't prompt if data is imported from a file
+    if (context.useConfigurationFile) {
+        return;
+    }
+    const done = this.async();
+    const prompts = [
+        {
+            type: 'confirm',
+            name: 'readOnly',
+            message: 'Is this entity read-only?',
+            default: false
+        }
+    ];
+    this.prompt(prompts).then(props => {
+        context.readOnly = props.readOnly;
         done();
     });
 }
@@ -532,6 +554,10 @@ function askForField(done) {
                 {
                     value: 'enum',
                     name: 'Enumeration (Java enum type)'
+                },
+                {
+                    value: 'UUID',
+                    name: 'UUID'
                 },
                 {
                     value: 'byte[]',

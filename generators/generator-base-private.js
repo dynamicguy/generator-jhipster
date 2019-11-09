@@ -35,6 +35,7 @@ const constants = require('./generator-constants');
 const { prettierTransform, prettierOptions } = require('./generator-transforms');
 
 const CLIENT_MAIN_SRC_DIR = constants.CLIENT_MAIN_SRC_DIR;
+const SERVER_TEST_SRC_DIR = constants.SERVER_TEST_SRC_DIR;
 
 /**
  * This is the Generator base private class.
@@ -66,7 +67,7 @@ module.exports = class extends Generator {
     installI18nClientFilesByLanguage(_this, webappDir, lang) {
         const generator = _this || this;
         const prefix = this.fetchFromInstalledJHipster('languages/templates');
-        if (generator.databaseType !== 'no' && generator.databaseType !== 'cassandra') {
+        if ((generator.databaseType !== 'no' || generator.authenticationType === 'uaa') && generator.databaseType !== 'cassandra') {
             generator.copyI18nFilesByName(generator, webappDir, 'audits.json', lang);
         }
         if (generator.applicationType === 'gateway' && generator.serviceDiscoveryType) {
@@ -103,14 +104,24 @@ module.exports = class extends Generator {
      * @param {string} resourceDir - resource directory
      * @param {string} lang - language code
      */
-    installI18nServerFilesByLanguage(_this, resourceDir, lang) {
+    installI18nServerFilesByLanguage(_this, resourceDir, lang, testResourceDir) {
         const generator = _this || this;
         const prefix = this.fetchFromInstalledJHipster('languages/templates');
         // Template the message server side properties
         const langProp = lang.replace(/-/g, '_');
+        // Target file : change xx_yyyy_zz to xx_yyyy_ZZ to match java locales
+        const langJavaProp = langProp.replace(/_[a-z]+$/g, lang => lang.toUpperCase());
         generator.template(
-            `${prefix}/${resourceDir}i18n/messages_${langProp}.properties.ejs`,
-            `${resourceDir}i18n/messages_${langProp}.properties`
+            `${prefix}/${resourceDir}i18n/messages_${langJavaProp}.properties.ejs`,
+            `${resourceDir}i18n/messages_${langJavaProp}.properties`
+        );
+        generator.template(
+            `${prefix}/${resourceDir}i18n/messages_${langJavaProp}.properties.ejs`,
+            `${resourceDir}i18n/messages_${langJavaProp}.properties`
+        );
+        generator.template(
+            `${prefix}/${testResourceDir}i18n/messages_${langJavaProp}.properties.ejs`,
+            `${testResourceDir}i18n/messages_${langJavaProp}.properties`
         );
     }
 
@@ -214,6 +225,40 @@ module.exports = class extends Generator {
                 {
                     file: fullPath,
                     pattern: /export.*LANGUAGES.*\[([^\]]*jhipster-needle-i18n-language-constant[^\]]*)\];/g,
+                    content
+                },
+                this
+            );
+        } catch (e) {
+            this.log(
+                chalk.yellow('\nUnable to find ') +
+                    fullPath +
+                    chalk.yellow(' or missing required jhipster-needle. LANGUAGE constant not updated with languages: ') +
+                    languages +
+                    chalk.yellow(' since block was not found. Check if you have enabled translation support.\n')
+            );
+            this.debug('Error:', e);
+        }
+    }
+
+    /**
+     * Update Languages In MailServiceIT
+     *
+     * @param languages
+     */
+    updateLanguagesInLanguageMailServiceIT(languages, packageFolder) {
+        const fullPath = `${SERVER_TEST_SRC_DIR}${packageFolder}/service/MailServiceIT.java`;
+        try {
+            let content = 'private static String languages[] = {\n';
+            languages.forEach((language, i) => {
+                content += `        "${language}"${i !== languages.length - 1 ? ',' : ''}\n`;
+            });
+            content += '        // jhipster-needle-i18n-language-constant - JHipster will add/remove languages in this array\n    };';
+
+            jhipsterUtils.replaceContent(
+                {
+                    file: fullPath,
+                    pattern: /private.*static.*String.*languages.*\{([^}]*jhipster-needle-i18n-language-constant[^}]*)\};/g,
                     content
                 },
                 this
@@ -715,20 +760,6 @@ module.exports = class extends Generator {
     }
 
     /**
-     * Normalize blueprint name: prepend 'generator-jhipster-' if needed
-     * @param {string} blueprint - name of the blueprint
-     */
-    normalizeBlueprintName(blueprint) {
-        if (blueprint && blueprint.startsWith('@')) {
-            return blueprint;
-        }
-        if (blueprint && !blueprint.startsWith('generator-jhipster')) {
-            return `generator-jhipster-${blueprint}`;
-        }
-        return blueprint;
-    }
-
-    /**
      * Compose external blueprint module
      * @param {string} blueprint - name of the blueprint
      * @param {string} subGen - sub generator
@@ -736,7 +767,7 @@ module.exports = class extends Generator {
      */
     composeBlueprint(blueprint, subGen, options = {}) {
         if (blueprint) {
-            blueprint = this.normalizeBlueprintName(blueprint);
+            blueprint = jhipsterUtils.normalizeBlueprintName(blueprint);
             if (options.skipChecks === undefined || !options.skipChecks) {
                 this.checkBlueprint(blueprint, subGen);
             }
@@ -759,11 +790,11 @@ module.exports = class extends Generator {
     }
 
     /**
-     * Try to retrieve the version of the blueprint used.
+     * Try to retrieve the package.json of the blueprint used, as an object.
      * @param {string} blueprintPkgName - generator name
-     * @return {string} version - retrieved version or empty string if not found
+     * @return {object} packageJson - retrieved package.json as an object or undefined if not found
      */
-    findBlueprintVersion(blueprintPkgName) {
+    findBlueprintPackageJson(blueprintPkgName) {
         let packageJsonPath = path.join(process.cwd(), 'node_modules', blueprintPkgName, 'package.json');
         try {
             if (!fs.existsSync(packageJsonPath)) {
@@ -771,13 +802,26 @@ module.exports = class extends Generator {
                 packageJsonPath = path.join(blueprintPkgName, 'package.json');
             }
             // eslint-disable-next-line global-require,import/no-dynamic-require
-            const packagejs = require(packageJsonPath);
-            return packagejs.version;
+            return require(packageJsonPath);
         } catch (err) {
             this.debug('ERROR:', err);
+            this.warning(`Could not retrieve package.json of blueprint '${blueprintPkgName}'`);
+            return undefined;
+        }
+    }
+
+    /**
+     * Try to retrieve the version of the blueprint used.
+     * @param {string} blueprintPkgName - generator name
+     * @return {string} version - retrieved version or empty string if not found
+     */
+    findBlueprintVersion(blueprintPkgName) {
+        const blueprintPackageJson = this.findBlueprintPackageJson(blueprintPkgName);
+        if (!blueprintPackageJson || !blueprintPackageJson.version) {
             this.warning(`Could not retrieve version of blueprint '${blueprintPkgName}'`);
             return '';
         }
+        return blueprintPackageJson.version;
     }
 
     /**
@@ -799,7 +843,11 @@ module.exports = class extends Generator {
             done();
             return;
         }
-        shelljs.exec('yo --generators', { silent: true }, (err, stdout, stderr) => {
+
+        // Path to the yo cli script in generator-jhipster's node_modules
+        const yoInternalCliPath = require.resolve('yo/lib/cli.js');
+
+        shelljs.exec(`node ${yoInternalCliPath} --generators`, { silent: true }, (err, stdout, stderr) => {
             if (!stdout.includes(` ${blueprint}\n`) && !stdout.includes(` ${generatorName}\n`)) {
                 this.error(
                     `The ${chalk.yellow(blueprint)} blueprint provided is not installed. Please install it using command ${chalk.yellow(
@@ -809,6 +857,39 @@ module.exports = class extends Generator {
             }
             done();
         });
+    }
+
+    /**
+     * Check if the generator specified as blueprint has a version compatible with current JHipster.
+     * @param {string} blueprintPkgName - generator name
+     */
+    checkJHipsterBlueprintVersion(blueprintPkgName) {
+        const blueprintPackageJson = this.findBlueprintPackageJson(blueprintPkgName);
+        if (!blueprintPackageJson) {
+            return;
+        }
+        const mainGeneratorJhipsterVersion = packagejs.version;
+        const blueprintJhipsterVersion = blueprintPackageJson.dependencies && blueprintPackageJson.dependencies['generator-jhipster'];
+        if (blueprintJhipsterVersion && mainGeneratorJhipsterVersion !== blueprintJhipsterVersion) {
+            this.error(
+                `The installed ${chalk.yellow(
+                    blueprintPkgName
+                )} blueprint targets JHipster v${blueprintJhipsterVersion} and is not compatible with this JHipster version. Either update the blueprint or JHipster. You can also disable this check using --skip-checks at your own risk`
+            );
+        }
+        const blueprintPeerJhipsterVersion =
+            blueprintPackageJson.peerDependencies && blueprintPackageJson.peerDependencies['generator-jhipster'];
+        if (blueprintPeerJhipsterVersion) {
+            if (semver.satisfies(mainGeneratorJhipsterVersion, blueprintPeerJhipsterVersion)) {
+                return;
+            }
+            this.error(
+                `The installed ${chalk.yellow(
+                    blueprintPkgName
+                )} blueprint targets JHipster ${blueprintPeerJhipsterVersion} and is not compatible with this JHipster version. Either update the blueprint or JHipster. You can also disable this check using --skip-checks at your own risk`
+            );
+        }
+        this.warning(`Could not retrieve version of JHipster declared by blueprint '${blueprintPkgName}'`);
     }
 
     /**
@@ -917,9 +998,11 @@ module.exports = class extends Generator {
                 if (variableName === entityInstance) {
                     variableName += 'Collection';
                 }
-                const relationshipFieldName = `this.${entityInstance}.${relationship.relationshipFieldName}`;
+                const relationshipFieldName = `${relationship.relationshipFieldName}`;
                 const relationshipFieldNameIdCheck =
-                    dto === 'no' ? `!${relationshipFieldName} || !${relationshipFieldName}.id` : `!${relationshipFieldName}Id`;
+                    dto === 'no'
+                        ? `!this.editForm.get('${relationshipFieldName}').value || !this.editForm.get('${relationshipFieldName}').value.id`
+                        : `!this.editForm.get('${relationshipFieldName}Id').value`;
 
                 filter = `filter: '${relationship.otherEntityRelationshipName.toLowerCase()}-is-null'`;
                 if (this.jpaMetamodelFiltering) {
@@ -927,21 +1010,15 @@ module.exports = class extends Generator {
                 }
 
                 query = `this.${relationship.otherEntityName}Service
-            .query({${filter}}).pipe(
-                filter((mayBeOk: HttpResponse<I${relationship.otherEntityAngularName}[]>) => mayBeOk.ok),
-                map((response: HttpResponse<I${relationship.otherEntityAngularName}[]>) => response.body),
-            )
-            .subscribe((res: I${relationship.otherEntityAngularName}[]) => {
+            .query({${filter}}).subscribe((res: HttpResponse<I${relationship.otherEntityAngularName}[]>) => {
                 if (${relationshipFieldNameIdCheck}) {
-                    this.${variableName} = res;
+                    this.${variableName} = res.body;
                 } else {
                     this.${relationship.otherEntityName}Service
-                        .find(${relationshipFieldName}${dto === 'no' ? '.id' : 'Id'}).pipe(
-                            filter((subResMayBeOk: HttpResponse<I${relationship.otherEntityAngularName}>) => subResMayBeOk.ok),
-                            map((subResponse: HttpResponse<I${relationship.otherEntityAngularName}>) => subResponse.body),
-                        )
-                        .subscribe((subRes: I${relationship.otherEntityAngularName}) =>
-                            this.${variableName} = [subRes].concat(res)
+                        .find(this.editForm.get('${relationshipFieldName}${dto !== 'no' ? 'Id' : ''}').value${
+                    dto === 'no' ? '.id' : ''
+                }).subscribe((subRes: HttpResponse<I${relationship.otherEntityAngularName}>) =>
+                            this.${variableName} = [subRes.body].concat(res.body)
                         , (subRes: HttpErrorResponse) => this.onError(subRes.message));
                 }
             }, (res: HttpErrorResponse) => this.onError(res.message));`;
@@ -950,12 +1027,8 @@ module.exports = class extends Generator {
                 if (variableName === entityInstance) {
                     variableName += 'Collection';
                 }
-                query = `this.${relationship.otherEntityName}Service.query().pipe(
-                            filter((mayBeOk: HttpResponse<I${relationship.otherEntityAngularName}[]>) => mayBeOk.ok),
-                            map((response: HttpResponse<I${relationship.otherEntityAngularName}[]>) => response.body),
-                        )
-            .subscribe(
-                (res: I${relationship.otherEntityAngularName}[]) => this.${variableName} = res,
+                query = `this.${relationship.otherEntityName}Service.query().subscribe(
+                (res: HttpResponse<I${relationship.otherEntityAngularName}[]>) => this.${variableName} = res.body,
                 (res: HttpErrorResponse) => this.onError(res.message));`;
             }
             if (variableName && !this.contains(queries, query)) {
@@ -1004,7 +1077,7 @@ module.exports = class extends Generator {
     generateEntityClientFields(pkType, fields, relationships, dto, customDateType = 'Moment') {
         const variablesWithTypes = [];
         let tsKeyType;
-        if (pkType === 'String') {
+        if (pkType === 'String' || pkType === 'UUID') {
             tsKeyType = 'string';
         } else {
             tsKeyType = 'number';
@@ -1105,6 +1178,28 @@ module.exports = class extends Generator {
                 } else {
                     importPath = `app/shared/model/${relationship.otherEntityClientRootFolder}${relationship.otherEntityFileName}.model`;
                 }
+                typeImports.set(importType, importPath);
+            }
+        });
+        return typeImports;
+    }
+
+    /**
+     * Generate Entity Client Enum Imports
+     *
+     * @param {Array|Object} fields - array of the entity fields
+     * @param {string} clientFramework the client framework, 'angularX' or 'react'.
+     * @returns typeImports: Map
+     */
+    generateEntityClientEnumImports(fields, clientFramework = this.clientFramework) {
+        const typeImports = new Map();
+        const uniqueEnums = {};
+        fields.forEach(field => {
+            const fileName = _.kebabCase(field.fieldType);
+            if (field.fieldIsEnum && (!uniqueEnums[field.fieldType] || (uniqueEnums[field.fieldType] && field.fieldValues.length !== 0))) {
+                const importType = `${field.fieldType}`;
+                const importPath = `app/shared/model/enumerations/${fileName}.model`;
+                uniqueEnums[field.fieldType] = field.fieldType;
                 typeImports.set(importType, importPath);
             }
         });
@@ -1254,28 +1349,56 @@ module.exports = class extends Generator {
      * Generate a primary key, according to the type
      *
      * @param {any} pkType - the type of the primary key
-     * @param {any} prodDatabaseType - the database type
      */
-    generateTestEntityId(pkType, prodDatabaseType) {
+    generateTestEntityId(pkType) {
         if (pkType === 'String') {
-            if (prodDatabaseType === 'cassandra') {
-                return "'9fec3727-3421-4967-b213-ba36557ca194'";
-            }
             return "'123'";
+        }
+        if (pkType === 'UUID') {
+            return "'9fec3727-3421-4967-b213-ba36557ca194'";
         }
         return 123;
     }
 
     /**
-     * Decide the primary key type based on DB
+     * Return the primary key data type based on DB
      *
      * @param {any} databaseType - the database type
      */
     getPkType(databaseType) {
-        if (['cassandra', 'mongodb', 'couchbase'].includes(databaseType)) {
-            return 'String';
+        let pk = '';
+        switch (databaseType) {
+            case 'mongodb':
+            case 'couchbase':
+                pk = 'String';
+                break;
+            case 'cassandra':
+                pk = 'UUID';
+                break;
+            default:
+                pk = 'Long';
+                break;
         }
-        return 'Long';
+        return pk;
+    }
+
+    /**
+     * Returns the primary key data type based on authentication type, DB and given association
+     *
+     * @param {string} authenticationType - the auth type
+     * @param {string} databaseType - the database type
+     * @param {any} relationships - relationships
+     */
+    getPkTypeBasedOnDBAndAssociation(authenticationType, databaseType, relationships) {
+        let hasFound = false;
+        let primaryKeyType = this.getPkType(databaseType);
+        relationships.forEach(relationship => {
+            if (relationship.useJPADerivedIdentifier === true && !hasFound) {
+                primaryKeyType = relationship.otherEntityName === 'user' && authenticationType === 'oauth2' ? 'String' : primaryKeyType;
+                hasFound = true;
+            }
+        });
+        return primaryKeyType;
     }
 
     /**

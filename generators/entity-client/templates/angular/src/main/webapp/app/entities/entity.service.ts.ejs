@@ -16,17 +16,21 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -%>
+<%_
+const primaryKeyType = getPkTypeBasedOnDBAndAssociation(authenticationType, databaseType, relationships);
+_%>
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse, HttpHeaders, HttpRequest, HttpEventType } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 <%_ if (fieldsContainDate) { _%>
 import * as moment from 'moment';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DATE_FORMAT } from 'app/shared/constants/input.constants';
 import { map } from 'rxjs/operators';
 <%_ } _%>
 
 import { SERVER_API_URL } from 'app/app.constants';
-import { createRequestOption } from 'app/shared';
+import { createRequestOption } from 'app/shared/util/request-util';
 import { I<%= entityAngularName %> } from 'app/shared/model/<%= entityModelFileName %>.model';
 
 type EntityResponseType = HttpResponse<I<%= entityAngularName %>>;
@@ -42,6 +46,7 @@ export class <%= entityAngularName %>Service {
 
     constructor(protected http: HttpClient) { }
 
+<%_ if (!readOnly) { _%>
     create(<%= entityInstance %>: I<%= entityAngularName %>): Observable<EntityResponseType> {
         <%_ if (fieldsContainDate) { _%>
         const copy = this.convertDateFromClient(<%= entityInstance %>);
@@ -61,8 +66,10 @@ export class <%= entityAngularName %>Service {
                     { observe: 'response' })
             <% if (fieldsContainDate) { %>.pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)))<% } %>;
     }
+<%_ } _%>
 
-    find(id: <% if (pkType === 'String') { %>string<% } else { %>number<% } %>): Observable<EntityResponseType> {
+    find(id: <% if (primaryKeyType === 'String' || pkType === 'UUID') { %>string<% } else { %>number<% } %>): Observable<EntityResponseType> {
+
         return this.http.get<I<%= entityAngularName %>>(`${this.resourceUrl}/${id}`, { observe: 'response'})
             <% if (fieldsContainDate) { %>.pipe(map((res: EntityResponseType) => this.convertDateFromServer(res)))<% } %>;
     }
@@ -73,9 +80,11 @@ export class <%= entityAngularName %>Service {
             <% if (fieldsContainDate) { %>.pipe(map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res)))<% } %>;
     }
 
-    delete(id: <% if (pkType === 'String') { %>string<% } else { %>number<% } %>): Observable<HttpResponse<any>> {
+<%_ if (!readOnly) { _%>
+    delete(id: <% if (primaryKeyType === 'String' || pkType === 'UUID') { %>string<% } else { %>number<% } %>): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response'});
     }
+<%_ } _%>
 
     <%_ if (searchEngine === 'elasticsearch') { _%>
     search(req?: any): Observable<EntityArrayResponseType> {
@@ -85,39 +94,6 @@ export class <%= entityAngularName %>Service {
     }
     <%_ } _%>
 
-    importCsv(req?: any): Observable<EntityArrayResponseType> {
-      return this.http.post<I<%= entityAngularName %>[]>(this.resourceUrl + '/upload', req, {
-        observe: 'response',
-        headers: new HttpHeaders({ 'Content-Type': 'multipart/form-data' })
-      });
-    }
-
-    upload(files: Set<File>): { [key: string]: Observable<number> } {
-      const status = {};
-      const url = this.resourceUrl + '/upload';
-      files.forEach(file => {
-        const formData: FormData = new FormData();
-        formData.append('file', file, file.name);
-        const req = new HttpRequest('POST', url, formData, {
-          reportProgress: true
-        });
-        const progress = new Subject<number>();
-        const startTime = new Date().getTime();
-        this.http.request(req).subscribe(event => {
-          if (event.type === HttpEventType.UploadProgress) {
-            const percentDone = Math.round((100 * event.loaded) / event.total);
-            progress.next(percentDone);
-          } else if (event instanceof HttpResponse) {
-            progress.complete();
-          }
-        });
-        status[file.name] = {
-          progress: progress.asObservable()
-        };
-      });
-      return status;
-    }
-      
 <%_ if (fieldsContainDate) { _%>
     protected convertDateFromClient(<%= entityInstance %>: I<%= entityAngularName %>): I<%= entityAngularName %> {
         const copy: I<%= entityAngularName %> = Object.assign({}, <%= entityInstance %>, {

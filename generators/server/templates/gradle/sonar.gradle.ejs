@@ -17,12 +17,16 @@
  limitations under the License.
 -%>
 jacoco {
-    toolVersion = "0.8.3"
+    toolVersion = "<%= JACOCO_VERSION %>"
 }
 
 jacocoTestReport {
+    executionData tasks.withType(Test)
+    classDirectories.from = files(sourceSets.main.output.classesDirs)
+    sourceDirectories.from = files(sourceSets.main.java.srcDirs)
+
     reports {
-        xml.enabled true
+        xml.enabled = true
     }
 }
 

@@ -151,10 +151,22 @@ spec:
           value: http://<%= app.baseName.toLowerCase() %>-elasticsearch.<%= kubernetesNamespace %>.svc.cluster.local:9200
         <%_ } _%>
         <%_ if (app.messageBroker === 'kafka') { _%>
-        - name: SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS
-          value: jhipster-kafka.<%= kubernetesNamespace %>.svc.cluster.local
-        - name: SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES
-          value: jhipster-zookeeper.<%= kubernetesNamespace %>.svc.cluster.local
+        - name: KAFKA_CONSUMER_KEY_DESERIALIZER
+          value: 'org.apache.kafka.common.serialization.StringDeserializer'
+        - name: KAFKA_CONSUMER_VALUE_DESERIALIZER
+          value: 'org.apache.kafka.common.serialization.StringDeserializer'
+        - name: KAFKA_CONSUMER_BOOTSTRAP_SERVERS
+          value: 'jhipster-kafka.<%= kubernetesNamespace %>.svc.cluster.local:9092'
+        - name: KAFKA_CONSUMER_GROUP_ID
+          value: '<%= app.baseName.toLowerCase() %>'
+        - name: KAFKA_CONSUMER_AUTO_OFFSET_RESET
+          value: 'earliest'
+        - name: KAFKA_PRODUCER_BOOTSTRAP_SERVERS
+          value: 'jhipster-kafka.<%= kubernetesNamespace %>.svc.cluster.local:9092'
+        - name: KAFKA_PRODUCER_KEY_DESERIALIZER
+          value: 'org.apache.kafka.common.serialization.StringDeserializer'
+        - name: KAFKA_PRODUCER_VALUE_DESERIALIZER
+          value: 'org.apache.kafka.common.serialization.StringDeserializer'
         <%_ } _%>
         <%_ if (monitoring === 'elk') { _%>
         - name: JHIPSTER_METRICS_LOGS_ENABLED
@@ -194,13 +206,13 @@ spec:
           containerPort: <%= app.serverPort %>
         readinessProbe:
           httpGet:
-            path: <%= app.applicationType === 'microservice' && !app.serviceDiscoveryType ? "/" + app.baseName.toLowerCase() : "" %>/management/health
+            path: <%= app.applicationType === 'microservice' && !app.serviceDiscoveryType ? `/services/${app.baseName.toLowerCase()}` : '' %>/management/health
             port: http
           initialDelaySeconds: 20
           periodSeconds: 15
           failureThreshold: 6
         livenessProbe:
           httpGet:
-            path: <%= app.applicationType === 'microservice' && !app.serviceDiscoveryType ? "/" + app.baseName.toLowerCase() : "" %>/management/health
+            path: <%= app.applicationType === 'microservice' && !app.serviceDiscoveryType ? `/services/${app.baseName.toLowerCase()}` : '' %>/management/info
             port: http
           initialDelaySeconds: 120

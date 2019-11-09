@@ -16,6 +16,9 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -%>
+<%_
+const primaryKeyType = getPkTypeBasedOnDBAndAssociation(authenticationType, databaseType, relationships);
+_%>
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -44,8 +47,8 @@ export class <%= entityAngularName %>DeleteDialogComponent {
         this.activeModal.dismiss('cancel');
     }
 
-    confirmDelete(id: <% if (pkType === 'String') { %>string<% } else { %>number<% } %>) {
-        this.<%= entityInstance %>Service.delete(id).subscribe((response) => {
+    confirmDelete(id: <% if (primaryKeyType === 'String' || pkType === 'UUID') { %>string<% } else { %>number<% } %>) {
+        this.<%= entityInstance %>Service.delete(id).subscribe(() => {
             this.eventManager.broadcast({
                 name: '<%= entityInstance %>ListModification',
                 content: 'Deleted an <%= entityInstance %>'
@@ -74,10 +77,10 @@ export class <%= entityAngularName %>DeletePopupComponent implements OnInit, OnD
             setTimeout(() => {
                 this.ngbModalRef = this.modalService.open(<%= entityAngularName %>DeleteDialogComponent as Component, { size: 'lg', backdrop: 'static'});
                 this.ngbModalRef.componentInstance.<%= entityInstance %> = <%= entityInstance %>;
-                this.ngbModalRef.result.then((result) => {
+                this.ngbModalRef.result.then(() => {
                     this.router.navigate(['/<%= entityUrl %>', { outlets: { popup: null }}]);
                     this.ngbModalRef = null;
-                }, (reason) => {
+                }, () => {
                     this.router.navigate(['/<%= entityUrl %>', { outlets: { popup: null }}]);
                     this.ngbModalRef = null;
                 });

@@ -17,20 +17,18 @@
  limitations under the License.
 -%>
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { HttpErrorResponse, <%_ if (pagination !== 'no') { _%>HttpHeaders, <% } %>HttpResponse } from '@angular/common/http';
+import { <%_ if (pagination !== 'no') { _%>HttpHeaders, <% } %>HttpResponse } from '@angular/common/http';
 <%_ if (pagination === 'pagination' || pagination === 'pager') { _%>
 import { ActivatedRoute, Router } from '@angular/router';
 <%_ } else if (searchEngine === 'elasticsearch') { _%>
 import { ActivatedRoute } from '@angular/router';
 <%_ } _%>
 import { Subscription } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
-import { JhiEventManager, <% if (pagination !== 'no') { %>JhiParseLinks, <% } %>JhiAlertService<% if (fieldsContainBlob) { %>, JhiDataUtils<% } %> } from 'ng-jhipster';
+import { JhiEventManager <% if (pagination !== 'no') { %>, JhiParseLinks <% } %><% if (fieldsContainBlob) { %>, JhiDataUtils<% } %> } from 'ng-jhipster';
 
 import { I<%= entityAngularName %> } from 'app/shared/model/<%= entityModelFileName %>.model';
-import { AccountService } from 'app/core';
 <%_ if (pagination !== 'no') { %>
-import { ITEMS_PER_PAGE } from 'app/shared';
+import { ITEMS_PER_PAGE } from 'app/shared/constants/pagination.constants';
 <%_ } _%>
 import { <%= entityAngularName %>Service } from './<%= entityFileName %>.service';
 
@@ -51,9 +49,6 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
     ngOnInit() {
         this.<%=entityInstancePlural %>Selected = [];
         this.loadAll();
-        this.accountService.identity().then((account) => {
-            this.currentAccount = account;
-        });
         this.registerChangeIn<%= entityClassPlural %>();
     }
 
@@ -81,7 +76,7 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
     } _%>
 
     registerChangeIn<%= entityClassPlural %>() {
-        this.eventSubscriber = this.eventManager.subscribe('<%= entityInstance %>ListModification', (response) => <%= eventCallBack %>);
+        this.eventSubscriber = this.eventManager.subscribe('<%= entityInstance %>ListModification', () => <%= eventCallBack %>);
     }
     <%_ if (pagination !== 'no') { _%>
         <%_ if (databaseType !== 'cassandra') { _%>
@@ -94,7 +89,7 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
         return result;
     }
         <%_ } _%>
-    
+
     openImportDialog() {
         // const modalRef = this.modalService.open(<%= entityClass %>ImportDialogComponent);
     }
@@ -138,7 +133,7 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
         }
       }
     }
-          
+
         <%_ if (pagination === 'pagination' || pagination === 'pager') { _%>
 
     protected paginate<%= entityClassPlural %>(data: I<%= entityAngularName %>[], headers: HttpHeaders) {
@@ -158,8 +153,4 @@ export class <%= entityAngularName %>Component implements OnInit, OnDestroy {
         }
     }
     <%_ }} _%>
-
-    protected onError(errorMessage: string) {
-        this.jhiAlertService.error(errorMessage, null, null);
-    }
 }

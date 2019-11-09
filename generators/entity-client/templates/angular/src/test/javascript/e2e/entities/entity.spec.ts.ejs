@@ -16,14 +16,6 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -%>
-/* tslint:disable no-unused-expression */
-import { browser, ExpectedConditions as ec, <% if ( fieldsContainInstant || fieldsContainZonedDateTime ) { %>protractor, <% } %>promise } from 'protractor';
-import { NavBarPage, SignInPage } from '../../<%= entityParentPathAddition %>page-objects/jhi-page-objects';
-
-import { <%= entityClass %>ComponentsPage, <%= entityClass %>DeleteDialog, <%= entityClass %>UpdatePage } from './<%= entityFileName %>.page-object';
-<%_ if (fieldsContainBlobOrImage) { _%>
-import * as path from 'path';
-<%_ } _%>
 <%_
 let elementGetter = `getText()`;
 let openBlockComment = ``;
@@ -33,11 +25,23 @@ if (enableTranslation) {
 }
 for (let relationship of relationships) {
     if (relationship.relationshipRequired || relationship.useJPADerivedIdentifier) {
-        openBlockComment = `/*`;
-        closeBlockComment = `*/`;
+        openBlockComment = `/* `;
+        closeBlockComment = ` */`;
         break;
     }
 } _%>
+import { browser, ExpectedConditions as ec <% if (!readOnly) { %><%= openBlockComment %><% if ( fieldsContainInstant || fieldsContainZonedDateTime ) { %>, protractor<% } %>, promise<%= closeBlockComment %><% } %> } from 'protractor';
+import { NavBarPage, SignInPage } from '../../<%= entityParentPathAddition %>page-objects/jhi-page-objects';
+
+import { <%= entityClass %>ComponentsPage,
+    <%_ if (!readOnly) { _%>
+    <%= openBlockComment %><%= entityClass %>DeleteDialog,
+    <%= closeBlockComment %> <%= entityClass %>UpdatePage
+    <%_ } _%>
+} from './<%= entityFileName %>.page-object';
+<%_ if (fieldsContainBlobOrImage) { _%>
+import * as path from 'path';
+<%_ } _%>
 
 const expect = chai.expect;
 
@@ -45,9 +49,11 @@ describe('<%= entityClass %> e2e test', () => {
 
     let navBarPage: NavBarPage;
     let signInPage: SignInPage;
-    let <%= entityInstance %>UpdatePage: <%= entityClass %>UpdatePage;
     let <%= entityInstance %>ComponentsPage: <%= entityClass %>ComponentsPage;
+    <%_ if (!readOnly) { _%>
+    let <%= entityInstance %>UpdatePage: <%= entityClass %>UpdatePage;
     <%= openBlockComment %>let <%= entityInstance %>DeleteDialog: <%= entityClass %>DeleteDialog;<%= closeBlockComment %>
+    <%_ } _%>
     <%_ if (fieldsContainBlobOrImage) { _%>
     const fileNameToUpload = 'logo-jhipster.png';
     const fileToUpload = '../../../../../../<%= entityParentPathAddition %><%= CLIENT_MAIN_SRC_DIR %>content/images/' + fileNameToUpload;
@@ -79,6 +85,7 @@ describe('<%= entityClass %> e2e test', () => {
         <%_ } _%>
     });
 
+<%_ if (!readOnly) { _%>
     it('should load create <%= entityClass %> page', async () => {
         await <%= entityInstance %>ComponentsPage.clickOnCreateButton();
         <%= entityInstance %>UpdatePage = new <%= entityClass %>UpdatePage();
@@ -190,6 +197,7 @@ describe('<%= entityClass %> e2e test', () => {
 
         expect(await <%= entityInstance %>ComponentsPage.countDeleteButtons()).to.eq(nbButtonsBeforeDelete - 1);
     });<%= closeBlockComment %>
+<%_ } _%>
 
     after(async () => {
         await navBarPage.autoSignOut();

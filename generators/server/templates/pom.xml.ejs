@@ -28,19 +28,6 @@
     <name><%= humanizedBaseName %></name>
 
     <repositories>
-<%_ if (devDatabaseType === 'oracle' || prodDatabaseType === 'oracle') { _%>
-    <!-- more information at https://blogs.oracle.com/dev2dev/entry/how_to_get_oracle_jdbc -->
-        <repository>
-            <id>maven.oracle.com</id>
-            <name>oracle-maven-repo</name>
-            <url>https://maven.oracle.com</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </releases>
-        </repository>
-<%_ } _%>
         <!-- jhipster-needle-maven-repository -->
     </repositories>
 
@@ -52,7 +39,7 @@
 
     <properties>
         <!-- Build properties -->
-        <maven.version>3.0.0</maven.version>
+        <maven.version>3.3.9</maven.version>
         <java.version><%= JAVA_VERSION %></java.version>
 <%_ if (!skipClient) { _%>
         <node.version>v<%= NODE_VERSION %></node.version>
@@ -80,62 +67,73 @@
         <profile.tls />
 
         <!-- Dependency versions -->
-        <jhipster-dependencies.version>3.0.1</jhipster-dependencies.version>
+        <jhipster-dependencies.version>3.0.7-SNAPSHOT</jhipster-dependencies.version>
         <!-- The spring-boot version should match the one managed by
         https://mvnrepository.com/artifact/io.github.jhipster/jhipster-dependencies/${jhipster-dependencies.version} -->
-        <spring-boot.version>2.1.4.RELEASE</spring-boot.version>
-        <%_ if (databaseType === 'sql') { _%>
+        <spring-boot.version>2.1.9.RELEASE</spring-boot.version>
+<%_ if (databaseType === 'sql') { _%>
+        <!-- The spring framework version should match the one managed by
+        https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies/${spring-boot.version} -->
+        <spring.version>5.1.10.RELEASE</spring.version>
         <!-- The hibernate version should match the one managed by
         https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies/${spring-boot.version} -->
-        <hibernate.version>5.3.9.Final</hibernate.version>
+        <hibernate.version>5.3.12.Final</hibernate.version>
         <!-- The javassist version should match the one managed by
         https://mvnrepository.com/artifact/org.hibernate/hibernate-core/${hibernate.version} -->
-        <javassist.version>3.23.1-GA</javassist.version>
+        <javassist.version>3.23.2-GA</javassist.version>
         <!-- The liquibase version should match the one managed by
         https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-dependencies/${spring-boot.version} -->
         <liquibase.version>3.6.3</liquibase.version>
         <liquibase-hibernate5.version>3.6</liquibase-hibernate5.version>
+        <!-- The hibernate version to be used to override default version of liquibase maven plugin -->
+        <hibernate-core.version>5.3.8.Final</hibernate-core.version>
     <%_ if (devDatabaseType === 'h2Disk') { _%>
         <h2.version>1.4.199</h2.version>
     <%_ } _%>
-        <spring.version>5.1.5.RELEASE</spring.version>
         <validation-api.version>2.0.1.Final</validation-api.version>
 <%_ } _%>
 <%_ if (databaseType === 'sql' || authenticationType === 'uaa') { _%>
         <jaxb-runtime.version>2.3.2</jaxb-runtime.version>
 <%_ } _%>
+        <archunit-junit5.version>0.11.0</archunit-junit5.version>
 <%_ if (searchEngine === 'elasticsearch') { _%>
         <log4j2-mock.version>0.0.1</log4j2-mock.version>
 <%_ } _%>
-        <mapstruct.version>1.3.0.Final</mapstruct.version>
-
+        <mapstruct.version>1.3.1.Final</mapstruct.version>
+<%_ if (enableSwaggerCodegen) { _%>
+        <jackson-databind-nullable.version>0.2.0</jackson-databind-nullable.version>
+<%_ } _%>
+<%_ if (cacheProvider === 'caffeine') { _%>
+        <caffeine.version>2.8.0</caffeine.version>
+        <typesafe.version>1.3.4</typesafe.version>
+<%_ } _%>
         <!-- Plugin versions -->
         <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-        <maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
         <maven-eclipse-plugin.version>2.10</maven-eclipse-plugin.version>
-        <!-- We can't go to 3.0.0-M2 as it has a regression. See https://issues.apache.org/jira/browse/MENFORCER-306 -->
-        <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
+        <maven-enforcer-plugin.version>3.0.0-M2</maven-enforcer-plugin.version>
         <maven-failsafe-plugin.version>3.0.0-M3</maven-failsafe-plugin.version>
         <maven-idea-plugin.version>2.2.1</maven-idea-plugin.version>
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M3</maven-surefire-plugin.version>
-        <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
+        <maven-war-plugin.version>3.2.3</maven-war-plugin.version>
 <%_ if (!skipClient) { _%>
-        <frontend-maven-plugin.version>1.7.6</frontend-maven-plugin.version>
+        <frontend-maven-plugin.version>1.8.0</frontend-maven-plugin.version>
 <%_ } _%>
-        <git-commit-id-plugin.version>2.2.6</git-commit-id-plugin.version>
-        <jacoco-maven-plugin.version>0.8.3</jacoco-maven-plugin.version>
-        <jib-maven-plugin.version>0.9.11</jib-maven-plugin.version>
+        <git-commit-id-plugin.version>3.0.1</git-commit-id-plugin.version>
+        <jacoco-maven-plugin.version><%= JACOCO_VERSION %></jacoco-maven-plugin.version>
+        <jib-maven-plugin.version><%= JIB_VERSION %></jib-maven-plugin.version>
         <lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
 <%_ if (enableSwaggerCodegen) { _%>
-        <openapi-generator-maven-plugin.version>3.3.4</openapi-generator-maven-plugin.version>
+        <openapi-generator-maven-plugin.version>4.1.3</openapi-generator-maven-plugin.version>
 <%_ } _%>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
-        <sonar-maven-plugin.version>3.6.0.1398</sonar-maven-plugin.version>
-        <jacoco.reportFolder>${project.build.directory}/jacoco</jacoco.reportFolder>
-        <jacoco.utReportFile>${jacoco.reportFolder}/test.exec</jacoco.utReportFile>
-        <jacoco.itReportFile>${jacoco.reportFolder}/integrationTest.exec</jacoco.itReportFile>
+        <sonar-maven-plugin.version>3.7.0.1746</sonar-maven-plugin.version>
+        <jacoco.utReportFolder>${project.build.directory}/jacoco/test</jacoco.utReportFolder>
+        <jacoco.utReportFile>${jacoco.utReportFolder}/test.exec</jacoco.utReportFile>
+        <jacoco.itReportFolder>${project.build.directory}/jacoco/integrationTest</jacoco.itReportFolder>
+        <jacoco.itReportFile>${jacoco.itReportFolder}/integrationTest.exec</jacoco.itReportFile>
         <junit.utReportFolder>${project.testresult.directory}/test</junit.utReportFolder>
         <junit.itReportFolder>${project.testresult.directory}/integrationTest</junit.itReportFolder>
         <!-- jhipster-needle-maven-property -->
@@ -264,6 +262,23 @@
             <scope>test</scope>
             <!-- parent POM declares this dependency in default (compile) scope -->
         </dependency>
+<%_ if (cacheProvider === 'redis' && enableHibernateCache) { _%>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jcache</artifactId>
+        </dependency>
+<%_ } _%>
+<%_ if (cacheProvider === 'redis') { _%>
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+<%_ } _%>
 <%_ if (!reactive) { _%>
         <dependency>
             <groupId>io.springfox</groupId>
@@ -290,6 +305,13 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
+<%_ if (enableSwaggerCodegen) { _%>
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>jackson-databind-nullable</artifactId>
+            <version>${jackson-databind-nullable.version}</version>
+        </dependency>
+<%_ } _%>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -303,8 +325,8 @@
 <%_ } _%>
 <%_ if (databaseType === 'couchbase') { _%>
         <dependency>
-            <groupId>com.github.differentway</groupId>
-            <artifactId>couchbase-testcontainer</artifactId>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>couchbase</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -316,7 +338,7 @@
             <artifactId>encryption</artifactId>
         </dependency>
 <%_ } _%>
-<%_ if (['ehcache', 'hazelcast', 'infinispan', 'memcached'].includes(cacheProvider)) { _%>
+<%_ if (['ehcache', 'caffeine', 'hazelcast', 'infinispan', 'memcached'].includes(cacheProvider)) { _%>
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
@@ -341,9 +363,8 @@
         </dependency>
 <%_ } _%>
 <%_ if (devDatabaseType === 'oracle' || prodDatabaseType === 'oracle') { _%>
-        <!-- more information at https://blogs.oracle.com/dev2dev/entry/how_to_get_oracle_jdbc -->
         <dependency>
-            <groupId>com.oracle.jdbc</groupId>
+            <groupId>com.oracle.ojdbc</groupId>
             <artifactId>ojdbc8</artifactId>
         </dependency>
 <%_ } _%>
@@ -362,13 +383,13 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
-        <%_ if (cucumberTests) { _%>
+<%_ if (cucumberTests) { _%>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
         </dependency>
-        <%_ } _%>
+<%_ } _%>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -398,6 +419,29 @@
         </dependency>
     <%_ } _%>
 <%_ } _%>
+<%_ if (cacheProvider === 'caffeine') { _%>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>${caffeine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>jcache</artifactId>
+            <version>${caffeine.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>${typesafe.version}</version>
+        </dependency>
+    <%_ if (enableHibernateCache) { _%>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jcache</artifactId>
+        </dependency>
+    <%_ } _%>
+<%_ } _%>
 <%_ if (databaseType === 'sql') { _%>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -407,10 +451,6 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-envers</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate.validator</groupId>
@@ -542,7 +582,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>
@@ -560,19 +599,28 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5-api</artifactId>
+            <version>${archunit-junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Adding the engine dependency to the surefire-plugin unfortunately does not work in the current version. -->
+        <!-- https://www.archunit.org/userguide/html/000_Index.html#_junit_5 -->
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5-engine</artifactId>
+            <version>${archunit-junit5.version}</version>
+            <scope>test</scope>
+        </dependency>
 <%_ if (messageBroker === 'kafka') { _%>
-        <!-- Kafka support -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-stream</artifactId>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-stream-binder-kafka</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-stream-test-support</artifactId>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
             <scope>test</scope>
         </dependency>
 <%_ } _%>
@@ -630,7 +678,6 @@
             <scope>runtime</scope>
     <%_ } _%>
         </dependency>
-
 <%_ } _%>
 <%_ if (databaseType === 'cassandra') { _%>
         <!-- DataStax driver -->
@@ -767,6 +814,11 @@
                     <target>${java.version}</target>
                     <annotationProcessorPaths>
                         <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>${spring-boot.version}</version>
+                        </path>
+                        <path>
                             <groupId>org.mapstruct</groupId>
                             <artifactId>mapstruct-processor</artifactId>
                             <version>${mapstruct.version}</version>
@@ -778,14 +830,13 @@
                             <artifactId>hibernate-jpamodelgen</artifactId>
                             <version>${hibernate.version}</version>
                         </path>
-    <%_ if (authenticationType !== 'uaa') { _%>
                         <path>
                             <groupId>org.glassfish.jaxb</groupId>
                             <artifactId>jaxb-runtime</artifactId>
                             <version>${jaxb-runtime.version}</version>
                         </path>
-    <%_ } _%>
 <%_ } _%>
+                        <!-- jhipster-needle-maven-add-annotation-processor -->
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
@@ -794,7 +845,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>${maven-javadoc-plugin.version}</version>
                 <configuration>
-                    <source>8</source>
+                    <source>${maven.compiler.source}</source>
                 </configuration>
             </plugin>
             <plugin>
@@ -847,7 +898,9 @@
                 </executions>
                 <configuration>
                     <mainClass>${start-class}</mainClass>
+                    <%_ if (embeddableLaunchScript) { _%>
                     <executable>true</executable>
+                    <%_ } _%>
                     <fork>true</fork>
                     <!--
                     Enable the line below to have remote debugging of your application on port 5005
@@ -916,6 +969,7 @@
                     </executions>
                     <configuration>
                         <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                        <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
                         <generateGitPropertiesFile>true</generateGitPropertiesFile>
                         <includeOnlyProperties>
                             <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
@@ -948,7 +1002,7 @@
                             </goals>
                             <configuration>
                                 <dataFile>${jacoco.utReportFile}</dataFile>
-                                <outputDirectory>${jacoco.reportFolder}</outputDirectory>
+                                <outputDirectory>${jacoco.utReportFolder}</outputDirectory>
                             </configuration>
                         </execution>
                         <execution>
@@ -970,7 +1024,7 @@
                             </goals>
                             <configuration>
                                 <dataFile>${jacoco.itReportFile}</dataFile>
-                                <outputDirectory>${jacoco.reportFolder}</outputDirectory>
+                                <outputDirectory>${jacoco.itReportFolder}</outputDirectory>
                             </configuration>
                         </execution>
                     </executions>
@@ -988,7 +1042,7 @@
                         </to>
                         <container>
                             <entrypoint>
-                                <shell>sh</shell>
+                                <shell>bash</shell>
                                 <option>-c</option>
                                 <arg>chmod +x /entrypoint.sh &amp;&amp; sync &amp;&amp; /entrypoint.sh</arg>
                             </entrypoint>
@@ -1005,7 +1059,7 @@
                                 <SPRING_OUTPUT_ANSI_ENABLED>ALWAYS</SPRING_OUTPUT_ANSI_ENABLED>
                                 <JHIPSTER_SLEEP>0</JHIPSTER_SLEEP>
                             </environment>
-                            <useCurrentTimestamp>true</useCurrentTimestamp>
+                            <creationTime>USE_CURRENT_TIMESTAMP</creationTime>
                         </container>
                     </configuration>
                 </plugin>
@@ -1017,7 +1071,7 @@
                     <configuration>
                         <changeLogFile>${project.basedir}/<%= SERVER_MAIN_RES_DIR %>config/liquibase/master.xml</changeLogFile>
                         <diffChangeLogFile>${project.basedir}/<%= SERVER_MAIN_RES_DIR %>config/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
-                        <driver><% if (devDatabaseType === 'mysql') { %>com.mysql.jdbc.Driver<% } else if (devDatabaseType === 'mariadb') { %>org.mariadb.jdbc.Driver<% } else if (devDatabaseType === 'postgresql') { %>org.postgresql.Driver<% } else if (devDatabaseType === 'h2Disk') { %>org.h2.Driver<% } else if (devDatabaseType === 'oracle') { %>oracle.jdbc.OracleDriver<% } %></driver>
+                        <driver><% if (devDatabaseType === 'mysql') { %>com.mysql.cj.jdbc.Driver<% } else if (devDatabaseType === 'mariadb') { %>org.mariadb.jdbc.Driver<% } else if (devDatabaseType === 'postgresql') { %>org.postgresql.Driver<% } else if (devDatabaseType === 'h2Disk') { %>org.h2.Driver<% } else if (devDatabaseType === 'oracle') { %>oracle.jdbc.OracleDriver<% } %></driver>
                         <url><% if (devDatabaseType === 'mysql') { %>jdbc:mysql://localhost:3306/<%= baseName %><% } else if (devDatabaseType === 'mariadb') { %>jdbc:mariadb://localhost:3306/<%= baseName %><% } else if (devDatabaseType === 'postgresql') { %>jdbc:postgresql://localhost:5432/<%= baseName %><% } else if (devDatabaseType === 'h2Disk') { %>jdbc:h2:file:${project.build.directory}/h2db/db/<%= lowercaseBaseName %><% } else if (devDatabaseType === 'oracle') { %>jdbc:oracle:thin:@localhost:1521:<%= baseName %><% } else if (devDatabaseType === 'mssql') { %>jdbc:sqlserver://localhost:1433;database=<%= baseName %><% } %></url>
                         <defaultSchemaName><% if (devDatabaseType === 'mysql') { %><%= baseName %><% } else if (devDatabaseType === 'postgresql') { %><% } %></defaultSchemaName>
                         <username><% if (devDatabaseType === 'mysql') { %>root<% } else if (devDatabaseType === 'postgresql' || devDatabaseType === 'h2Disk' || devDatabaseType === 'h2Memory') { %><%= baseName %><% } else if (devDatabaseType === 'mssql') { %>SA<% } %></username>
@@ -1031,6 +1085,11 @@
     <%_ } _%>
                     </configuration>
                     <dependencies>
+                        <dependency>
+                            <groupId>org.hibernate</groupId>
+                            <artifactId>hibernate-core</artifactId>
+                            <version>${hibernate-core.version}</version>
+                        </dependency>
                         <dependency>
                             <groupId>org.javassist</groupId>
                             <artifactId>javassist</artifactId>
@@ -1100,6 +1159,18 @@
                                 <goal>enforce</goal>
                             </goals>
                         </execution>
+                        <execution>
+                            <id>enforce-dependencyConvergence</id>
+                            <configuration>
+                                <rules>
+                                    <DependencyConvergence />
+                                </rules>
+                                <fail>false</fail>
+                            </configuration>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                        </execution>
                     </executions>
                     <configuration>
                         <rules>
@@ -1108,8 +1179,8 @@
                                 <version>[${maven.version},)</version>
                             </requireMavenVersion>
                             <requireJavaVersion>
-                                <message>You are running an incompatible version of Java. JHipster supports JDK 8 to 12.</message>
-                                <version>[1.8,13)</version>
+                                <message>You are running an incompatible version of Java. JHipster supports JDK 8 to 13.</message>
+                                <version>[1.8,14)</version>
                             </requireJavaVersion>
                         </rules>
                     </configuration>
@@ -1170,7 +1241,6 @@
                         <excludes>
                             <exclude>**/*IT*</exclude>
                             <exclude>**/*IntTest*</exclude>
-                            <exclude>**/*CucumberIT*</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -1188,15 +1258,7 @@
                         <includes>
                             <include>**/*IT*</include>
                             <include>**/*IntTest*</include>
-                    <%_ if (cucumberTests) { _%>
-                            <include>**/*CucumberIT*</include>
-                    <%_ } _%>
                         </includes>
-                    <%_ if (!cucumberTests) { _%>
-                        <excludes>
-                            <exclude>**/*CucumberIT*</exclude>
-                        </excludes>
-                    <%_ } _%>
                     </configuration>
                     <executions>
                         <execution>
@@ -1233,11 +1295,12 @@
                                 <apiPackage><%= packageName %>.web.api</apiPackage>
                                 <modelPackage><%= packageName %>.web.api.model</modelPackage>
                                 <supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
-                                <validateSpec>true</validateSpec>
+                                <importMappings>Problem=org.zalando.problem.Problem</importMappings>
+                                <skipValidateSpec>false</skipValidateSpec>
                                 <configOptions>
-                                    <%_ if (reactive) { _%>
+    <%_ if (reactive) { _%>
                                     <reactive>true</reactive>
-                                    <%_ } _%>
+    <%_ } _%>
                                     <delegatePattern>true</delegatePattern>
                                     <title><%= dasherizedBaseName %></title>
                                 </configOptions>
@@ -1261,6 +1324,7 @@
                     </configuration>
 <%_ } _%>
                 </plugin>
+                <!-- jhipster-needle-maven-add-plugin-management -->
             </plugins>
         </pluginManagement>
     </build>
@@ -1361,6 +1425,9 @@
                                 <phase>generate-resources</phase>
                                 <configuration>
                                     <arguments>run webpack:build</arguments>
+                                    <environmentVariables>
+                                        <APP_VERSION>${project.version}</APP_VERSION>
+                                    </environmentVariables>
     <%_ if (clientPackageManager === 'yarn') { _%>
                                     <yarnInheritsProxyConfigFromMaven>false</yarnInheritsProxyConfigFromMaven>
     <%_ } else if (clientPackageManager === 'npm') { _%>
@@ -1434,7 +1501,9 @@
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <configuration>
                             <mainClass>${start-class}</mainClass>
+                            <%_ if (embeddableLaunchScript) { _%>
                             <executable>true</executable>
+                            <%_ } _%>
                         </configuration>
                         <executions>
                             <execution>
@@ -1513,6 +1582,9 @@
                                 <phase>generate-resources</phase>
                                 <configuration>
                                     <arguments>run webpack:prod</arguments>
+                                    <environmentVariables>
+                                        <APP_VERSION>${project.version}</APP_VERSION>
+                                    </environmentVariables>
     <%_ if (clientPackageManager === 'yarn') { _%>
                                     <yarnInheritsProxyConfigFromMaven>false</yarnInheritsProxyConfigFromMaven>
     <%_ } else if (clientPackageManager === 'npm') { _%>

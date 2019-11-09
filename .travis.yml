@@ -1,90 +1,106 @@
-os:
-  - linux
+#
+# Copyright 2013-2019 the original author or authors from the JHipster project.
+#
+# This file is part of the JHipster project, see https://www.jhipster.tech/
+# for more information.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+dist: bionic
 services:
-  - docker
+    - docker
+    - xvfb
 language: node_js
 node_js:
-  - "6.11.0"
-jdk:
-  - oraclejdk8
-addons:
-  apt:
-    sources:
-    - google-chrome
-    packages:
-    - google-chrome-stable
+    - '10.16.3'
 cache:
-  yarn: true
-  directories:
-    - $HOME/.m2
-    - $HOME/.gradle
-    - $HOME/.yarn-cache
+    directories:
+        - $HOME/.m2
+        - $HOME/.gradle
+addons:
+  chrome: stable
 env:
-  global:
-    - PROFILE=dev
-    - RUN_APP=1
-    - PROTRACTOR=0
-    - JHIPSTER_TRAVIS=$TRAVIS_BUILD_DIR/travis
-    - JHIPSTER_SAMPLES=$JHIPSTER_TRAVIS/samples
-    - JHIPSTER_SCRIPTS=$JHIPSTER_TRAVIS/scripts
-    - APP_FOLDER=$HOME/app
-    - UAA_APP_FOLDER=$HOME/uaa
-    # environment properties
-    - SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
-    - SPRING_JPA_SHOW_SQL=false
-  matrix:
-    - JHIPSTER=app-default-from-scratch PROFILE=prod RUN_APP=0
-    - JHIPSTER=app-ng2-default PROTRACTOR=1
-    - JHIPSTER=app-ng2-psql-es-noi18n PROFILE=prod PROTRACTOR=1
-    - JHIPSTER=app-ng2-gradle-jwt-psql PROTRACTOR=1
-    - JHIPSTER=app-ng2-social-websocket PROTRACTOR=1
-    - JHIPSTER=app-ng2-sass-noi18n PROTRACTOR=1
-    - JHIPSTER=app-ng2-gateway-eureka
-    - JHIPSTER=app-ng2-gateway-consul
-    - JHIPSTER=app-ng2-gateway-uaa
-    - JHIPSTER=app-ng2-infinispan
-    - JHIPSTER=app-ng2-cassandra
-    - JHIPSTER=app-ng2-mongodb
-    - JHIPSTER=app-ng2-oauth2
-    - JHIPSTER=app-mysql PROFILE=prod PROTRACTOR=1
-    - JHIPSTER=app-gradle PROTRACTOR=1
-    - JHIPSTER=app-hazelcast-cucumber
-    - JHIPSTER=app-mariadb-kafka
-    - JHIPSTER=app-jwt
-    - JHIPSTER=app-microservice-eureka
-    - JHIPSTER=app-microservice-consul
+    global:
+        - JHI_PROFILE=dev
+        - JHI_RUN_APP=1
+        - JHI_PROTRACTOR=0
+        - JHI_JDK=11
+        # if JHI_LIB_BRANCH value is release, use the release from Maven
+        - JHI_LIB_REPO=https://github.com/jhipster/jhipster.git
+        - JHI_LIB_BRANCH=master
+        # if JHI_GEN_BRANCH value is release, use the release from NPM
+        - JHI_GEN_REPO=https://github.com/jhipster/generator-jhipster.git
+        - JHI_GEN_BRANCH=master
+        # specific config
+        - SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
+        - SPRING_JPA_SHOW_SQL=false
+        - JHI_DISABLE_WEBPACK_LOGS=true
+        - JHI_E2E_HEADLESS=true
+        - JHI_SCRIPTS=$TRAVIS_BUILD_DIR/test-integration/scripts
+        - NG_CLI_ANALYTICS="false"
+    matrix:
+        - JHI_APP=ngx-default JHI_PROFILE=prod JHI_PROTRACTOR=1 JHI_ENTITY=sql JHI_SONAR=1
+        - JHI_APP=ngx-psql-es-noi18n-mapsid JHI_PROFILE=prod JHI_PROTRACTOR=1 JHI_ENTITY=sqlfull
+        - JHI_APP=ngx-gradle-fr JHI_PROFILE=prod JHI_PROTRACTOR=1 JHI_ENTITY=sql JHI_WAR=1
+        - JHI_APP=ms-ngx-gateway-eureka JHI_ENTITY=sql JHI_WAR=1
+        - JHI_APP=ms-micro-eureka JHI_ENTITY=micro JHI_WAR=1
+        - JHI_APP=ms-micro-consul JHI_ENTITY=micro
 
+#----------------------------------------------------------------------
+# Install all tools and check configuration
+#----------------------------------------------------------------------
 before_install:
-  - jdk_switcher use oraclejdk8
-  - java -version
-  - export TZ=Australia/Canberra
-  - date
-  - sudo /etc/init.d/mysql stop
-  - sudo /etc/init.d/postgresql stop
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  # Repo for Yarn
-  - curl -o- -L https://yarnpkg.com/install.sh | bash
-  - export PATH=$HOME/.yarn/bin:$PATH
-  - yarn global add yo bower gulp-cli
+    - sudo apt-get install -y google-chrome-stable
+    - java -version
+    - export TZ=Australia/Canberra
+    - date
+    # Install Yarn
+    - npm install -g yarn
+    - $JHI_SCRIPTS/04-git-config.sh
+
+#----------------------------------------------------------------------
+# Install JHipster and generate project+entities
+#----------------------------------------------------------------------
 install:
-  - cd "$TRAVIS_BUILD_DIR"/
-  - yarn install
-  - yarn link
-  - if [ "$JHIPSTER" == "app-default-from-scratch" ]; then
-        yarn run test;
-    fi
-  - $JHIPSTER_SCRIPTS/01-generate-entities.sh
-  - $JHIPSTER_SCRIPTS/02-generate-project.sh
+    - $JHI_SCRIPTS/10-install-jhipster.sh
+    - $JHI_SCRIPTS/11-generate-entities.sh
+    - $JHI_SCRIPTS/12-generate-project.sh
+    - $JHI_SCRIPTS/13-replace-version-generated-project.sh
+    - $JHI_SCRIPTS/14-jhipster-info.sh
+
+#----------------------------------------------------------------------
+# Launch tests
+#----------------------------------------------------------------------
 script:
-  - $JHIPSTER_SCRIPTS/03-docker-compose.sh
-  - $JHIPSTER_SCRIPTS/04-tests.sh
-  - travis_wait 30 $JHIPSTER_SCRIPTS/05-run.sh
-  - $JHIPSTER_SCRIPTS/06-sonar.sh
+    - $JHI_SCRIPTS/20-docker-compose.sh
+    - $JHI_SCRIPTS/21-tests-backend.sh
+    - $JHI_SCRIPTS/22-tests-frontend.sh
+    - $JHI_SCRIPTS/23-package.sh
+    - $JHI_SCRIPTS/24-tests-e2e.sh
+    - $JHI_SCRIPTS/25-sonar-analyze.sh
+
+#----------------------------------------------------------------------
+# Cache
+#----------------------------------------------------------------------
+before_cache:
+    - rm -rf $HOME/.m2/repository/io/github/jhipster/jhipster-framework/
+    - rm -rf $HOME/.m2/repository/io/github/jhipster/jhipster-dependencies/
+    - rm -rf $HOME/.m2/repository/io/github/jhipster/jhipster-parent/
 notifications:
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/479b810ad42c816679fb
-    on_success: always  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: false     # default: false
+    webhooks:
+        urls:
+            - https://webhooks.gitter.im/e/479b810ad42c816679fb
+        on_success: always # options: [always|never|change] default: always
+        on_failure: always # options: [always|never|change] default: always
+        on_start: false # default: false
