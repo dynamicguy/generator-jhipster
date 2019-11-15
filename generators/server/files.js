@@ -163,6 +163,9 @@ const serverFiles = {
     ],
     serverBuild: [
         {
+            templates: [{ file: 'checkstyle.xml', options: { interpolate: INTERPOLATE_REGEX } }]
+        },
+        {
             condition: generator => generator.buildTool === 'gradle',
             templates: [
                 'build.gradle',
@@ -177,7 +180,7 @@ const serverFiles = {
                 { file: 'gradlew', method: 'copy', noEjs: true },
                 { file: 'gradlew.bat', method: 'copy', noEjs: true },
                 { file: 'gradle/wrapper/gradle-wrapper.jar', method: 'copy', noEjs: true },
-                { file: 'gradle/wrapper/gradle-wrapper.properties', method: 'copy', noEjs: true }
+                'gradle/wrapper/gradle-wrapper.properties'
             ]
         },
         {
